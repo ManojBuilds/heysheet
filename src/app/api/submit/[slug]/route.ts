@@ -13,9 +13,30 @@ export async function POST(
 
     // Get client info
     const clientInfo = {
-      ip_address: request.headers.get("x-forwarded-for") || request.ip || "",
+      ip_address: request.headers.get("x-forwarded-for") || "",
       user_agent: request.headers.get("user-agent") || "",
+      browser: request.headers.get("sec-ch-ua") || "",
+      platform: request.headers.get("sec-ch-ua-platform") || "",
+      mobile: request.headers.get("sec-ch-ua-mobile") === "?1",
+      referer: request.headers.get("referer") || "",
+      language: request.headers.get("accept-language") || "",
+      location: {}
     };
+
+    // Optionally, you can integrate an IP geolocation service to get location info
+    let locationInfo = {};
+    if (clientInfo.ip_address) {
+      try {
+      const geoResponse = await fetch(`https://ipapi.co/${clientInfo.ip_address}/json/`);
+      if (geoResponse.ok) {
+        locationInfo = await geoResponse.json();
+      }
+      } catch (error) {
+      console.error("Error fetching IP location info:", error);
+      }
+    }
+
+    clientInfo.location = locationInfo;
 
     // Call the database function to handle the submission
     const supabase = await createClient();
