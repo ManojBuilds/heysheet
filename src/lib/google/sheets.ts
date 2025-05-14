@@ -1,3 +1,4 @@
+"use server";
 import { google, sheets_v4 } from "googleapis";
 import { getAuthenticatedClient } from "./auth";
 import { createClient } from "@/lib/supabase/server";
@@ -16,12 +17,13 @@ export async function createSheet(
   title: string,
   sheetName: string = "Sheet1"
 ) {
+  console.log({ title, sheetName });
   const sheets = await getSheetsClient(googleAccountId);
 
   const response = await sheets.spreadsheets.create({
     requestBody: {
       properties: {
-        title,
+        title: title + " By formsync",
       },
       sheets: [
         {
@@ -68,7 +70,8 @@ export async function appendToSheet(
   try {
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${range} - FormSync!A1`, // HarSheet1!A1:B2d-coded range for name, email, message
+      // range: `Check if it is working2 By formsync!A1`,// HarSheet1!A1:B2d-coded range for name, email, message
+      range,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: {
@@ -107,10 +110,8 @@ export async function processSubmission(submissionId: string) {
       `Submission not found: ${submissionError?.message || "No data returned"}`
     );
   }
-  console.log("@submission", submission);
 
   const endpoint = submission.endpoints;
-  console.log("@endpoint", endpoint);
   if (!endpoint) {
     throw new Error("Endpoint not found for this submission");
   }
@@ -166,13 +167,14 @@ export async function processSubmission(submissionId: string) {
           `Error checking submission count: ${countError.message}`
         );
       }
+      console.log("@endpoint", endpoint);
 
       if (count === 0) {
         // This is the first submission, add header row
         await appendToSheet(
           endpoint.google_account_id,
           endpoint.spreadsheet_id,
-          endpoint.name || "Sheet1",
+          endpoint.sheet_name || "Sheet1",
           [Object.keys(formData)]
         );
       }
@@ -182,7 +184,7 @@ export async function processSubmission(submissionId: string) {
     const result = await appendToSheet(
       endpoint.google_account_id,
       endpoint.spreadsheet_id,
-      endpoint.name || "Sheet1",
+      endpoint.sheet_name || "Sheet1",
       values
     );
 
@@ -215,4 +217,28 @@ export async function processSubmission(submissionId: string) {
 
     throw error;
   }
+}
+
+export async function getExistingSheets(googleAccountId: string) {
+  // Use Google Drive API to list all spreadsheets accessible to the user (owned by or shared with)
+  const drive = google.drive({
+    version: "v3",
+    auth: await getAuthenticatedClient(googleAccountId),
+  });
+
+  // The query below lists all spreadsheets the user has access to (owned by or shared with, not just created via API)
+  const res = await drive.files.list({
+    q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+    fields: "files(id, name, createdTime, modifiedTime, owners, permissions, sharedWithMeTime)",
+    pageSize: 1000,
+    orderBy: "modifiedTime desc",
+    corpora: "user",
+    includeItemsFromAllDrives: true,
+    supportsAllDrives: true,
+  });
+
+  // If you want to include files shared with the user, you can also query corpora: 'user' and 'drive'
+  // For most use cases, 'user' will include owned and shared files
+
+  return res.data.files || [];
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Props = {
   endpointUrl: string;
@@ -17,6 +18,7 @@ export default function CodeSnippet({ endpointUrl }: Props) {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    toast.success('Code copied to clipboard')
   };
   
   const htmlCode = `<form action="${endpointUrl}" method="POST">
@@ -25,6 +27,43 @@ export default function CodeSnippet({ endpointUrl }: Props) {
   <textarea name="message" placeholder="Your message" required></textarea>
   <button type="submit">Send</button>
 </form>`;
+
+  // Render the HTML form below the code snippet when HTML tab is active
+  const renderHtmlForm = () => {
+    if (activeTab !== 'html') return null;
+    return (
+      <div className="p-4 border-t bg-muted/10">
+        <form action={endpointUrl} method="POST" className="space-y-2">
+          <input
+            type="text"
+            name="name"
+            placeholder="Your name"
+            required
+            className="block w-full border rounded px-2 py-1"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="Your email"
+            required
+            className="block w-full border rounded px-2 py-1"
+          />
+          <textarea
+            name="message"
+            placeholder="Your message"
+            required
+            className="block w-full border rounded px-2 py-1"
+          ></textarea>
+          <button
+            type="submit"
+            className="bg-primary text-white px-4 py-1 rounded"
+          >
+            Send
+          </button>
+        </form>
+      </div>
+    );
+  };
 
   const fetchCode = `// Using fetch API
 fetch("${endpointUrl}", {
@@ -105,7 +144,7 @@ return (
       </div>
       
       <div className="relative">
-        <pre className="p-4 overflow-x-auto text-sm font-mono bg-muted/30">
+        <pre className="p-4 overflow-x-auto text-sm bg-muted/30 font-geist-mono">
           <code>{getCodeForTab()}</code>
         </pre>
         
@@ -122,6 +161,7 @@ return (
           )}
         </Button>
       </div>
+      {renderHtmlForm()}
     </div>
   );
 }

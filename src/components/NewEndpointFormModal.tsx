@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,8 @@ import { PlusCircle } from "lucide-react";
 import useGoogleAccounts from "@/hooks/use-google-accounts";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { getExistingSheets } from "@/lib/google/sheets";
+import { drive_v3 } from "googleapis";
 
 type GoogleAccount = {
   id: string;
@@ -47,7 +49,7 @@ export default function NewEndpointForm() {
   const userId = user?.id;
   const { googleAccounts } = useGoogleAccounts();
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState("");
@@ -60,6 +62,28 @@ export default function NewEndpointForm() {
   const [sheetName, setSheetName] = useState("Sheet1");
   const [createSpreadsheet, setCreateSpreadsheet] = useState(true);
   const [headerRow, setHeaderRow] = useState(true);
+
+  const [existingSpreadsheets, setExistingSpreadsheets] = useState<
+    drive_v3.Schema$File[]
+  >([]);
+  const [searchVal, setSearchVal] = useState("");
+
+  useEffect(() => {
+    const fetchSpreadsheets = async () => {
+      try {
+        const res = await getExistingSheets(googleAccountId);
+        console.log("@existingSpreadsheets", res);
+        setExistingSpreadsheets(res);
+      } catch (error) {
+        console.log(error);
+        toast.error("Failed to load user spreadsheets");
+      }
+    };
+    console.log({ googleAccountId });
+    if (googleAccountId) {
+      fetchSpreadsheets();
+    }
+  }, [googleAccountId]);
 
   // Generate slug from name
   const handleNameChange = (value: string) => {
@@ -85,11 +109,7 @@ export default function NewEndpointForm() {
 
       if (createSpreadsheet && !spreadsheetId) {
         try {
-          const sheet = await createGoogleSheet(
-            googleAccountId,
-            sheetName,
-            `${name} - FormSync`
-          );
+          const sheet = await createGoogleSheet(googleAccountId, sheetName, name);
           finalSpreadsheetId = sheet.spreadsheetId;
         } catch (err: any) {
           setError(`Failed to create Google Sheet: ${err.message}`);
@@ -121,8 +141,8 @@ export default function NewEndpointForm() {
       }
 
       console.log("Endpoint: ", data);
-      toast.success('Endpoint created successfully');
-      setIsOpen(false)
+      toast.success("Endpoint created successfully");
+      setIsOpen(false);
       // Redirect to dashboard
       router.push("/dashboard?success=endpoint_created");
       router.refresh();
@@ -134,6 +154,14 @@ export default function NewEndpointForm() {
       setIsLoading(false);
     }
   };
+
+  const filteredSpreadsheets = useMemo(
+    () =>
+      existingSpreadsheets?.filter((s) =>
+        s.name?.toLowerCase().includes(searchVal.toLowerCase())
+      ),
+    [searchVal, existingSpreadsheets]
+  );
 
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>
@@ -233,6 +261,24 @@ export default function NewEndpointForm() {
 
             {!createSpreadsheet && (
               <div className="space-y-2 mt-4">
+                <Select value={spreadsheetId} onValueChange={setSpreadsheetId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Please select sheet" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <Input
+                      onChange={(e) => setSearchVal(e.target.value)}
+                      value={searchVal}
+                      placeholder="Search your existing sheet..."
+                    />
+
+                    {filteredSpreadsheets?.map((s) => (
+                      <SelectItem value={s.id ?? ""} key={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Label htmlFor="spreadsheetId">Existing Spreadsheet ID</Label>
                 <Input
                   id="spreadsheetId"
@@ -277,17 +323,16 @@ export default function NewEndpointForm() {
               </p>
             </div>
           </div>
-        <DialogFooter className="flex justify-end space-x-2 pt-4">
-          <DialogClose asChild>
-            <Button type="button" variant="outline" disabled={isLoading}>
-              Cancel
+          <DialogFooter className="flex justify-end space-x-2 pt-4">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" disabled={isLoading}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create Endpoint"}
             </Button>
-          </DialogClose>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Endpoint"}
-          </Button>
-        </DialogFooter>
-
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

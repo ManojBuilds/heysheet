@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/Provider";
 import Navbar from "@/components/Navbar";
@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: "FormSync - Connect Forms to Google Sheets",
   description:
     "Easily connect your forms to Google Sheets in seconds. No code required.",
+  icons: {
+    icon: "/logo.webp",
+  },
 };
 
 export default function RootLayout({
@@ -41,7 +44,7 @@ export default function RootLayout({
             closeButton
             expand={false}
             position="top-right"
-           />
+          />
         </body>
       </html>
     </Provider>

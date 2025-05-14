@@ -60,7 +60,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Google Accounts Section */}
-        <div className="bg-card rounded-lg border p-6">
+        <div className="bg-card rounded-lg border p-6 h-fit">
           <h2 className="text-xl font-semibold mb-4">Google Accounts</h2>
 
           {googleAccounts && googleAccounts.length > 0 ? (

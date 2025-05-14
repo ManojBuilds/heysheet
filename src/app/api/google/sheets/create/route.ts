@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     const { googleAccountId, sheetName, title } = await request.json();
 
-    if (!googleAccountId || !sheetName || !title) {
+    if (!googleAccountId || !sheetName || !title ) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the Google Sheet
-    const sheet = await createSheet(googleAccountId, sheetName, title);
+    const sheet = await createSheet(googleAccountId, title, sheetName);
 
     return NextResponse.json(sheet);
   } catch (error: any) {

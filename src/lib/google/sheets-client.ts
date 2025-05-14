@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/client';
+import { google, sheets_v4 } from "googleapis";
+import { getAuthenticatedClient } from './auth';
 
 // Create a new Google Sheet (client-side version)
 export async function createGoogleSheet(

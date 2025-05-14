@@ -5,12 +5,29 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  let formData: any = {};
+  let isFormData = false;
+
+  // Try to detect and parse formData or JSON
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded")) {
+    isFormData = true;
+    const fd = await request.formData();
+    fd.forEach((value, key) => {
+      formData[key] = value;
+    });
+  } else {
+    try {
+      formData = await request.json();
+    } catch {
+      // fallback: empty object if not valid JSON
+      formData = {};
+    }
+  }
+
   const { slug } = await params;
 
   try {
-    // Get form data
-    const formData = await request.json();
-
     // Get client info
     const clientInfo = {
       ip_address: request.headers.get("x-forwarded-for") || "",
@@ -27,12 +44,12 @@ export async function POST(
     let locationInfo = {};
     if (clientInfo.ip_address) {
       try {
-      const geoResponse = await fetch(`https://ipapi.co/${clientInfo.ip_address}/json/`);
-      if (geoResponse.ok) {
-        locationInfo = await geoResponse.json();
-      }
+        const geoResponse = await fetch(`https://ipapi.co/${clientInfo.ip_address}/json/`);
+        if (geoResponse.ok) {
+          locationInfo = await geoResponse.json();
+        }
       } catch (error) {
-      console.error("Error fetching IP location info:", error);
+        console.error("Error fetching IP location info:", error);
       }
     }
 
@@ -56,9 +73,7 @@ export async function POST(
 
     // Process the submission asynchronously
     if (data.success) {
-      // TODO: In a production app, you would use a queue system here
-      // For now, we'll process it in the background
-      processSubmissionAsync(data.submission_id);
+      await processSubmissionAsync(data.submission_id);
     }
 
     return NextResponse.json(data);
