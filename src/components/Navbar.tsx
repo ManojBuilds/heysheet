@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton, SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { PlusCircle, RefreshCw } from "lucide-react";
+import { Plus, PlusCircle, RefreshCw } from "lucide-react";
 import NewEndpointForm from "./NewEndpointFormModal";
 
 export default function Navbar() {
@@ -63,7 +63,13 @@ export default function Navbar() {
             </SignedOut>
           </nav>
           <SignedIn>
-            <NewEndpointForm/>
+            <Link
+              href={"/endpoints/new"}
+              className={buttonVariants({ variant: "default" })}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create new endpoint
+            </Link>
             <UserButton />
           </SignedIn>
         </div>

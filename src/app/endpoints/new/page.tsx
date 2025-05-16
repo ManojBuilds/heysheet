@@ -42,7 +42,6 @@ export default async function NewEndpointPage() {
       
       <div className="bg-card rounded-lg border p-6">
         <h1 className="text-2xl font-bold mb-6">Create New Endpoint</h1>
-        
         <NewEndpointForm/>
       </div>
     </div>

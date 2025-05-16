@@ -154,6 +154,9 @@ export async function processSubmission(submissionId: string) {
 
     const values = [Object.values(formData)];
 
+    const tabs = await getSheetTabs(endpoint.google_accounts.id, endpoint.spreadsheet_id)
+    console.log("@tabs", tabs)
+
     // Determine if we need to add a header row
     if (endpoint.header_row) {
       const { count, error: countError } = await supabase
@@ -174,7 +177,7 @@ export async function processSubmission(submissionId: string) {
         await appendToSheet(
           endpoint.google_account_id,
           endpoint.spreadsheet_id,
-          endpoint.sheet_name || "Sheet1",
+          "Sheet1",
           [Object.keys(formData)]
         );
       }
@@ -184,7 +187,7 @@ export async function processSubmission(submissionId: string) {
     const result = await appendToSheet(
       endpoint.google_account_id,
       endpoint.spreadsheet_id,
-      endpoint.sheet_name || "Sheet1",
+      "Sheet1",
       values
     );
 
@@ -220,25 +223,42 @@ export async function processSubmission(submissionId: string) {
 }
 
 export async function getExistingSheets(googleAccountId: string) {
-  // Use Google Drive API to list all spreadsheets accessible to the user (owned by or shared with)
+  // Use Google Drive API to list all spreadsheets accessible to the user
   const drive = google.drive({
     version: "v3",
     auth: await getAuthenticatedClient(googleAccountId),
   });
 
-  // The query below lists all spreadsheets the user has access to (owned by or shared with, not just created via API)
-  const res = await drive.files.list({
-    q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
-    fields: "files(id, name, createdTime, modifiedTime, owners, permissions, sharedWithMeTime)",
-    pageSize: 1000,
-    orderBy: "modifiedTime desc",
-    corpora: "user",
-    includeItemsFromAllDrives: true,
-    supportsAllDrives: true,
+  try {
+    // Simpler query that should include all spreadsheets regardless of creation method
+    const res = await drive.files.list({
+      q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=true",
+      fields: "nextPageToken, files(id, name, createdTime, modifiedTime, owners, permissions, sharedWithMeTime)",
+      pageSize: 1000,
+      orderBy: "modifiedTime desc",
+      // Using 'allDrives' ensures we get files from all possible sources
+      spaces: "drive",
+      corpora: "allDrives",
+      includeItemsFromAllDrives: true,
+      supportsAllDrives: true,
+    });
+
+    console.log(`Found ${res.data.files?.length || 0} spreadsheets`);
+    return res.data.files || [];
+  } catch (error) {
+    console.error("Error fetching spreadsheets:", error);
+    throw error;
+  }
+}
+
+export async function getSheetTabs(googleAccountId: string, spreadsheetId: string) {
+  const sheets = await getSheetsClient(googleAccountId);
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    fields: "sheets.properties",
   });
-
-  // If you want to include files shared with the user, you can also query corpora: 'user' and 'drive'
-  // For most use cases, 'user' will include owned and shared files
-
-  return res.data.files || [];
+  // Returns an array of sheet/tab names
+  return (
+    response.data.sheets?.map((sheet) => sheet.properties?.title) || []
+  );
 }

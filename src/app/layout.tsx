@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Geist_Mono,
+  Plus_Jakarta_Sans,
+  Bricolage_Grotesque,
+} from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/Provider";
 import Navbar from "@/components/Navbar";
@@ -14,6 +18,10 @@ const geistSans = Plus_Jakarta_Sans({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const grotesque = Bricolage_Grotesque({
+  variable: "--font-grotesque",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +42,7 @@ export default function RootLayout({
     <Provider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable}  antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} ${grotesque.variable}  antialiased`}
         >
           <Navbar />
           <main>{children}</main>

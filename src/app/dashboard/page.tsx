@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getGoogleAuthUrl } from "@/lib/google/auth";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { PlusCircle, RefreshCw, ExternalLink, Copy } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { PlusCircle, RefreshCw, ExternalLink, Copy, Plus } from "lucide-react";
 import RecentSubmissions from "../endpoints/[id]/RecentSubmissions";
 import NewEndpointForm from "../../components/NewEndpointFormModal";
 
@@ -30,8 +30,6 @@ export default async function DashboardPage() {
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
-  console.log({ endpoints });
-
   // Get recent submissions for user's endpoints
   const endpointIds = endpoints?.map((endpoint) => endpoint.id) || [];
   // const { data: submissions } = await supabase
@@ -46,8 +44,6 @@ export default async function DashboardPage() {
     .in("endpoint_id", endpointIds)
     .order("created_at", { ascending: false })
     .limit(10);
-
-  console.log({ submissions });
 
   // Generate Google auth URL
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
@@ -109,8 +105,13 @@ export default async function DashboardPage() {
         <div className="bg-card rounded-lg border p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Form Endpoints</h2>
-            <NewEndpointForm/>
-            
+            <Link
+              href={"/endpoints/new"}
+              className={buttonVariants({ variant: "default" })}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create new endpoint
+            </Link>
           </div>
 
           {endpoints && endpoints.length > 0 ? (
@@ -186,7 +187,7 @@ export default async function DashboardPage() {
 
       {/* Recent Submissions Section */}
       <div className="mt-8">
-        <RecentSubmissions submissions={submissions}/>
+        <RecentSubmissions submissions={submissions} />
       </div>
     </div>
   );
