@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Loader } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query';
 
 type Props = {
   endpointUrl: string;
@@ -13,6 +14,10 @@ type Props = {
 export default function CodeSnippet({ endpointUrl }: Props) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState('html');
+
+  const demoFormSubmissionMutation = useMutation({
+    mutationFn: (e: FormEvent)=>demoFormSubmission(e)
+  })
   
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -26,14 +31,30 @@ export default function CodeSnippet({ endpointUrl }: Props) {
   <input type="email" name="email" placeholder="Your email" required />
   <textarea name="message" placeholder="Your message" required></textarea>
   <button type="submit">Send</button>
+  <input type="hidden" name="heysheet-api-key" value="YOUR_API_KEY_HERE" />
 </form>`;
 
   // Render the HTML form below the code snippet when HTML tab is active
+
+  const demoFormSubmission = async(e: FormEvent)=>{
+    e.preventDefault()
+    const formData = new FormData(e.target as HTMLFormElement)
+    const data = Object.fromEntries(formData)
+    console.log(data)
+    const res = await fetch(endpointUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'heysheet-api-key': process.env.NEXT_PUBLIC_ONBOARDING_API_KEY!,
+      },
+      body: JSON.stringify(data),
+    })
+  }
   const renderHtmlForm = () => {
     if (activeTab !== 'html') return null;
     return (
       <div className="p-4 border-t bg-muted/10">
-        <form action={endpointUrl} method="POST" className="space-y-2">
+        <form onSubmit={demoFormSubmissionMutation.mutate} className="space-y-2">
           <input
             type="text"
             name="name"
@@ -57,7 +78,13 @@ export default function CodeSnippet({ endpointUrl }: Props) {
           <button
             type="submit"
             className="bg-primary text-white px-4 py-1 rounded"
+            disabled={demoFormSubmissionMutation.isPending}
           >
+            {
+              demoFormSubmissionMutation.isPending && (
+                  <Loader className='animate-spin mr-2' />
+              )
+            }
             Send
           </button>
         </form>
@@ -70,6 +97,7 @@ fetch("${endpointUrl}", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
+    "heysheet-api-key": "YOUR_API_KEY_HERE",
   },
   body: JSON.stringify({
     name: "John Doe",
@@ -92,6 +120,7 @@ const handleSubmit = async (e) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "heysheet-api-key": "YOUR_API_KEY_HERE",
       },
       body: JSON.stringify(data),
     });

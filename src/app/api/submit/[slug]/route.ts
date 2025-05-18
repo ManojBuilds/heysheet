@@ -1,4 +1,6 @@
+import { validateApiKey } from "@/lib/settings";
 import { createClient } from "@/lib/supabase/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -7,6 +9,12 @@ export async function POST(
 ) {
   let formData: any = {};
   let isFormData = false;
+
+  const apiKey = request.headers.get('heysheet-api-key')
+  console.log({apiKey})
+  if(!apiKey || !validateApiKey(apiKey)){
+    return new Response("Invalid or Missing api key", { status: 401 });
+  }
 
   // Try to detect and parse formData or JSON
   const contentType = request.headers.get("content-type") || "";
@@ -54,6 +62,7 @@ export async function POST(
     }
 
     clientInfo.location = locationInfo;
+    console.log('clientInfo', clientInfo)
 
     // Call the database function to handle the submission
     const supabase = await createClient();
@@ -73,7 +82,7 @@ export async function POST(
 
     // Process the submission asynchronously
     if (data.success) {
-      await processSubmissionAsync(data.submission_id);
+      await processSubmissionAsync(formData, data.submission_id);
     }
 
     return NextResponse.json(data);
@@ -87,11 +96,11 @@ export async function POST(
 }
 
 // Process submission asynchronously
-async function processSubmissionAsync(submissionId: string) {
+async function processSubmissionAsync(formData: any, submissionId: string) {
   // TODO: In a production app, this would be handled by a queue system
   try {
     const { processSubmission } = await import("@/lib/google/sheets");
-    await processSubmission(submissionId);
+    await processSubmission(formData, submissionId);
   } catch (error) {
     console.error("Error processing submission:", error);
   }

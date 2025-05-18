@@ -2,6 +2,7 @@
 import { google, sheets_v4 } from "googleapis";
 import { getAuthenticatedClient } from "./auth";
 import { createClient } from "@/lib/supabase/server";
+import { sendEmail } from "../email";
 
 // Get Google Sheets client
 export async function getSheetsClient(
@@ -87,7 +88,10 @@ export async function appendToSheet(
 }
 
 // Process a form submission to Google Sheets
-export async function processSubmission(submissionId: string) {
+export async function processSubmission(
+  dataToSendInEmail: any,
+  submissionId: string
+) {
   const supabase = await createClient();
 
   // Get submission with endpoint details
@@ -154,8 +158,11 @@ export async function processSubmission(submissionId: string) {
 
     const values = [Object.values(formData)];
 
-    const tabs = await getSheetTabs(endpoint.google_accounts.id, endpoint.spreadsheet_id)
-    console.log("@tabs", tabs)
+    const tabs = await getSheetTabs(
+      endpoint.google_accounts.id,
+      endpoint.spreadsheet_id
+    );
+    console.log("@tabs", tabs);
 
     // Determine if we need to add a header row
     if (endpoint.header_row) {
@@ -206,6 +213,22 @@ export async function processSubmission(submissionId: string) {
       })
       .eq("id", submissionId);
 
+    const { data, error } = await supabase
+      .from("email_notifications")
+      .select("*")
+      .eq("user_id", endpoint.user_id)
+      .single();
+    // TODO: handle Slack notification
+
+    console.log({email_alert: data, error})
+
+    if (data && data.enabled && data.email) {
+      sendEmail({
+        data: submission.data,
+        toEmail: endpoint.google_accounts.email,
+      });
+    }
+
     return { success: true, rowNumber };
   } catch (error: any) {
     // Update submission as failed
@@ -233,7 +256,8 @@ export async function getExistingSheets(googleAccountId: string) {
     // Simpler query that should include all spreadsheets regardless of creation method
     const res = await drive.files.list({
       q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=true",
-      fields: "nextPageToken, files(id, name, createdTime, modifiedTime, owners, permissions, sharedWithMeTime)",
+      fields:
+        "nextPageToken, files(id, name, createdTime, modifiedTime, owners, permissions, sharedWithMeTime)",
       pageSize: 1000,
       orderBy: "modifiedTime desc",
       // Using 'allDrives' ensures we get files from all possible sources
@@ -251,14 +275,15 @@ export async function getExistingSheets(googleAccountId: string) {
   }
 }
 
-export async function getSheetTabs(googleAccountId: string, spreadsheetId: string) {
+export async function getSheetTabs(
+  googleAccountId: string,
+  spreadsheetId: string
+) {
   const sheets = await getSheetsClient(googleAccountId);
   const response = await sheets.spreadsheets.get({
     spreadsheetId,
     fields: "sheets.properties",
   });
   // Returns an array of sheet/tab names
-  return (
-    response.data.sheets?.map((sheet) => sheet.properties?.title) || []
-  );
+  return response.data.sheets?.map((sheet) => sheet.properties?.title) || [];
 }
