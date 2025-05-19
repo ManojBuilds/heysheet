@@ -3,7 +3,10 @@ import { google, sheets_v4 } from "googleapis";
 import { getAuthenticatedClient } from "./auth";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "../email";
-import { createFormSubmissionMessage, getSlackAccountAndNotificationAndToken } from "../slack/client";
+import {
+  createFormSubmissionMessage,
+  getSlackAccountAndNotificationAndToken,
+} from "../slack/client";
 import { sendMessage } from "../slack/sendMessage";
 
 // Get Google Sheets client
@@ -225,7 +228,22 @@ export async function processSubmission(
     const slackAccount = await getSlackAccountAndNotificationAndToken();
 
     if (slackAccount && slackAccount.enabled && slackAccount.slack_accounts) {
-      const messagePayload =await createFormSubmissionMessage()
+      const messagePayload = await createFormSubmissionMessage({
+        endpoint,
+        submission,
+        analytics: {
+          ...submission,
+        },
+      });
+
+      console.log({
+        endpoint,
+        submission,
+        analytics: {
+          ...submission,
+        },
+      })
+
       sendMessage(slackAccount.slack_channel, messagePayload);
     }
 

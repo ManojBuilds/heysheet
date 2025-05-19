@@ -13,10 +13,15 @@ interface FormSubmissionData {
     id: string;
   };
   analytics?: {
-    ip?: string;
-    userAgent?: string;
     referrer?: string;
     country?: string;
+    city?: string;
+    timezone?: string;
+    deviceType?: string;
+    browser?: string;
+    language?: string;
+    processed_at?: string;
+    created_at?: string;
   };
 }
 
@@ -76,14 +81,21 @@ export async function getSlackAccountAndNotificationAndToken() {
   return data;
 }
 
-export async function createFormSubmissionMessage() {
+export async function createFormSubmissionMessage(data: FormSubmissionData) {
+  const formattedData = Object.entries(data.submission.data)
+    .map(
+      ([key, value]) =>
+        `• *${key}:* ${value}`
+    )
+    .join('\n');
+
   return {
     blocks: [
       {
         type: "header",
         text: {
           type: "plain_text",
-          text: "📝 New Form Submission",
+          text: "📥 New Form Submission Received",
           emoji: true
         }
       },
@@ -92,11 +104,11 @@ export async function createFormSubmissionMessage() {
         fields: [
           {
             type: "mrkdwn",
-            text: "*Form:*\nContact Form"
+            text: `🗂️ *Form:*\n${data.endpoint.name}`
           },
           {
             type: "mrkdwn",
-            text: "*Submitted At:*\n<!date^1703980800^{date_short} at {time}|December 31, 2023 12:00 PM>"
+            text: `⏰ *Submitted At:*\n<!date^${Math.floor(new Date(data.submission.created_at).getTime() / 1000)}^{date_short} at {time}|${data.submission.created_at}>`
           }
         ]
       },
@@ -104,7 +116,7 @@ export async function createFormSubmissionMessage() {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "*Submission Details:*\n• *Name:* John Doe\n• *Email:* john@example.com\n• *Message:* Hello, I'd like to learn more about your services."
+          text: "📝 *Submission Details:*\n" + formattedData
         }
       },
       {
@@ -112,11 +124,35 @@ export async function createFormSubmissionMessage() {
         fields: [
           {
             type: "mrkdwn",
-            text: "*Source:*\nContact Page"
+            text: `🌐 *Source:*\n${data.analytics?.referrer || 'Direct'}`
           },
           {
             type: "mrkdwn",
-            text: "*IP Location:*\nNew York, USA"
+            text: `🏳️ *Country:*\n${data.analytics?.country || 'Unknown'}`
+          },
+          {
+            type: "mrkdwn",
+            text: `🏙️ *City:*\n${data.analytics?.city || 'Unknown'}`
+          },
+          {
+            type: "mrkdwn",
+            text: `🕰️ *Timezone:*\n${data.analytics?.timezone || 'Unknown'}`
+          },
+          {
+            type: "mrkdwn",
+            text: `📱 *Device Type:*\n${data.analytics?.deviceType || 'Unknown'}`
+          },
+          {
+            type: "mrkdwn",
+            text: `🌍 *Browser:*\n${data.analytics?.browser || 'Unknown'}`
+          },
+          {
+            type: "mrkdwn",
+            text: `🗣️ *Language:*\n${data.analytics?.language || 'Unknown'}`
+          },
+          {
+            type: "mrkdwn",
+            text: `✅ *Processed At:*\n${data.analytics?.processed_at || data.analytics?.created_at || 'Unknown'}`
           }
         ]
       },
@@ -125,7 +161,7 @@ export async function createFormSubmissionMessage() {
         elements: [
           {
             type: "mrkdwn",
-            text: `View in <https://docs.google.com/spreadsheets/d/your-sheet-id|Google Sheets> • Submission ID: \`sub_abc123\``
+            text: `🔗 <https://docs.google.com/spreadsheets/d/${data.endpoint.spreadsheet_id}|View in Google Sheets> &nbsp;•&nbsp; 🆔 Submission ID: \`${data.submission.id}\``
           }
         ]
       },
@@ -136,66 +172,4 @@ export async function createFormSubmissionMessage() {
   };
 }
 
-// export function createFormSubmissionMessage(data: FormSubmissionData) {
-//   const formattedData = Object.entries(data.submission.data)
-//     .map(([key, value]) => `• *${key}:* ${value}`)
-//     .join('\n');
 
-//   return {
-//     blocks: [
-//       {
-//         type: "header",
-//         text: {
-//           type: "plain_text",
-//           text: "🎯 New Form Submission Received",
-//           emoji: true
-//         }
-//       },
-//       {
-//         type: "section",
-//         fields: [
-//           {
-//             type: "mrkdwn",
-//             text: `*Form:*\n${data.endpoint.name}`
-//           },
-//           {
-//             type: "mrkdwn",
-//             text: `*Submitted:*\n<!date^${Math.floor(new Date(data.submission.created_at).getTime() / 1000)}^{date_short} at {time}|${data.submission.created_at}>`
-//           }
-//         ]
-//       },
-//       {
-//         type: "section",
-//         text: {
-//           type: "mrkdwn",
-//           text: "*Submission Details:*\n" + formattedData
-//         }
-//       },
-//       {
-//         type: "section",
-//         fields: [
-//           {
-//             type: "mrkdwn",
-//             text: `*Location:*\n${data.analytics?.country || 'Unknown'}`
-//           },
-//           {
-//             type: "mrkdwn",
-//             text: `*Source:*\n${data.analytics?.referrer || 'Direct'}`
-//           }
-//         ]
-//       },
-//       {
-//         type: "context",
-//         elements: [
-//           {
-//             type: "mrkdwn",
-//             text: `ID: \`${data.submission.id}\` • View in <https://docs.google.com/spreadsheets/d/${data.endpoint.spreadsheet_id}|Google Sheets>`
-//           }
-//         ]
-//       },
-//       {
-//         type: "divider"
-//       }
-//     ]
-//   };
-// }

@@ -1,4 +1,5 @@
 import { validateApiKey } from "@/lib/settings";
+import { collectAnalytics } from "@/lib/submission";
 import { createClient } from "@/lib/supabase/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,15 +11,18 @@ export async function POST(
   let formData: any = {};
   let isFormData = false;
 
-  const apiKey = request.headers.get('heysheet-api-key')
-  console.log({apiKey})
-  if(!apiKey || !validateApiKey(apiKey)){
+  const apiKey = request.headers.get("heysheet-api-key");
+  console.log({ apiKey });
+  if (!apiKey || !validateApiKey(apiKey)) {
     return new Response("Invalid or Missing api key", { status: 401 });
   }
 
   // Try to detect and parse formData or JSON
   const contentType = request.headers.get("content-type") || "";
-  if (contentType.includes("multipart/form-data") || contentType.includes("application/x-www-form-urlencoded")) {
+  if (
+    contentType.includes("multipart/form-data") ||
+    contentType.includes("application/x-www-form-urlencoded")
+  ) {
     isFormData = true;
     const fd = await request.formData();
     fd.forEach((value, key) => {
@@ -40,37 +44,39 @@ export async function POST(
     const clientInfo = {
       ip_address: request.headers.get("x-forwarded-for") || "",
       user_agent: request.headers.get("user-agent") || "",
-      browser: request.headers.get("sec-ch-ua") || "",
-      platform: request.headers.get("sec-ch-ua-platform") || "",
       mobile: request.headers.get("sec-ch-ua-mobile") === "?1",
       referer: request.headers.get("referer") || "",
       language: request.headers.get("accept-language") || "",
-      location: {}
+      location: {},
     };
 
-    // Optionally, you can integrate an IP geolocation service to get location info
+    // Use ipinfo.io API to get location info
     let locationInfo = {};
-    if (clientInfo.ip_address) {
-      try {
-        const geoResponse = await fetch(`https://ipapi.co/${clientInfo.ip_address}/json/`);
-        if (geoResponse.ok) {
-          locationInfo = await geoResponse.json();
-        }
-      } catch (error) {
-        console.error("Error fetching IP location info:", error);
+    try {
+      const ipInfoApiKey = process.env.IP_INFO_API_KEY;
+      const url = `https://ipinfo.io/json?token=${ipInfoApiKey}`;
+      const geoResponse = await fetch(url);
+      if (geoResponse.ok) {
+        locationInfo = await geoResponse.json();
+        console.log("locationInfo", locationInfo);
       }
+    } catch (error) {
+      console.error("Error fetching IP location info:", error);
     }
 
     clientInfo.location = locationInfo;
-    console.log('clientInfo', clientInfo)
+
+    const analytics = collectAnalytics(clientInfo)
+    console.log(analytics);
 
     // Call the database function to handle the submission
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("handle_form_submission", {
       endpoint_slug: slug,
       form_data: formData,
-      client_info: clientInfo,
+      client_info: analytics,
     });
+    console.log(data)
 
     if (error) {
       console.error("Error handling form submission:", error);
