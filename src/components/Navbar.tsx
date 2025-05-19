@@ -6,6 +6,7 @@ import { UserButton, SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Plus, PlusCircle, RefreshCw, Settings } from "lucide-react";
 import NewEndpointForm from "./NewEndpointFormModal";
+import { ConnectToSlackBtn } from "./connect-to-slack-button";
 
 export default function Navbar() {
   const pathname = usePathname();

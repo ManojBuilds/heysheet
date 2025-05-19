@@ -34,30 +34,8 @@ import {
   upsertEmailAlert,
 } from "@/lib/settings";
 import { toast } from "sonner";
+import { ConnectToSlackBtn } from "@/components/connect-to-slack-button";
 
-type ApiKey = {
-  id: string;
-  name: string;
-  key: string;
-  active: boolean;
-  createdAt: string;
-};
-
-const sidebarItems = [
-  "Profile",
-  "Appearance",
-  "Organization",
-  "Members",
-  "Workspaces",
-  "Billing",
-  "Limits",
-  "API keys",
-  "Admin keys",
-  "Logs",
-  "Privacy controls",
-  "Usage",
-  "Cost",
-];
 
 export default function SettingsPage() {
   const queryClient = useQueryClient();
@@ -205,17 +183,15 @@ export default function SettingsPage() {
           {/* Alert Notification Settings */}
           <section>
             <h2 className="text-lg font-semibold mb-4">Alert Notifications</h2>
-            <div className="flex items-center space-x-4 mb-4">
-              <Button
-                variant={slackConnected ? "secondary" : "default"}
-                onClick={() => setSlackConnected((v) => !v)}
-              >
-                {slackConnected ? "Connected to Slack" : "Connect to Slack"}
-              </Button>
-              {slackConnected && <Badge variant={"default"}>Connected</Badge>}
-            </div>
-            {/* Email notification toggle */}
-            <div className="flex items-center space-x-2">
+            <ConnectToSlackBtn />
+            <div className="flex items-center justify-between mt-4">
+              <div className="space-y-0.5">
+                <Label>Email Notifications</Label>
+                <div className="text-sm text-muted-foreground">
+                  Receive alerts in directly to your email
+                </div>
+              </div>
+
               <Switch
                 id="email-alerts"
                 checked={isEmailAlertEnabled}
@@ -228,9 +204,10 @@ export default function SettingsPage() {
                   });
                 }}
                 disabled={upsertEmailAlertMutation.isPending}
+                aria-label="Toggle Email Alert"
               />
-              <Label htmlFor="email-alerts">Enable Email Alerts</Label>
             </div>
+
             <form className="my-4 flex items-center gap-2">
               <Input
                 value={email}
