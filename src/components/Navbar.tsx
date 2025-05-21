@@ -51,6 +51,12 @@ export default function Navbar() {
                 <Settings />
                 Settings
               </Link>
+              <Link
+                href="/form-builder"
+                className={buttonVariants({ variant: "link" })}
+              >
+                Form Builder
+              </Link>
             </SignedIn>
             <SignedOut>
               <Link

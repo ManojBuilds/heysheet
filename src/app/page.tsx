@@ -1,6 +1,10 @@
+import Navbar from "@/components/Navbar";
 
 export default function Home() {
   return (
-    <div>Hello, HeySheet</div>
+    <>
+    <Navbar/>
+    <h1>Welcome to the heysheet</h1>
+    </>
   );
 }

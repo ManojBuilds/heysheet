@@ -44,9 +44,7 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} ${grotesque.variable}  antialiased`}
         >
-          <Navbar />
           <main>{children}</main>
-          <Footer />
           <Toaster
             className="font-main"
             closeButton
