@@ -1,4 +1,4 @@
-
+'use client'
 import React, { useState, useEffect } from "react";
 import { FormComponent, FormData, FormTheme } from "@/types/form-builder";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { Star } from "lucide-react";
 
 interface FormPreviewProps {
   formData: FormData;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 const FormPreview: React.FC<FormPreviewProps> = ({ formData, onClose }) => {
@@ -40,7 +40,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ formData, onClose }) => {
     e.preventDefault();
     toast.success("Form submitted! Answers logged to console");
     console.log("Form answers:", answers);
-    onClose();
+    onClose?.();
   };
   
   const handleNext = () => {
@@ -78,15 +78,15 @@ const FormPreview: React.FC<FormPreviewProps> = ({ formData, onClose }) => {
   
   return (
     <div 
-      className="flex flex-col min-h-[500px] max-w-xl mx-auto"
+      className="flex flex-col min-h-[500px]"
       style={{ 
         backgroundColor: formData.theme.backgroundColor,
         color: formData.theme.textColor,
-        fontFamily: formData.theme.fontFamily,
+        // fontFamily: formData.theme.fontFamily,
       }}
     >
       <div className="flex-1 p-6">
-        <div className="mb-6">
+        <div className="">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -94,14 +94,14 @@ const FormPreview: React.FC<FormPreviewProps> = ({ formData, onClose }) => {
                 Page {currentPageIndex + 1} of {pageComponents.length}
               </span>
             </div>
-            <div className="text-sm">
+            {/* <div className="text-sm">
               <span 
                 className="cursor-pointer hover:underline"
                 onClick={onClose}
               >
                 Exit
               </span>
-            </div>
+            </div> */}
           </div>
           <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
             <div 
@@ -115,18 +115,13 @@ const FormPreview: React.FC<FormPreviewProps> = ({ formData, onClose }) => {
         </div>
         
         <Card
-          className="shadow-lg border-0 animate-fade-in"
-          style={{ borderRadius: formData.theme.borderRadius }}
+          className="shadow-none border-0 animate-fade-in w-full"
         >
-          <CardHeader>
-            <CardTitle className="text-xl font-medium">
-              {formData.pages[currentPageIndex]?.title || `Page ${currentPageIndex + 1}`}
-            </CardTitle>
-          </CardHeader>
+          
           <CardContent>
             <div className="space-y-8">
               {currentPageComponents.map((component, index) => (
-                <div key={component.id} className="space-y-3">
+                <div key={component.id} className="space-y-2">
                   <div>
                     <h3 className="text-lg font-medium mb-1">{component.title}</h3>
                     {component.description && (
@@ -143,7 +138,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({ formData, onClose }) => {
               ))}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between border-t p-4">
+          <CardFooter className="flex justify-between p-4">
             <Button 
               variant="outline" 
               onClick={handlePrevious}
@@ -181,7 +176,7 @@ function renderComponentInput(
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           className="focus:ring-2"
-          style={{ borderColor: theme.primaryColor + "40", borderRadius: theme.borderRadius }}
+          style={{ borderColor: theme.primaryColor + "40",  }}
         />
       );
     
@@ -192,7 +187,7 @@ function renderComponentInput(
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           className="min-h-[120px] focus:ring-2"
-          style={{ borderColor: theme.primaryColor + "40", borderRadius: theme.borderRadius }}
+          style={{ borderColor: theme.primaryColor + "40"}}
         />
       );
     
@@ -247,7 +242,6 @@ function renderComponentInput(
           <SelectTrigger
             style={{ 
               borderColor: theme.primaryColor + "40",
-              borderRadius: theme.borderRadius
             }}
           >
             <SelectValue placeholder="Select an option" />
@@ -269,7 +263,7 @@ function renderComponentInput(
           placeholder="email@example.com"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          style={{ borderColor: theme.primaryColor + "40", borderRadius: theme.borderRadius }}
+          style={{ borderColor: theme.primaryColor + "40",  }}
         />
       );
     
@@ -280,7 +274,7 @@ function renderComponentInput(
           placeholder="+1 (555) 123-4567"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          style={{ borderColor: theme.primaryColor + "40", borderRadius: theme.borderRadius }}
+          style={{ borderColor: theme.primaryColor + "40"  }}
         />
       );
     
@@ -293,7 +287,7 @@ function renderComponentInput(
           max={component.properties.max || undefined}
           value={value || ""}
           onChange={(e) => onChange(e.target.value ? Number(e.target.value) : "")}
-          style={{ borderColor: theme.primaryColor + "40", borderRadius: theme.borderRadius }}
+          style={{ borderColor: theme.primaryColor + "40" }}
         />
       );
     
@@ -303,7 +297,7 @@ function renderComponentInput(
           type="date"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          style={{ borderColor: theme.primaryColor + "40", borderRadius: theme.borderRadius }}
+          style={{ borderColor: theme.primaryColor + "40" }}
         />
       );
     
@@ -319,7 +313,6 @@ function renderComponentInput(
                 className="h-10 w-10"
                 style={{
                   borderColor: theme.primaryColor + "40",
-                  borderRadius: theme.borderRadius,
                   backgroundColor: value && value > i ? theme.primaryColor : undefined,
                   color: value && value > i ? "#fff" : undefined,
                 }}

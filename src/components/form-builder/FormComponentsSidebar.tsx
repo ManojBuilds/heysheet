@@ -16,36 +16,30 @@ import {
 import { FORM_COMPONENT_TYPES } from "@/lib/form-builder";
 import { FormComponentType } from "@/types/form-builder";
 import { Input } from "@/components/ui/input";
-import { useDraggable } from "@dnd-kit/core";
+import { DragOverlay, useDraggable } from "@dnd-kit/core";
 import FormComponentCard from "./FormComponentCard";
 
 interface FormComponentsSidebarProps {
-  onDragStart: (type: FormComponentType) => void;
+  activeId: string | null
 }
 
 const FormComponentsSidebar: React.FC<FormComponentsSidebarProps> = ({
-  onDragStart,
+  activeId
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const handleDragEnd = (result: any) => {
-    // This is a sidebar, so we don't need to reorder anything
-    // But we can trigger the onDragStart callback when an item is dragged
-    if (!result.destination) return;
-
-    const componentType = result.draggableId.split("-")[1] as FormComponentType;
-    onDragStart(componentType);
-  };
 
   const filteredComponents = FORM_COMPONENT_TYPES.filter((component) =>
     component.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const activeDraggingFormComponent = filteredComponents.find(
+    (c) => c.type === activeId
+  );
+
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Form Components</CardTitle>
-        <div className="relative mt-2">
+    <div className="w-full h-[calc(100svh-9.5rem)]">
+      <header className="pb-2">
+        <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search components..."
@@ -54,19 +48,24 @@ const FormComponentsSidebar: React.FC<FormComponentsSidebarProps> = ({
             className="pl-8"
           />
         </div>
-      </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-2">
+      </header>
+      <div className="grid grid-cols-1 gap-2">
         {filteredComponents.length > 0 ? (
           filteredComponents.map((component, index) => (
-           <FormComponentCard {...component}/> 
+            <FormComponentCard key={component.type} {...component} />
           ))
         ) : (
           <div className="text-center py-4 text-muted-foreground">
             No components found
           </div>
         )}
-      </CardContent>
-    </Card>
+        <DragOverlay>
+          {activeId && activeDraggingFormComponent ? (
+            <FormComponentCard {...activeDraggingFormComponent} />
+          ) : null}
+        </DragOverlay>
+      </div>
+    </div>
   );
 };
 

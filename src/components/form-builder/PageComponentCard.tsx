@@ -6,18 +6,21 @@ import FormComponentPreview from "./FormComponentPreview";
 import { FormComponent, FormTheme } from "@/types/form-builder";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { cn } from "@/lib/utils";
 
 interface PageComponentCardProps {
   theme: FormTheme;
   component: FormComponent;
   onEditSettings: () => void;
   onDeleteComponent: () => void;
+  currentComponent: FormComponent | null;
 }
 const PageComponentCard = ({
   theme,
   onDeleteComponent,
   onEditSettings,
   component,
+  currentComponent,
 }: PageComponentCardProps) => {
   const { setNodeRef, listeners, attributes, transform, transition } =
     useSortable({
@@ -30,15 +33,19 @@ const PageComponentCard = ({
         transition,
       }
     : undefined;
+    console.log(component)
   return (
     <Card
-      className="form-builder-component my-2"
+      className={cn(
+        "form-builder-component my-2 shadow-none rounded-none hover:bg-muted transition-all duration-200",
+        component.id === currentComponent?.id && "border border-black"
+      )}
       style={{
-        borderColor: theme.primaryColor + "40",
-        borderRadius: theme.borderRadius,
+        // borderColor: theme.primaryColor + "40",
+        // borderRadius: theme.borderRadius,
         ...style,
       }}
-
+      onClick={onEditSettings}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
@@ -48,13 +55,13 @@ const PageComponentCard = ({
               {...attributes}
               ref={setNodeRef}
               className="cursor-grab p-1 rounded hover:bg-muted flex items-center justify-center bg-muted"
-              variant={'ghost'}
-              size={'icon'}
+              variant={"ghost"}
+              size={"icon"}
             >
               <MoveVertical className="h-5 w-5 text-muted-foreground" />
             </Button>
             <div className="flex-1">
-              <div className="font-medium">{component.title}</div>
+              <div className="font-medium">{component.title}{component?.required && <span className="text-red-500"> *</span>}</div>
               {component.description && (
                 <p className="text-sm text-muted-foreground">
                   {component.description}

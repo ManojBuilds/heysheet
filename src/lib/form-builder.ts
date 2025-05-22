@@ -26,48 +26,45 @@ export const FONT_FAMILIES = [
 
 export const DEFAULT_FORM_THEMES: FormTheme[] = [
   {
-    id: 'default',
-    name: 'Default',
-    primaryColor: '#8B5CF6',
+    id: 'classic',
+    name: 'Classic',
+    primaryColor: '#2563EB', // Blue
     backgroundColor: '#FFFFFF',
     textColor: '#1F2937',
-    fontFamily: 'Inter, sans-serif',
-    borderRadius: '8px',
   },
   {
-    id: 'dark',
-    name: 'Dark',
-    primaryColor: '#8B5CF6',
-    backgroundColor: '#1F2937',
+    id: 'modern-dark',
+    name: 'Modern Dark',
+    primaryColor: '#6366F1', // Indigo
+    backgroundColor: '#18181B',
     textColor: '#F3F4F6',
-    fontFamily: 'Inter, sans-serif',
-    borderRadius: '8px',
   },
   {
-    id: 'minimal',
-    name: 'Minimal',
-    primaryColor: '#6B7280',
+    id: 'minimal-light',
+    name: 'Minimal Light',
+    primaryColor: '#10B981', // Emerald
     backgroundColor: '#F9FAFB',
-    textColor: '#1F2937',
-    fontFamily: 'Inter, sans-serif',
-    borderRadius: '4px',
+    textColor: '#111827',
   },
   {
-    id: 'rounded',
-    name: 'Rounded',
-    primaryColor: '#3B82F6',
-    backgroundColor: '#EFF6FF',
-    textColor: '#1E3A8A',
-    fontFamily: 'Inter, sans-serif',
-    borderRadius: '16px',
+    id: 'corporate',
+    name: 'Corporate',
+    primaryColor: '#0EA5E9', // Sky
+    backgroundColor: '#F1F5F9',
+    textColor: '#0F172A',
   },
   {
-    id: 'playful',
-    name: 'Playful',
-    primaryColor: '#EC4899',
-    backgroundColor: '#FDFCFE',
-    textColor: '#831843',
-    fontFamily: 'Poppins, sans-serif',
-    borderRadius: '12px',
+    id: 'vibrant',
+    name: 'Vibrant',
+    primaryColor: '#F59E42', // Orange
+    backgroundColor: '#FFF7ED',
+    textColor: '#78350F',
+  },
+  {
+    id: 'elegant',
+    name: 'Elegant',
+    primaryColor: '#A21CAF', // Purple
+    backgroundColor: '#F3E8FF',
+    textColor: '#3B0764',
   },
 ];

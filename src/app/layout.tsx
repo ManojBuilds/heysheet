@@ -46,10 +46,10 @@ export default function RootLayout({
         >
           <main>{children}</main>
           <Toaster
-            className="font-main"
+            className="!font-main"
             closeButton
             expand={false}
-            position="top-right"
+            position="top-center"
           />
         </body>
       </html>

@@ -49,10 +49,10 @@ const FormComponentCard = ({ type, label, icon }: FormComponentCardProps) => {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`flex items-center gap-2 p-2 rounded-md border border-border hover:bg-muted cursor-grab transition-colors`}
+      className={`flex items-center gap-2 p-2 rounded border border-border hover:bg-muted cursor-grab transition-colors`}
       style={style}
     >
-      <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary">
+      <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
         {iconMap[icon]}
       </div>
       <span className="text-sm">{label}</span>

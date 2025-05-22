@@ -1,4 +1,4 @@
-import React, { act, SetStateAction, useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   FormComponent,
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Trash, Edit, MoveVertical } from "lucide-react";
 import { toast } from "sonner";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import ComponentSettingsSidebar from "./ComponentSettingsSidebar";
 import FormComponentPreview from "./FormComponentPreview";
 import DropZone from "./Dropzone";
 import PageTabs from "./PageTabs";
@@ -32,6 +31,7 @@ import {
   useDroppable,
   DragEndEvent,
 } from "@dnd-kit/core";
+import ComponentSettingsSidebar from "./ComponentSettingsSidebar";
 
 interface FormCanvasProps {
   components: FormComponent[];
@@ -87,15 +87,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     onEditComponent(component);
   };
 
-  const handleSaveComponent = (updatedComponent: FormComponent) => {
-    const index = components.findIndex((c) => c.id === updatedComponent.id);
-    if (index !== -1) {
-      const newComponents = [...components];
-      newComponents[index] = updatedComponent;
-      onUpdateComponents(newComponents);
-      toast.success("Component updated!");
-    }
-  };
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     console.log("Reorder :", active.id, over?.id);
@@ -117,66 +109,61 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     }
   }
   return (
-    <div className="flex flex-col w-full">
-      <PageTabs
-        pages={pages}
-        activePage={activePage}
-        onChangePage={onChangePage}
-        onAddPage={onAddPage}
-      />
-
-      <div ref={setNodeRef} className="min-h-44">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext strategy={verticalListSortingStrategy} items={pageComponents}>
-            {pageComponents.map((component, index) => (
-              <PageComponentCard
-                key={`${component.id}`}
-                component={component}
-                onEditSettings={() => handleOpenSettings(component)}
-                onDeleteComponent={() => handleDeleteComponent(component.id)}
-                theme={theme}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      </div>
-      <Drawer
-        direction="right"
-        open={isDrawerOpen}
-        onOpenChange={setIsDrawerOpen}
-      >
-        <DrawerContent className="w-[400px] sm:w-[540px] p-0">
-          <ComponentSettingsSidebar
-            component={currentComponent}
-            onClose={() => setIsDrawerOpen(false)}
-            onSave={handleSaveComponent}
-            onDelete={handleDeleteComponent}
+    <div className="flex">
+      {/* Main Form Canvas */}
+      <div className="flex-1">
+        <div className="flex flex-col w-full">
+          <PageTabs
+            pages={pages}
+            activePage={activePage}
+            onChangePage={onChangePage}
+            onAddPage={onAddPage}
           />
-        </DrawerContent>
-      </Drawer>
+
+          <div ref={setNodeRef} className="min-h-44">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                strategy={verticalListSortingStrategy}
+                items={pageComponents}
+              >
+                {pageComponents?.map((component) => (
+                  <PageComponentCard
+                    key={`${component.id}`}
+                    component={component}
+                    onEditSettings={() => handleOpenSettings(component)}
+                    onDeleteComponent={() => handleDeleteComponent(component.id)}
+                    theme={theme}
+                    currentComponent={currentComponent}
+                  />
+                ))}
+                {
+                  pageComponents.length === 0 && (
+                    <div
+                      aria-label="Drag and drop form component here"
+                      className="h-52 w-full border-2 border-dashed flex flex-col items-center justify-center gap-3 bg-muted/50 shadow-inner transition-colors"
+                    >
+                      <h3 className="text-lg font-semibold text-muted-foreground">
+                        Drag and drop form elements here
+                      </h3>
+                      <p className="text-sm text-muted-foreground text-center max-w-xs">
+                        Start building your form by dragging components from the sidebar. You can rearrange them anytime.
+                      </p>
+                    </div>
+                  )
+                }
+              </SortableContext>
+            </DndContext>
+          </div>
+        </div>
+      </div>
+     
     </div>
   );
 };
 
-function getDefaultPropertiesForType(
-  type: FormComponentType
-): Record<string, any> {
-  switch (type) {
-    case "multiple-choice":
-    case "single-choice":
-    case "dropdown":
-      return { options: ["Option 1", "Option 2", "Option 3"] };
-    case "rating":
-      return { maxRating: 5 };
-    case "number":
-      return { min: 0, max: 100 };
-    default:
-      return {};
-  }
-}
 
 export default FormCanvas;

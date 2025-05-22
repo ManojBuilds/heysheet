@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { auth } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import CodeSnippet from "./CodeSnippet";
 import RecentSubmissions from "./RecentSubmissions";
@@ -156,7 +156,13 @@ export default async function EndpointDetailPage({
           </div>
         </div>
       </div>
-      <RecentSubmissions submissions={submissions}/>
+      <Link
+        href={`/form-builder?endpoint_id=${id}`}
+        className={buttonVariants({ variant: "default" })}
+      >
+        Build form by form builder
+      </Link>
+      <RecentSubmissions submissions={submissions} />
     </div>
   );
 }

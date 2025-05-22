@@ -7,11 +7,11 @@ import {
   FormData,
   FormTheme,
 } from "@/types/form-builder";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Eye, Palette, Save } from "lucide-react";
+import { Eye, Loader, Loader2, Palette, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Card, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
@@ -20,7 +20,7 @@ import { Dialog, DialogContent } from "../ui/dialog";
 import FormPreview from "./FormPreview";
 import FormComponentsSidebar from "./FormComponentsSidebar";
 import { ThemeSelector } from "./ThemeSelector";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,8 +29,51 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ComponentSettingsSidebar from "./ComponentSettingsSidebar";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import FormBuilderHeader from "./FormBuilderHeader";
+
+async function fetchFormByEndpoint(endpointId: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("forms")
+    .select(
+      `
+      *
+    `
+    )
+    .eq("endpoint_id", endpointId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function upsertForm(formData: FormData & { endpoint_id: string }) {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("upsert_form", {
+    p_endpoint_id: formData.endpoint_id,
+    p_title: formData.title,
+    p_theme: formData.theme,
+    p_components: formData.components,
+    p_pages: formData.pages,
+    p_active_page: formData.activePage,
+  });
+
+  if (error) throw error;
+  return data;
+}
 
 const FormBuilder = () => {
+  const supabase = createClient();
+  const searchParams = useSearchParams();
+  const endpointId = searchParams.get("endpoint_id") || "";
+  const router = useRouter();
   const defaultPageId = "page-1";
   const [formData, setFormData] = useState<FormData>({
     activePage: defaultPageId,
@@ -53,10 +96,62 @@ const FormBuilder = () => {
   const [activeSidebarTab, setActiveSidebarTab] =
     useState<string>("components");
   const [isDropped, setIsDropped] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const handleDragStart = (type: FormComponentType) => {
-    // This function is only kept for API compatibility with existing components
-    // The actual drag handling is now done in FormCanvas and FormComponentsSidebar
+  const {
+    data: existingForm,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["form", endpointId],
+    queryFn: () => fetchFormByEndpoint(endpointId),
+    enabled: !!endpointId,
+    retry: false,
+  });
+
+  const saveFormMutation = useMutation({
+    mutationFn: upsertForm,
+    onSuccess: () => {
+      toast.success("Form saved successfully!");
+    },
+    onError: (error) => {
+      toast.error("Failed to save form: " + error.message);
+    },
+  });
+
+  useEffect(() => {
+    if (existingForm) {
+      setFormData({
+        id: existingForm.id,
+        title: existingForm.title,
+        theme: existingForm.theme,
+        components: existingForm.components,
+        pages: existingForm.pages,
+        activePage: existingForm.active_page,
+      });
+      const firstComponentOfPageOne = existingForm.components.filter(
+        (c: { pageId: string }) => c.pageId === "page-1"
+      )?.[0];
+      setCurrentComponent(firstComponentOfPageOne ?? null);
+    }
+  }, [existingForm]);
+
+  if (!endpointId) {
+    router.push("/dashboard");
+  }
+
+  if (isLoading)
+    return (
+      <div className="h-44 w-full grid place-items-center">
+        <Loader className="w-5 h-5 animate-spin" />
+        <p className="font-main animate-pulse mt-4">Loading...</p>
+      </div>
+    );
+
+  console.log({ existingForm, error });
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
   };
 
   const updateFormComponents = (components: FormComponent[]) => {
@@ -76,25 +171,22 @@ const FormBuilder = () => {
     setCurrentComponent(component);
   };
 
-  const handleSaveForm = () => {
-    toast.success("Form saved successfully!");
-    console.log("Form data saved:", formData);
+  const handleSaveComponent = (updatedComponent: FormComponent) => {
+    setFormData((prev) => ({
+      ...prev,
+      components: prev.components.map((c) =>
+        c.id === updatedComponent.id ? updatedComponent : c
+      ),
+    }));
+    // setCurrentComponent(null);
+    toast.success("Component updated successfully!");
+  };
 
-    // For Next.js integration, you would add code like:
-    // const saveForm = async () => {
-    //   try {
-    //     const response = await fetch('/api/forms', {
-    //       method: 'POST',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify(formData)
-    //     });
-    //     const data = await response.json();
-    //     toast.success("Form saved successfully!");
-    //   } catch (error) {
-    //     toast.error("Failed to save form");
-    //   }
-    // };
-    // saveForm();
+  const handleSaveForm = () => {
+    saveFormMutation.mutate({
+      ...formData,
+      endpoint_id: endpointId,
+    });
   };
 
   const addNewPage = () => {
@@ -122,156 +214,159 @@ const FormBuilder = () => {
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    console.log(active.id, over?.id);
     if (!over || over.id !== "form-canvas") return;
     const formElementId = active.id as string;
 
-    console.log(formElementId);
     const component = FORM_COMPONENT_TYPES.find(
       (c) => c.type === formElementId
     );
     if (!component) return;
-    // Add new component on that formData
+
+    // Add default properties based on component type
+    const defaultProperties = getDefaultProperties(
+      formElementId as FormComponentType
+    );
+
+    const newComponent = {
+      id: `${formElementId}x${formData.components.length}`,
+      properties: defaultProperties,
+      required: false,
+      title: component.label,
+      type: formElementId as FormComponentType,
+      pageId: formData.activePage,
+    } as FormComponent;
+
     setFormData((formData) => ({
       ...formData,
-      components: [
-        ...formData.components,
-        {
-          id: `${formElementId}x${formData.components.length}`,
-          properties: {},
-          required: false,
-          title: component.label,
-          type: formElementId as FormComponentType,
-          pageId: formData.activePage,
-        } as FormComponent,
-      ],
+      components: [...formData.components, newComponent],
     }));
+    setCurrentComponent(newComponent);
+  }
+
+  // Add this helper function
+  // TODO:
+  function getDefaultProperties(type: FormComponentType) {
+    switch (type) {
+      // case "text":
+      //   return { placeholder: "Enter your answer" };
+      case "number":
+        return { min: 0, max: 100, placeholder: "Enter a number" };
+      case "multiple-choice":
+      case "single-choice":
+      case "dropdown":
+        return { options: ["Option 1", "Option 2", "Option 3"] };
+      case "rating":
+        return { maxRating: 5 };
+      case "date":
+        return { format: "MM/DD/YYYY" };
+      case "email":
+        return { placeholder: "Enter your email" };
+      case "phone":
+        return { placeholder: "Enter your phone number" };
+      // case "file":
+      //   return { maxSize: 5, allowedTypes: ["image/*", "application/pdf"] };
+      default:
+        return {};
+    }
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 overflow-x-hidden">
-      <header className="border-b ">
-        <div className="flex justify-between items-center p-4">
-          <div className="flex items-center gap-4 flex-1">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
-              FormBuilder
-            </h1>
-            <div className="flex-1 max-w-md">
-              <Input
-                value={formData.title}
-                onChange={(e) => updateFormTitle(e.target.value)}
-                className="border-0 text-lg font-medium focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
-                placeholder="Untitled Form"
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsThemeDialogOpen(true)}
-                  className="gap-1.5"
-                >
-                  <Palette className="h-4 w-4" />
-                  Theme
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
+    <div className="flex flex-col h-screen border border-green-600 bg-gray-50">
+      <FormBuilderHeader
+        formData={formData}
+        updateFormTheme={updateFormTheme}
+        handleSaveForm={handleSaveForm}
+        isSaving={saveFormMutation.isPending}
+        setIsPreviewOpen={setIsPreviewOpen}
+        setIsThemeDialogOpen={setIsThemeDialogOpen}
+        updateFormTitle={updateFormTitle}
+      />
+      <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
+        <div className="flex flex-1 gap-6 h-[calc(100svh-50px)] overflow-hidden">
+          {/* Left Sidebar - Components & Theme */}
+          <div className="w-[300px] shrink-0 p-4 border-r">
+            <Tabs value={activeSidebarTab} onValueChange={setActiveSidebarTab}>
+              <TabsList className="grid grid-cols-2 mb-4">
+                <TabsTrigger value="components">Components</TabsTrigger>
+                <TabsTrigger value="theme">Theme</TabsTrigger>
+              </TabsList>
+              <TabsContent value="components">
+                <FormComponentsSidebar activeId={activeId} />
+              </TabsContent>
+              <TabsContent value="theme">
                 <ThemeSelector
                   selectedTheme={formData.theme}
                   onSelectTheme={updateFormTheme}
                   onCustomizeTheme={updateFormTheme}
-                  className="border-none rounded-none shadow-none"
                 />
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </TabsContent>
+            </Tabs>
+          </div>
 
-            <Button
-              variant="outline"
-              onClick={() => setIsPreviewOpen(true)}
-              className="gap-1.5"
-            >
-              <Eye className="h-4 w-4" />
-              Preview
-            </Button>
-            <Button onClick={handleSaveForm} className="gap-1.5">
-              <Save className="h-4 w-4" />
-              Save
-            </Button>
+          {/* Main Content Area - Form Canvas */}
+          <div className="max-w-5xl mx-auto w-full">
+            <div className="flex-1 overflow-y-auto h-full p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Input
+                  value={formData.title}
+                  onChange={(e) => updateFormTitle(e.target.value)}
+                  className="border-0 text-lg font-medium focus-visible:ring-0 focus-visible:ring-offset-0 px-2 w-fit bg-transparent shadow-none"
+                  placeholder="Untitled Form"
+                />
+                <div className="text-sm text-muted-foreground">
+                  {formData.components.length}{" "}
+                  {formData.components.length === 1 ? "question" : "questions"}{" "}
+                  across {formData.pages.length}{" "}
+                  {formData.pages.length === 1 ? "page" : "pages"}
+                </div>
+              </div>
+              <Separator className="mb-6" />
+              <FormCanvas
+                components={formData.components}
+                theme={formData.theme}
+                pages={formData.pages}
+                activePage={formData.activePage}
+                onUpdateComponents={updateFormComponents}
+                onEditComponent={handleEditComponent}
+                onAddPage={addNewPage}
+                onChangePage={setActivePage}
+                onUpdateFormData={setFormData}
+              />
+            </div>
           </div>
+
+          {/* Right Sidebar - Component Settings */}
+          {currentComponent && formData.components.length && (
+            <div className="w-[400px] shrink-0">
+              <ComponentSettingsSidebar
+                component={currentComponent}
+                onClose={() => setCurrentComponent(null)}
+                onSave={handleSaveComponent}
+                onDelete={(id) => {
+                  const newComponents = formData.components.filter(
+                    (c) => c.id !== id
+                  );
+                  setFormData((prev) => ({
+                    ...prev,
+                    components: newComponents,
+                  }));
+                  setCurrentComponent(null);
+                  toast.success("Component deleted!");
+                }}
+              />
+            </div>
+          )}
         </div>
-      </header>
-      <DndContext onDragEnd={handleDragEnd}>
-        <main className="flex-1 container py-6">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 md:col-span-3 space-y-6">
-              <Tabs
-                value={activeSidebarTab}
-                onValueChange={setActiveSidebarTab}
-              >
-                <TabsList className="grid grid-cols-2 mb-4">
-                  <TabsTrigger value="components">Components</TabsTrigger>
-                  <TabsTrigger value="theme">Theme</TabsTrigger>
-                </TabsList>
-                <TabsContent value="components">
-                  <FormComponentsSidebar onDragStart={handleDragStart} />
-                </TabsContent>
-                <TabsContent value="theme">
-                  <ThemeSelector
-                    selectedTheme={formData.theme}
-                    onSelectTheme={updateFormTheme}
-                    onCustomizeTheme={updateFormTheme}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-            <div className="col-span-12 md:col-span-9">
-              <Card className="w-full">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-medium">Form Builder</h2>
-                    <div className="text-sm text-muted-foreground">
-                      {formData.components.length}{" "}
-                      {formData.components.length === 1
-                        ? "question"
-                        : "questions"} {" "}
-                      across {formData.pages.length}{" "}
-                      {formData.pages.length === 1 ? "page" : "pages"}
-                    </div>
-                  </div>
-                  <Separator className="mb-6" />
-                  <FormCanvas
-                    components={formData.components}
-                    theme={formData.theme}
-                    pages={formData.pages}
-                    activePage={formData.activePage}
-                    onUpdateComponents={updateFormComponents}
-                    onEditComponent={handleEditComponent}
-                    onAddPage={addNewPage}
-                    onChangePage={setActivePage}
-                    onUpdateFormData={setFormData}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </main>
       </DndContext>
+
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl p-0">
+        <DialogContent className="p-2 sm:max-w-3xl">
           <FormPreview
             formData={formData}
             onClose={() => setIsPreviewOpen(false)}
           />
         </DialogContent>
       </Dialog>
-
-      {/* <Dialog open={isThemeDialogOpen} onOpenChange={setIsThemeDialogOpen}>
-        <DialogContent className="">
-          
-        </DialogContent>
-      </Dialog> */}
     </div>
   );
 };
