@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import NewEndpointForm from '../../../components/NewEndpointFormModal';
+import NewEndpointForm from '@/components/NewEndpointFormModal';
 
 export default async function NewEndpointPage() {
   const { userId } = await auth();
@@ -14,7 +14,6 @@ export default async function NewEndpointPage() {
   
   const supabase = await createClient();
   
-  // Get user's Google accounts
   const { data: googleAccounts, error } = await supabase
     .from('google_accounts')
     .select('*')
@@ -25,7 +24,6 @@ export default async function NewEndpointPage() {
     return <div>Error loading Google accounts</div>;
   }
   
-  // If no Google accounts, redirect to dashboard with a message
   if (!googleAccounts || googleAccounts.length === 0) {
     return redirect('/dashboard?error=no_google_account');
   }

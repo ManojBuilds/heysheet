@@ -10,10 +10,8 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Eye, Loader, Loader2, Palette, Save } from "lucide-react";
+import { Loader } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Card, CardContent } from "../ui/card";
 import { Separator } from "../ui/separator";
 import FormCanvas from "./FormCanvas";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -21,17 +19,9 @@ import FormPreview from "./FormPreview";
 import FormComponentsSidebar from "./FormComponentsSidebar";
 import { ThemeSelector } from "./ThemeSelector";
 import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import ComponentSettingsSidebar from "./ComponentSettingsSidebar";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import FormBuilderHeader from "./FormBuilderHeader";
 
@@ -69,10 +59,7 @@ async function upsertForm(formData: FormData & { endpoint_id: string }) {
   return data;
 }
 
-const FormBuilder = () => {
-  const supabase = createClient();
-  const searchParams = useSearchParams();
-  const endpointId = searchParams.get("endpoint_id") || "";
+const FormBuilder = ({ endpointId }: { endpointId: string }) => {
   const router = useRouter();
   const defaultPageId = "page-1";
   const [formData, setFormData] = useState<FormData>({
@@ -286,8 +273,8 @@ const FormBuilder = () => {
       ...formData,
       pages: updatedPages,
       components: updatedComponents,
-      activePage: newActivePage
-    })
+      activePage: newActivePage,
+    });
   };
 
   return (

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import {
-  Geist_Mono,
   Plus_Jakarta_Sans,
   Bricolage_Grotesque,
 } from "next/font/google";
@@ -9,18 +8,15 @@ import Provider from "@/components/Provider";
 import { Toaster } from "sonner";
 import NextTopLoader from "nextjs-toploader";
 
-const geistSans = Plus_Jakarta_Sans({
+const sans = Plus_Jakarta_Sans({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
 const grotesque = Bricolage_Grotesque({
   variable: "--font-grotesque",
+
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -41,7 +37,7 @@ export default function RootLayout({
     <Provider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} ${grotesque.variable}  antialiased`}
+          className={`${sans.variable} ${grotesque.variable}  antialiased`}
         >
           <main>{children}</main>
           <Toaster
@@ -56,7 +52,7 @@ export default function RootLayout({
             crawlSpeed={200}
             height={3}
             crawl={true}
-            showSpinner={true}
+            showSpinner={false}
             easing="ease"
             speed={200}
             shadow="0 0 10px #2299DD,0 0 5px #2299DD"

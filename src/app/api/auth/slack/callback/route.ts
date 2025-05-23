@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     }
 
     // 4️⃣ Find or create #heysheet
-    let channel = listData.channels.find((c: any) => c.name === "heysheetbot");
+    const channel = listData.channels.find((c: any) => c.name === "heysheetbot");
     // if (!channel) {
     //     console.log("Channel #heysheet not found, creating...");
     //     const createRes = await fetch(

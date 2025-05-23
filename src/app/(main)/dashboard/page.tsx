@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { PlusCircle, RefreshCw, ExternalLink, Copy, Plus } from "lucide-react";
 import RecentSubmissions from "../endpoints/[id]/RecentSubmissions";
-import NewEndpointForm from "../../components/NewEndpointFormModal";
 
 export default async function DashboardPage() {
   const { userId } = await auth();

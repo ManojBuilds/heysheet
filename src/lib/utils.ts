@@ -19,6 +19,5 @@ export function generateApiKey() {
     }
   } while (generatedApiKeys.has(key));
   generatedApiKeys.add(key);
-  console.log('apikey generated',key)
   return key;
 }

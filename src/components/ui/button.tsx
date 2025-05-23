@@ -35,7 +35,6 @@ const buttonVariants = cva(
   }
 )
 
-// Add ButtonProps interface
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
@@ -45,34 +44,40 @@ export interface ButtonProps
   rightIcon?: React.ReactNode
 }
 
-// Update the Button component to use the new interface
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  loading = false,
-  leftIcon,
-  rightIcon,
-  children,
-  disabled,
-  ...props
-}: ButtonProps) {
-  const Comp = asChild ? Slot : "button"
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      leftIcon,
+      rightIcon,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
+    const Comp = asChild ? Slot : "button"
 
-  return (
-    <Comp
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {loading && <span className="animate-spin">⏳</span>}
-      {leftIcon}
-      {children}
-      {rightIcon}
-    </Comp>
-  )
-}
+    return (
+      <Comp
+        data-slot="button"
+        className={cn(buttonVariants({ variant, size, className }))}
+        disabled={disabled || loading}
+        ref={ref}
+        {...props}
+      >
+        {loading && <span className="animate-spin">⏳</span>}
+        {leftIcon}
+        {children}
+        {rightIcon}
+      </Comp>
+    )
+  }
+)
+Button.displayName = "Button"
 
 export { Button, buttonVariants }

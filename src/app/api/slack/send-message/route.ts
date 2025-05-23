@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest){
     try {
-       const {channel, text, token} = await req.json()
-       await sendMessage(token, channel, text)
+       const {channel, text } = await req.json()
+       await sendMessage(channel, text)
        return NextResponse.json({message: "success"}, {status: 200})
-    } catch (error) {
+    } catch (error: any) {
         console.log(error)
        return NextResponse.json({message: error.message}, {status: 500}) 
     }

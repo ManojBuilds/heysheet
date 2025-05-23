@@ -32,7 +32,7 @@ export default function useGoogleAccounts() {
     if (user?.id) {
       getGoogleAccounts();
     }
-  }, [user]);
+  }, [user, supabase]);
 
   return { googleAccounts };
 }

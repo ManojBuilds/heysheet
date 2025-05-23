@@ -12,7 +12,6 @@ export async function POST(
   let isFormData = false;
 
   const apiKey = request.headers.get("heysheet-api-key");
-  console.log({ apiKey });
   if (!apiKey || !validateApiKey(apiKey)) {
     return new Response("Invalid or Missing api key", { status: 401 });
   }
