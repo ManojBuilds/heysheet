@@ -1,23 +1,10 @@
 import React, { useState } from "react";
-import { Check, Plus, ChevronDown, Edit, Palette } from "lucide-react";
+import { Check, Palette } from "lucide-react";
 import { FormTheme } from "@/types/form-builder";
-import { DEFAULT_FORM_THEMES, FONT_FAMILIES } from "@/lib/form-builder";
-import { Card, CardContent } from "@/components/ui/card";
+import { DEFAULT_FORM_THEMES } from "@/lib/form-builder";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface ThemeSelectorProps {
@@ -63,33 +50,46 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     }
     const hue = randomHue();
     const primaryColor = hsl(hue, 70, 50);
-    const backgroundColor = hsl(hue, 40, 96);
-    const textColor = "#fff";
+    const secondaryColor = hsl(hue, 60, 60);
+    const accentColor = hsl((hue + 120) % 360, 70, 50);
+    const backgroundColor = hsl(hue, 10, 98);
+    const backgroundSecondary = hsl(hue, 15, 95);
+    const textColor = hsl(hue, 15, 15);
+    const textColorSecondary = hsl(hue, 10, 30);
+    const borderColor = hsl(hue, 15, 90);
+    const errorColor = "#DC2626";
+
     const randomTheme: FormTheme = {
       id: `random-${Date.now()}`,
       name: "Random",
       primaryColor,
+      secondaryColor,
+      accentColor,
       backgroundColor,
+      backgroundSecondary,
       textColor,
+      textColorSecondary,
+      borderColor,
+      errorColor,
     };
     handleSelectTheme(randomTheme);
   };
 
   return (
-    <div className={cn('h-fit overflow-y-auto',className)}>
+    <div className={cn('h-[calc(100svh-9rem)] overflow-y-auto',className)}>
       <div className="mb-4">
         <div className="grid grid-cols-2 gap-4">
           {DEFAULT_FORM_THEMES.map((theme) => (
             <button
               key={theme.id}
               onClick={() => handleSelectTheme(theme)}
-              className={`relative flex flex-col items-center justify-center h-20 rounded-lg border-2 transition-colors cursor-pointer ${
+              className={`relative flex flex-col items-center justify-center h-24 rounded-lg border-2 transition-colors cursor-pointer ${
                 selectedTheme.id === theme.id
                   ? "border ring-2 ring-primary/30"
                   : "border-muted"
               }`}
               style={{
-                backgroundColor: theme.primaryColor,
+                background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`,
                 color: "#fff",
               }}
               aria-label={`Select ${theme.name} theme`}
@@ -119,87 +119,106 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
             </Button>
           </div>
         </div>
+
         <div className="space-y-4 mt-6">
           <h4 className="font-medium">Customize Theme</h4>
-          <div className="space-y-2">
-            <Label htmlFor="primary-color">Primary Color</Label>
-            <div className="flex gap-2">
-              <div
-                className="w-8 h-8 border rounded"
-                style={{ backgroundColor: customTheme.primaryColor }}
-              />
-              <Input
-                id="primary-color"
-                value={customTheme.primaryColor}
-                onChange={(e) => handleChange("primaryColor", e.target.value)}
-                className="flex-1"
-              />
-            </div>
+
+          {/* Primary Colors Section */}
+          <div className="space-y-4">
+            <h5 className="text-sm font-medium text-muted-foreground">Primary Colors</h5>
+            <ColorInput
+              label="Primary Color"
+              value={customTheme.primaryColor}
+              onChange={(value) => handleChange("primaryColor", value)}
+            />
+            <ColorInput
+              label="Secondary Color"
+              value={customTheme.secondaryColor}
+              onChange={(value) => handleChange("secondaryColor", value)}
+            />
+            <ColorInput
+              label="Accent Color"
+              value={customTheme.accentColor}
+              onChange={(value) => handleChange("accentColor", value)}
+            />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="background-color">Background Color</Label>
-            <div className="flex gap-2">
-              <div
-                className="w-8 h-8 border rounded"
-                style={{ backgroundColor: customTheme.backgroundColor }}
-              />
-              <Input
-                id="background-color"
-                value={customTheme.backgroundColor}
-                onChange={(e) =>
-                  handleChange("backgroundColor", e.target.value)
-                }
-                className="flex-1"
-              />
-            </div>
+
+          {/* Background Colors Section */}
+          <div className="space-y-4">
+            <h5 className="text-sm font-medium text-muted-foreground">Background Colors</h5>
+            <ColorInput
+              label="Background"
+              value={customTheme.backgroundColor}
+              onChange={(value) => handleChange("backgroundColor", value)}
+            />
+            <ColorInput
+              label="Background Secondary"
+              value={customTheme.backgroundSecondary}
+              onChange={(value) => handleChange("backgroundSecondary", value)}
+            />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="text-color">Text Color</Label>
-            <div className="flex gap-2">
-              <div
-                className="w-8 h-8 border rounded"
-                style={{ backgroundColor: customTheme.textColor }}
-              />
-              <Input
-                id="text-color"
-                value={customTheme.textColor}
-                onChange={(e) => handleChange("textColor", e.target.value)}
-                className="flex-1"
-              />
-            </div>
+
+          {/* Text Colors Section */}
+          <div className="space-y-4">
+            <h5 className="text-sm font-medium text-muted-foreground">Text Colors</h5>
+            <ColorInput
+              label="Text Color"
+              value={customTheme.textColor}
+              onChange={(value) => handleChange("textColor", value)}
+            />
+            <ColorInput
+              label="Text Color Secondary"
+              value={customTheme.textColorSecondary}
+              onChange={(value) => handleChange("textColorSecondary", value)}
+            />
           </div>
-          {/* <div className="space-y-2">
-              <Label htmlFor="font-family">Font Family</Label>
-              <Select
-                value={customTheme.fontFamily}
-                onValueChange={(value) => handleChange("fontFamily", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select font" />
-                </SelectTrigger>
-                <SelectContent>
-                  {FONT_FAMILIES.map((font) => (
-                    <SelectItem key={font.value} value={font.value}>
-                      <span style={{ fontFamily: font.value }}>
-                        {font.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div> */}
-          {/* <div className="space-y-2">
-              <Label htmlFor="border-radius">Border Radius</Label>
-              <Input
-                id="border-radius"
-                value={customTheme.borderRadius}
-                onChange={(e) => handleChange(borderRadius", e.target.value)}
-              />
-            </div> */}
+
+          {/* Other Colors Section */}
+          <div className="space-y-4">
+            <h5 className="text-sm font-medium text-muted-foreground">Other Colors</h5>
+            <ColorInput
+              label="Border Color"
+              value={customTheme.borderColor}
+              onChange={(value) => handleChange("borderColor", value)}
+            />
+            <ColorInput
+              label="Error Color"
+              value={customTheme.errorColor}
+              onChange={(value) => handleChange("errorColor", value)}
+            />
+          </div>
+
           <Button onClick={handleCustomizeTheme} className="w-full">
             Apply Theme
           </Button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Add this new ColorInput component at the end of the file
+interface ColorInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const ColorInput: React.FC<ColorInputProps> = ({ label, value, onChange }) => {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={label.toLowerCase().replace(/\s+/g, '-')}>{label}</Label>
+      <div className="flex gap-2">
+        <div
+          className="w-8 h-8 border rounded"
+          style={{ backgroundColor: value }}
+        />
+        <Input
+          id={label.toLowerCase().replace(/\s+/g, '-')}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1"
+        />
       </div>
     </div>
   );

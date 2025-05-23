@@ -17,18 +17,24 @@ export interface FormComponent {
   title: string;
   description?: string;
   required: boolean;
+  name: string
   properties: Record<string, any>;
   pageId?: string;
 }
 
+
 export interface FormTheme {
   id: string;
   name: string;
-  primaryColor: string;
-  backgroundColor: string;
-  textColor: string;
-  // fontFamily: string;
-  // borderRadius: string;
+  primaryColor: string;         // Main action color
+  secondaryColor: string;       // Secondary actions/hover states
+  accentColor: string;         // Highlights and accents
+  backgroundColor: string;      // Main background
+  backgroundSecondary: string;  // Secondary background (cards, sections)
+  textColor: string;           // Primary text
+  textColorSecondary: string;  // Secondary/muted text
+  borderColor: string;         // Borders and dividers
+  errorColor: string;          // Error states
 }
 
 export interface FormPage {

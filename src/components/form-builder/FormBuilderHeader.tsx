@@ -1,16 +1,23 @@
 "use client";
-import { Eye, Loader2, Palette, Save } from "lucide-react";
+import {
+  ExternalLink,
+  Eye,
+  Loader2,
+  Palette,
+  Save,
+  Share2,
+} from "lucide-react";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Input } from "../ui/input";
 import { ThemeSelector } from "./ThemeSelector";
 import { FormTheme, FormData } from "@/types/form-builder";
-import Link from "next/link";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface FormBuilderHeaderProps {
   formData: FormData;
@@ -20,6 +27,7 @@ interface FormBuilderHeaderProps {
   setIsPreviewOpen: (open: boolean) => void;
   handleSaveForm: () => void;
   isSaving: boolean;
+  formId: string;
 }
 
 const FormBuilderHeader = ({
@@ -30,8 +38,10 @@ const FormBuilderHeader = ({
   setIsPreviewOpen,
   handleSaveForm,
   isSaving,
+  formId,
 }: FormBuilderHeaderProps) => {
   const router = useRouter();
+
   return (
     <header className="border-b">
       <div className="flex justify-between items-center p-4">
@@ -44,6 +54,15 @@ const FormBuilderHeader = ({
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <Link
+            className="flex items-center gap-1.5"
+            href={`${window.location.origin}/f/${formId}`}
+            target="_blank"
+          >
+            Share URL
+            <ExternalLink className="w-5 h-5" />
+          </Link>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -60,7 +79,7 @@ const FormBuilderHeader = ({
                 selectedTheme={formData.theme}
                 onSelectTheme={updateFormTheme}
                 onCustomizeTheme={updateFormTheme}
-                className="border-none rounded-none shadow-none"
+                className="border-none rounded-none shadow-none p-4"
               />
             </DropdownMenuContent>
           </DropdownMenu>

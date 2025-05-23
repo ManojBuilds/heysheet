@@ -148,8 +148,6 @@ const FormBuilder = () => {
       </div>
     );
 
-  console.log({ existingForm, error });
-
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
@@ -222,12 +220,16 @@ const FormBuilder = () => {
     );
     if (!component) return;
 
-    // Add default properties based on component type
+    const typeCount =
+      formData.components.filter((c) => c.type === formElementId).length + 1;
+    const name = `${formElementId}_${typeCount}`;
+
     const defaultProperties = getDefaultProperties(
       formElementId as FormComponentType
     );
 
     const newComponent = {
+      name,
       id: `${formElementId}x${formData.components.length}`,
       properties: defaultProperties,
       required: false,
@@ -247,8 +249,9 @@ const FormBuilder = () => {
   // TODO:
   function getDefaultProperties(type: FormComponentType) {
     switch (type) {
-      // case "text":
-      //   return { placeholder: "Enter your answer" };
+      case "short-text":
+      case "long-text":
+        return { placeholder: "Enter your answer" };
       case "number":
         return { min: 0, max: 100, placeholder: "Enter a number" };
       case "multiple-choice":
@@ -269,9 +272,26 @@ const FormBuilder = () => {
         return {};
     }
   }
+  const handleRemovePage = (pageId: string) => {
+    const updatedComponents = formData.components.filter(
+      (c) => c.pageId !== pageId
+    );
+    const updatedPages = formData.pages.filter((p) => p.id !== pageId);
+
+    const newActivePage =
+      pageId === formData.activePage
+        ? updatedPages[0]?.id
+        : formData.activePage;
+    setFormData({
+      ...formData,
+      pages: updatedPages,
+      components: updatedComponents,
+      activePage: newActivePage
+    })
+  };
 
   return (
-    <div className="flex flex-col h-screen border border-green-600 bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50">
       <FormBuilderHeader
         formData={formData}
         updateFormTheme={updateFormTheme}
@@ -280,6 +300,7 @@ const FormBuilder = () => {
         setIsPreviewOpen={setIsPreviewOpen}
         setIsThemeDialogOpen={setIsThemeDialogOpen}
         updateFormTitle={updateFormTitle}
+        formId={existingForm.id}
       />
       <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
         <div className="flex flex-1 gap-6 h-[calc(100svh-50px)] overflow-hidden">
@@ -331,6 +352,7 @@ const FormBuilder = () => {
                 onAddPage={addNewPage}
                 onChangePage={setActivePage}
                 onUpdateFormData={setFormData}
+                onRemovePage={handleRemovePage}
               />
             </div>
           </div>
@@ -364,6 +386,7 @@ const FormBuilder = () => {
           <FormPreview
             formData={formData}
             onClose={() => setIsPreviewOpen(false)}
+            endpoint={endpointId}
           />
         </DialogContent>
       </Dialog>

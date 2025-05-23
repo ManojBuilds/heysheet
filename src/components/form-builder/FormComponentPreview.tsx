@@ -16,11 +16,12 @@ interface FormComponentPreviewProps {
 }
 
 const FormComponentPreview: React.FC<FormComponentPreviewProps> = ({ component, theme }) => {
+  console.log(component.properties)
   switch (component.type) {
     case "short-text":
-      return <Input placeholder="Short text answer" disabled />;
+      return <Input {...component.properties} disabled />;
     case "long-text":
-      return <Textarea placeholder="Long text answer" disabled />;
+      return <Textarea {...component.properties} disabled />;
     case "multiple-choice":
       return (
         <div className="flex flex-col gap-2">
@@ -63,11 +64,11 @@ const FormComponentPreview: React.FC<FormComponentPreviewProps> = ({ component, 
         </Select>
       );
     case "email":
-      return <Input type="email" placeholder="email@example.com" disabled />;
+      return <Input type="email" {...component.properties} disabled />;
     case "phone":
-      return <Input type="tel" placeholder="+1 (555) 123-4567" disabled />;
+      return <Input type="tel" {...component.properties} disabled />;
     case "number":
-      return <Input type="number" placeholder="0" disabled />;
+      return <Input type="number" {...component.properties} disabled />;
     case "date":
       return <Input type="date" disabled />;
     case "rating":

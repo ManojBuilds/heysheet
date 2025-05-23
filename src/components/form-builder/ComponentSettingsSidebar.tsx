@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect } from "react";
 import { FormComponent, FormComponentType } from "@/types/form-builder";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,8 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
   onSave,
   onDelete,
 }) => {
-  const [localComponent, setLocalComponent] = React.useState<FormComponent | null>(component);
+  const [localComponent, setLocalComponent] =
+    React.useState<FormComponent | null>(component);
 
   useEffect(() => {
     setLocalComponent(component);
@@ -57,7 +58,8 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
   };
 
   const handleAddOption = () => {
-    if (!localComponent || !Array.isArray(localComponent.properties.options)) return;
+    if (!localComponent || !Array.isArray(localComponent.properties.options))
+      return;
 
     handlePropertyChange("options", [
       ...localComponent.properties.options,
@@ -66,7 +68,8 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
   };
 
   const handleOptionChange = (index: number, value: string) => {
-    if (!localComponent || !Array.isArray(localComponent.properties.options)) return;
+    if (!localComponent || !Array.isArray(localComponent.properties.options))
+      return;
 
     const newOptions = [...localComponent.properties.options];
     newOptions[index] = value;
@@ -74,9 +77,12 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
   };
 
   const handleRemoveOption = (index: number) => {
-    if (!localComponent || !Array.isArray(localComponent.properties.options)) return;
+    if (!localComponent || !Array.isArray(localComponent.properties.options))
+      return;
 
-    const newOptions = localComponent.properties.options.filter((_, i) => i !== index);
+    const newOptions = localComponent.properties.options.filter(
+      (_, i) => i !== index
+    );
     handlePropertyChange("options", newOptions);
   };
 
@@ -98,7 +104,9 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
     // TODO:
     if (
       !localComponent ||
-      !["multiple-choice", "single-choice", "dropdown"].includes(localComponent.type) ||
+      !["multiple-choice", "single-choice", "dropdown"].includes(
+        localComponent.type
+      ) ||
       !Array.isArray(localComponent.properties.options)
     ) {
       return null;
@@ -119,24 +127,26 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
           </Button>
         </div>
         <div className="space-y-2">
-          {localComponent.properties.options.map((option: string, index: number) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={option}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => handleRemoveOption(index)}
-                className="h-8 w-8"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
+          {localComponent.properties.options.map(
+            (option: string, index: number) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={option}
+                  onChange={(e) => handleOptionChange(index, e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveOption(index)}
+                  className="h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            )
+          )}
         </div>
       </div>
     );
@@ -157,7 +167,9 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
             min="1"
             max="10"
             value={localComponent.properties.maxRating || 5}
-            onChange={(e) => handlePropertyChange("maxRating", Number(e.target.value))}
+            onChange={(e) =>
+              handlePropertyChange("maxRating", Number(e.target.value))
+            }
           />
         </div>
       </div>
@@ -177,7 +189,9 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
             id="min-value"
             type="number"
             value={localComponent.properties.min || 0}
-            onChange={(e) => handlePropertyChange("min", Number(e.target.value))}
+            onChange={(e) =>
+              handlePropertyChange("min", Number(e.target.value))
+            }
           />
         </div>
         <div className="space-y-2">
@@ -186,20 +200,22 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
             id="max-value"
             type="number"
             value={localComponent.properties.max || 100}
-            onChange={(e) => handlePropertyChange("max", Number(e.target.value))}
+            onChange={(e) =>
+              handlePropertyChange("max", Number(e.target.value))
+            }
           />
         </div>
       </div>
     );
   };
-
-  // Add this type-specific settings renderer
+    // Add this type-specific settings renderer
   const renderTypeSpecificSettings = () => {
     if (!localComponent) return null;
     // TODO:
 
     switch (localComponent.type) {
-      // case "text":
+      case "long-text":
+      case "short-text":
       case "email":
       case "phone":
         return (
@@ -209,7 +225,9 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
               <Input
                 id="placeholder"
                 value={localComponent.properties.placeholder || ""}
-                onChange={(e) => handlePropertyChange("placeholder", e.target.value)}
+                onChange={(e) =>
+                  handlePropertyChange("placeholder", e.target.value)
+                }
                 placeholder="Enter placeholder text"
               />
             </div>
@@ -289,6 +307,17 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
       <div className="flex-1 overflow-auto p-4">
         <div className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
+            <p className="text-sm text-muted-foreground">Please update this property this will be used when submitting form </p>
+            <Input
+              id="name"
+              value={localComponent.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="title">Question Title</Label>
             <Input
               id="title"
@@ -296,7 +325,7 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
               onChange={(e) => handleChange("title", e.target.value)}
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">Description (optional)</Label>
             <Textarea
@@ -306,13 +335,12 @@ const ComponentSettingsSidebar: React.FC<ComponentSettingsSidebarProps> = ({
               placeholder="Add a description..."
             />
           </div>
-          
           {/* Type-specific settings */}
           {renderTypeSpecificSettings()}
           {renderOptionFields()}
           {renderRatingSettings()}
           {renderNumberSettings()}
-          
+
           <div className="flex items-center justify-between">
             <Label htmlFor="required">Required</Label>
             <Switch

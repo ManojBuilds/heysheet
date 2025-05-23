@@ -33,7 +33,6 @@ const PageComponentCard = ({
         transition,
       }
     : undefined;
-    console.log(component)
   return (
     <Card
       className={cn(

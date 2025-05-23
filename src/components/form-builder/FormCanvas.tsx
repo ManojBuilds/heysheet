@@ -43,6 +43,7 @@ interface FormCanvasProps {
   onAddPage: () => void;
   onChangePage: (pageId: string) => void;
   onUpdateFormData: React.Dispatch<SetStateAction<FormData>>;
+  onRemovePage: (pageId: string)=>void;
 }
 
 const FormCanvas: React.FC<FormCanvasProps> = ({
@@ -55,6 +56,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
   onAddPage,
   onChangePage,
   onUpdateFormData,
+  onRemovePage
 }) => {
   const { setNodeRef } = useDroppable({
     id: "form-canvas",
@@ -118,6 +120,7 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
             activePage={activePage}
             onChangePage={onChangePage}
             onAddPage={onAddPage}
+            onRemovePage={onRemovePage}
           />
 
           <div ref={setNodeRef} className="min-h-44">

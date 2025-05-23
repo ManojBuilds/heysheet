@@ -7,12 +7,7 @@ export async function getForm(formId: string) {
     .from("forms")
     .select(
       `
-      id,
-      title,
-      theme,
-      components,
-      pages,
-      active_page
+     * 
     `
     )
     .eq("id", formId)
@@ -21,6 +16,11 @@ export async function getForm(formId: string) {
   if (error || !form) {
     return null;
   }
+  console.log(form, form.endpoint_id)
 
-  return form;
+  const {data: endpoint, error: endpointError} = await supabase.from('endpoints').select('slug').eq('id', form.endpoint_id).single()
+  console.log({endpoint})
+  if(endpointError || !endpoint)  return null
+
+  return {form, endpoint};
 }

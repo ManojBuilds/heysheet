@@ -1,6 +1,7 @@
 import FormPreview from "@/components/form-builder/FormPreview";
 import { FormDisplay } from "@/components/FormDisplay";
 import { getForm } from "@/lib/form";
+import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
 interface FormPageProps {
@@ -11,26 +12,27 @@ interface FormPageProps {
 
 export default async function FormPage({ params }: FormPageProps) {
   const { formId } = await params;
-  const form = await getForm(formId);
+  const formRes = await getForm(formId);
 
-  if (!form) {
+  if (!formRes?.form) {
     notFound();
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="py-10">
-        {/* <FormDisplay
-          title={form.title}
-          theme={form.theme}
-          components={form.components}
-          pages={form.pages}
-          activePage={form.active_page}
-        /> */}
-        <FormPreview
-          formData={{ ...form, activePage: form.active_page }}
-        />
-      </div>
-    </main>
+    <FormPreview
+      endpoint={formRes.endpoint?.slug}
+      formData={{ ...formRes.form, activePage: formRes.form.active_page }}
+    />
   );
+}
+
+export async function generateMetadata(
+  { params }: FormPageProps,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { formId } = await params;
+  const formRes = await getForm(formId);
+  return {
+    title: formRes?.form.title,
+  };
 }
