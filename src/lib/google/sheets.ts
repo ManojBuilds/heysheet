@@ -58,25 +58,17 @@ export async function getSpreadsheet(
   return response.data;
 }
 
-// Append values to a sheet
 export async function appendToSheet(
   googleAccountId: string,
   spreadsheetId: string,
   range: string,
   values: any[][]
 ) {
-  console.log("@range", range);
-  console.log("@values", values);
+  console.log('Adding to sheet')
   const sheets = await getSheetsClient(googleAccountId);
-  console.log(
-    "sheets",
-    (await sheets.spreadsheets.get({ spreadsheetId })).data.sheets
-  );
-
   try {
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
-      // range: `Check if it is working2 By formsync!A1`,// HarSheet1!A1:B2d-coded range for name, email, message
       range,
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
@@ -92,110 +84,50 @@ export async function appendToSheet(
   }
 }
 
-// Process a form submission to Google Sheets
-export async function processSubmission(
-  dataToSendInEmail: any,
-  submissionId: string
-) {
+export async function processSubmission(submissionId: string) {
   const supabase = await createClient();
 
-  // Get submission with endpoint details
   const { data: submission, error: submissionError } = await supabase
     .from("submissions")
     .select(
       `
+    * ,
+    endpoint:endpoint_id (
       *,
-      endpoints:endpoint_id (
-        *,
-        google_accounts:google_account_id (*)
-      )
-    `
+      google_accounts:google_account_id (*)
+    )
+  `
     )
     .eq("id", submissionId)
     .single();
 
-  if (submissionError || !submission) {
-    throw new Error(
-      `Submission not found: ${submissionError?.message || "No data returned"}`
-    );
+  if (submissionError || !submission?.endpoint) {
+    throw new Error("Submission or endpoint not found");
   }
 
-  const endpoint = submission.endpoints;
-  if (!endpoint) {
-    throw new Error("Endpoint not found for this submission");
-  }
+  const { endpoint } = submission;
+  const formData = submission.data as Record<string, any>;
 
-  // Update submission status
-  await supabase
-    .from("submissions")
-    .update({ status: "processing" })
-    .eq("id", submissionId);
+  if (!formData || Object.keys(formData).length === 0) {
+    throw new Error("Submission contains no data");
+  }
 
   try {
-    // Check if we need to create a spreadsheet
-    if (!endpoint.spreadsheet_id && endpoint.create_spreadsheet_if_missing) {
-      const newSheet = await createSheet(
-        endpoint.google_account_id,
-        `${endpoint.name} - FormSync`,
-        endpoint.sheet_name || "Sheet1" // Provide default if sheet_name is undefined
-      );
-
-      // Update endpoint with new spreadsheet ID
-      await supabase
-        .from("endpoints")
-        .update({ spreadsheet_id: newSheet.spreadsheetId })
-        .eq("id", endpoint.id);
-
-      endpoint.spreadsheet_id = newSheet.spreadsheetId;
-    }
-
-    if (!endpoint.spreadsheet_id) {
-      throw new Error(
-        "No spreadsheet ID and create_spreadsheet_if_missing is false"
-      );
-    }
-
-    // Convert submission data to array format for sheets
-    const formData = submission.data as Record<string, any>;
-    if (!formData || Object.keys(formData).length === 0) {
-      throw new Error("Submission contains no data");
-    }
-
     const values = [Object.values(formData)];
 
-    const tabs = await getSheetTabs(
-      endpoint.google_accounts.id,
-      endpoint.spreadsheet_id
-    );
-    console.log("@tabs", tabs);
-
-    // Determine if we need to add a header row
     if (endpoint.header_row) {
-      const { count, error: countError } = await supabase
+      const { count } = await supabase
         .from("submissions")
         .select("id", { count: "exact", head: true })
         .eq("endpoint_id", endpoint.id)
-        .eq("status", "completed");
-
-      if (countError) {
-        throw new Error(
-          `Error checking submission count: ${countError.message}`
-        );
-      }
-      console.log("@endpoint", endpoint);
+        .eq("status", "completed")
+        .single();
 
       if (count === 0) {
-        // This is the first submission, add header row
-        await appendToSheet(
-          endpoint.google_account_id,
-          endpoint.spreadsheet_id,
-          "Sheet1",
-          [Object.keys(formData)]
-        );
+        values.unshift(Object.keys(formData));
       }
     }
 
-    // Append data to sheet
     const result = await appendToSheet(
       endpoint.google_account_id,
       endpoint.spreadsheet_id,
@@ -203,71 +135,54 @@ export async function processSubmission(
       values
     );
 
-    // Extract row number from result
-    const updatedRange = result.updates?.updatedRange;
-    const match = updatedRange?.match(/!A(\d+):/);
-    const rowNumber = match ? parseInt(match[1]) : null;
+    const rowNumber = result.updates?.updatedRange?.match(/!A(\d+):/)?.[1];
 
-    // Update submission as completed
+    const [emailNotif, slackAccount] = await Promise.all([
+      supabase
+        .from("email_notifications")
+        .select("enabled, email")
+        .eq("user_id", endpoint.user_id)
+        .single(),
+      getSlackAccountAndNotificationAndToken(),
+    ]);
+
     await supabase
       .from("submissions")
       .update({
         status: "completed",
-        sheet_row_number: rowNumber,
+        sheet_row_number: rowNumber ? parseInt(rowNumber) : null,
         processed_at: new Date().toISOString(),
       })
       .eq("id", submissionId);
 
-    const { data, error } = await supabase
-      .from("email_notifications")
-      .select("*")
-      .eq("user_id", endpoint.user_id)
-      .single();
-    // TODO: handle Slack notification
-
-    const slackAccount = await getSlackAccountAndNotificationAndToken();
-
-    if (slackAccount && slackAccount.enabled && slackAccount.slack_accounts) {
+    if (slackAccount?.enabled && slackAccount.slack_accounts) {
       const messagePayload = await createFormSubmissionMessage({
-        endpoint,
-        submission,
-        analytics: {
-          ...submission,
+        endpoint: {
+          name: endpoint.name,
+          spreadsheet_id: endpoint.spreadsheet_id,
         },
+        submission: {
+          created_at: submission.created_at,
+          data: submission.data,
+          id: submission.id,
+        },
+        analytics: { ...submission },
       });
-
-      console.log({
-        endpoint,
-        submission,
-        analytics: {
-          ...submission,
-        },
-      })
-
-      sendMessage(slackAccount.slack_channel, messagePayload);
+      sendMessage(slackAccount.slack_channel, messagePayload).catch(
+        console.error
+      );
     }
 
-    console.log({ email_alert: data, error });
-
-    if (data && data.enabled && data.email) {
+    if (emailNotif.data?.enabled && emailNotif.data?.email) {
       sendEmail({
         data: submission.data,
-        toEmail: endpoint.google_accounts.email,
-      });
+        toEmail: emailNotif.data.email,
+      }).catch(console.error);
     }
 
     return { success: true, rowNumber };
   } catch (error: any) {
-    // Update submission as failed
-    await supabase
-      .from("submissions")
-      .update({
-        status: "failed",
-        error_message: error.message || "Unknown error occurred",
-        processed_at: new Date().toISOString(),
-      })
-      .eq("id", submissionId);
-
+    console.error("Error processing submission:", error);
     throw error;
   }
 }

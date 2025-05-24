@@ -99,7 +99,6 @@ const FormPreview: React.FC<FormPreviewProps> = ({
   const onSubmit = async (data: FormValues) => {
     const mergedData = { ...allFormData, ...data };
     const flattenedData: Record<string, any> = {};
-
     for (const key in mergedData) {
       const value = mergedData[key];
       if (Array.isArray(value)) {
@@ -110,23 +109,18 @@ const FormPreview: React.FC<FormPreviewProps> = ({
         flattenedData[key] = value;
       }
     }
-
     setAllFormData(flattenedData);
-
     if (!isLastPage) {
       setCurrentPageIndex((prev) => prev + 1);
       methods.reset({});
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       const response = await fetch(`/api/submit/${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "heysheet-api-key": process.env.NEXT_PUBLIC_HEYSHEET_API_KEY || "",
         },
         body: JSON.stringify(flattenedData),
       });
@@ -161,7 +155,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
     }
   };
 
-  if (!hasSubmitted) {
+  if (hasSubmitted) {
     return <SuccessPreview formData={formData} />;
   }
 

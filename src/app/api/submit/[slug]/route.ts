@@ -1,7 +1,6 @@
 import { validateApiKey } from "@/lib/settings";
 import { collectAnalytics } from "@/lib/submission";
 import { createClient } from "@/lib/supabase/server";
-import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -11,12 +10,18 @@ export async function POST(
   let formData: any = {};
   let isFormData = false;
 
-  const apiKey = request.headers.get("heysheet-api-key");
-  if (!apiKey || !validateApiKey(apiKey)) {
-    return new Response("Invalid or Missing api key", { status: 401 });
+  const referer = request.headers.get("referer") || "";
+  const isInternalRequest = referer.includes(
+    process.env.NEXT_PUBLIC_APP_URL || ""
+  );
+
+  if (!isInternalRequest) {
+    const apiKey = request.headers.get("heysheet-api-key");
+    if (!apiKey || !validateApiKey(apiKey)) {
+      return new Response("Invalid or Missing api key", { status: 401 });
+    }
   }
 
-  // Try to detect and parse formData or JSON
   const contentType = request.headers.get("content-type") || "";
   if (
     contentType.includes("multipart/form-data") ||
@@ -31,7 +36,6 @@ export async function POST(
     try {
       formData = await request.json();
     } catch {
-      // fallback: empty object if not valid JSON
       formData = {};
     }
   }
@@ -39,7 +43,6 @@ export async function POST(
   const { slug } = await params;
 
   try {
-    // Get client info
     const clientInfo = {
       ip_address: request.headers.get("x-forwarded-for") || "",
       user_agent: request.headers.get("user-agent") || "",
@@ -49,7 +52,6 @@ export async function POST(
       location: {},
     };
 
-    // Use ipinfo.io API to get location info
     let locationInfo = {};
     try {
       const ipInfoApiKey = process.env.IP_INFO_API_KEY;
@@ -57,26 +59,19 @@ export async function POST(
       const geoResponse = await fetch(url);
       if (geoResponse.ok) {
         locationInfo = await geoResponse.json();
-        console.log("locationInfo", locationInfo);
       }
     } catch (error) {
       console.error("Error fetching IP location info:", error);
     }
 
     clientInfo.location = locationInfo;
-
-    const analytics = collectAnalytics(clientInfo)
-    console.log(analytics);
-
-    // Call the database function to handle the submission
+    const analytics = collectAnalytics(clientInfo);
     const supabase = await createClient();
     const { data, error } = await supabase.rpc("handle_form_submission", {
       endpoint_slug: slug,
       form_data: formData,
       client_info: analytics,
     });
-    console.log(data)
-
     if (error) {
       console.error("Error handling form submission:", error);
       return NextResponse.json(
@@ -84,10 +79,10 @@ export async function POST(
         { status: 500 }
       );
     }
-
-    // Process the submission asynchronously
     if (data.success) {
-      await processSubmissionAsync(formData, data.submission_id);
+      processSubmissionAsync(formData, data.submission_id).catch((e) =>
+        console.log("Background processing error:", e)
+      );
     }
 
     return NextResponse.json(data);
@@ -100,13 +95,20 @@ export async function POST(
   }
 }
 
-// Process submission asynchronously
 async function processSubmissionAsync(formData: any, submissionId: string) {
+  const { updateSubmissionStatus } = await import("@/lib/background-processor");
   // TODO: In a production app, this would be handled by a queue system
+  await updateSubmissionStatus(submissionId, "processing");
   try {
     const { processSubmission } = await import("@/lib/google/sheets");
-    await processSubmission(formData, submissionId);
-  } catch (error) {
+    processSubmission(submissionId)
+      .then(() => updateSubmissionStatus(submissionId, "completed"))
+      .catch(async (error) => {
+        console.error("Error processing submission: ", error);
+        await updateSubmissionStatus(submissionId, "failed", error.message);
+      });
+  } catch (error: any) {
     console.error("Error processing submission:", error);
+    await updateSubmissionStatus(submissionId, "failed", error.message);
   }
 }
