@@ -21,7 +21,7 @@ export default async function FormPage({ params }: FormPageProps) {
   return (
     <FormPreview
       endpoint={formRes.endpoint?.slug}
-      formData={{ ...formRes.form, activePage: formRes.form.active_page }}
+      formData={{ ...formRes.form, activePage: formRes.form.active_page, successPage: formRes.form.success_page }}
     />
   );
 }

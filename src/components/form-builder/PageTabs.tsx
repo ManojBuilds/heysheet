@@ -30,10 +30,10 @@ const PageTabs: React.FC<PageTabsProps> = ({
       <div className="flex items-center justify-between">
         <TabsList>
           {pages.map((page) => (
-            <TabsTrigger key={page.id} value={page.id}>
+            <TabsTrigger key={page.id} value={page.id} >
               {page.title}
               {
-                pages.length > 1 &&(<button aria-label="Delete current page" className="ml-2 cursor-pointer hover:opacity-50" onClick={(e)=>handleRemovePage(page.id, e)} ><X/></button>)
+                pages.length > 1 &&(<div aria-label="Delete current page" className="ml-2 cursor-pointer hover:opacity-50" onClick={(e)=>handleRemovePage(page.id, e)} ><X/></div>)
               }
             </TabsTrigger>
           ))}

@@ -42,6 +42,12 @@ export interface FormPage {
   title: string;
 }
 
+export interface SuccessPage {
+  title: string;
+  description: string;
+  customContent?: string
+}
+
 export interface FormData {
   id: string;
   title: string;
@@ -50,4 +56,5 @@ export interface FormData {
   components: FormComponent[];
   pages: FormPage[];
   activePage: string;
+  successPage: SuccessPage
 }

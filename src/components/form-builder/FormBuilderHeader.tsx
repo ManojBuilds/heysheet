@@ -7,7 +7,7 @@ import {
   Save,
   Share2,
 } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import { FormTheme, FormData } from "@/types/form-builder";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import TooltipWrapper from "../TooltipWrapper";
 
 interface FormBuilderHeaderProps {
   formData: FormData;
@@ -54,25 +55,28 @@ const FormBuilderHeader = ({
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <Link
-            className="flex items-center gap-1.5"
-            href={`${window.location.origin}/f/${formId}`}
-            target="_blank"
-          >
-            Share URL
-            <ExternalLink className="w-5 h-5" />
-          </Link>
+          <TooltipWrapper content="Open preview in new tab">
+            <Link
+              href={`${window.location.origin}/f/${formId}`}
+              target="_blank"
+              aria-label="Open preview in new tab"
+              className={buttonVariants({ variant: "outline" })}
+            >
+              <ExternalLink className="w-5 h-5" />
+            </Link>
+          </TooltipWrapper>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                onClick={() => setIsThemeDialogOpen(true)}
-                className="gap-1.5"
-              >
-                <Palette className="h-4 w-4" />
-                Theme
-              </Button>
+              <TooltipWrapper content="Configure theme">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsThemeDialogOpen(true)}
+                  className="gap-1.5"
+                >
+                  <Palette className="h-4 w-4" />
+                </Button>
+              </TooltipWrapper>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <ThemeSelector
@@ -84,14 +88,15 @@ const FormBuilderHeader = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button
-            variant="outline"
-            onClick={() => setIsPreviewOpen(true)}
-            className="gap-1.5"
-          >
-            <Eye className="h-4 w-4" />
-            Preview
-          </Button>
+          <TooltipWrapper content="View Preview">
+            <Button
+              variant="outline"
+              onClick={() => setIsPreviewOpen(true)}
+              className="gap-1.5"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </TooltipWrapper>
           <Button
             disabled={isSaving}
             onClick={handleSaveForm}

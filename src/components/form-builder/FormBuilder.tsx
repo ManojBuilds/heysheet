@@ -14,7 +14,7 @@ import { Loader } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Separator } from "../ui/separator";
 import FormCanvas from "./FormCanvas";
-import { Dialog, DialogContent } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import FormPreview from "./FormPreview";
 import FormComponentsSidebar from "./FormComponentsSidebar";
 import { ThemeSelector } from "./ThemeSelector";
@@ -24,6 +24,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import FormBuilderHeader from "./FormBuilderHeader";
+import { Label } from "../ui/label";
+import { Textarea } from "../ui/textarea";
+import RichTextEditor from '@/components/rich-text-editor/RichTextEditor';
+import SuccessPageSettings from "./SuccessPageSettings";
 
 async function fetchFormByEndpoint(endpointId: string) {
   const supabase = createClient();
@@ -53,6 +57,7 @@ async function upsertForm(formData: FormData & { endpoint_id: string }) {
     p_components: formData.components,
     p_pages: formData.pages,
     p_active_page: formData.activePage,
+    p_success_page: formData.successPage,
   });
 
   if (error) throw error;
@@ -75,6 +80,10 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
     theme: DEFAULT_FORM_THEMES[0],
     title: "Untitled Form",
     description: "",
+    successPage: {
+      title: "Thanks for your submission",
+      description: "Your response has been recorded",
+    },
   });
   const [currentComponent, setCurrentComponent] =
     useState<FormComponent | null>(null);
@@ -115,6 +124,7 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
         components: existingForm.components,
         pages: existingForm.pages,
         activePage: existingForm.active_page,
+        successPage: existingForm.success_page,
       });
       const firstComponentOfPageOne = existingForm.components.filter(
         (c: { pageId: string }) => c.pageId === "page-1"
@@ -264,7 +274,6 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
       (c) => c.pageId !== pageId
     );
     const updatedPages = formData.pages.filter((p) => p.id !== pageId);
-
     const newActivePage =
       pageId === formData.activePage
         ? updatedPages[0]?.id
@@ -275,6 +284,16 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
       components: updatedComponents,
       activePage: newActivePage,
     });
+  };
+
+  const updateSuccessPage = (updates: Partial<FormData["successPage"]>) => {
+    setFormData((prev) => ({
+      ...prev,
+      successPage: {
+        ...prev.successPage,
+        ...updates,
+      },
+    }));
   };
 
   return (
@@ -291,12 +310,12 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
       />
       <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
         <div className="flex flex-1 gap-6 h-[calc(100svh-50px)] overflow-hidden">
-          {/* Left Sidebar - Components & Theme */}
-          <div className="w-[300px] shrink-0 p-4 border-r">
+          <div className="w-[400px] shrink-0 p-4 border-r">
             <Tabs value={activeSidebarTab} onValueChange={setActiveSidebarTab}>
-              <TabsList className="grid grid-cols-2 mb-4">
+              <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="components">Components</TabsTrigger>
                 <TabsTrigger value="theme">Theme</TabsTrigger>
+                <TabsTrigger value="success">Success</TabsTrigger>
               </TabsList>
               <TabsContent value="components">
                 <FormComponentsSidebar activeId={activeId} />
@@ -308,10 +327,11 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
                   onCustomizeTheme={updateFormTheme}
                 />
               </TabsContent>
+              <TabsContent value="success">
+               <SuccessPageSettings formData={formData} updateSuccessPage={updateSuccessPage}/> 
+              </TabsContent>
             </Tabs>
           </div>
-
-          {/* Main Content Area - Form Canvas */}
           <div className="max-w-5xl mx-auto w-full">
             <div className="flex-1 overflow-y-auto h-full p-6">
               <div className="flex items-center justify-between mb-4">
@@ -343,10 +363,8 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
               />
             </div>
           </div>
-
-          {/* Right Sidebar - Component Settings */}
           {currentComponent && formData.components.length && (
-            <div className="w-[400px] shrink-0">
+            <div className="w-fit shrink-0">
               <ComponentSettingsSidebar
                 component={currentComponent}
                 onClose={() => setCurrentComponent(null)}
@@ -360,16 +378,19 @@ const FormBuilder = ({ endpointId }: { endpointId: string }) => {
                     components: newComponents,
                   }));
                   setCurrentComponent(null);
-                  toast.success("Component deleted!");
+                  // toast.success("Component deleted!");
                 }}
               />
             </div>
           )}
         </div>
       </DndContext>
-
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="p-2 sm:max-w-3xl">
+        <DialogContent
+          className="p-2 sm:max-w-5xl overflow-y-auto max-h-[70svh]"
+          style={{ backgroundColor: formData.theme.backgroundColor }}
+        >
+          <DialogTitle className="sr-only">{formData.title}</DialogTitle>
           <FormPreview
             formData={formData}
             onClose={() => setIsPreviewOpen(false)}

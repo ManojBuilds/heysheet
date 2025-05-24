@@ -161,7 +161,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
     }
   };
 
-  if (hasSubmitted) {
+  if (!hasSubmitted) {
     return <SuccessPreview formData={formData} />;
   }
 

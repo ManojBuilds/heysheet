@@ -121,7 +121,53 @@
   body {
     @apply bg-background text-foreground font-main;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-grotesque font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .prose h2 {
+    @apply text-xl font-semibold mb-4 mt-6;
+  }
+
+  .prose p {
+    @apply mb-4;
+  }
+
+  .prose ul {
+    @apply list-disc pl-6 mb-4 space-y-2;
+  }
+
+  .prose a {
+    @apply hover:underline;
+  }
+
+  .prose strong {
+    @apply font-semibold;
+  }
+
+  .prose em {
+    @apply italic;
+  }
+  .ProseMirror {
+    @apply min-h-[200px] outline-none;
+  }
+
+  .ProseMirror p {
+    @apply mb-4;
+  }
+
+  .ProseMirror ul {
+    @apply list-disc pl-6 mb-4;
+  }
+
+  .ProseMirror h2 {
+    @apply text-xl font-semibold mb-3;
   }
 }
