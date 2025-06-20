@@ -1,18 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
 
-export async function updateSubmissionStatus(submissionId: string, status: string, error?: string) {
+export async function updateSubmissionStatus(
+  submissionId: string,
+  status: "pending" | "completed" | "failed" | "processing",
+  _error?: string, // kept for logging only
+) {
+  console.log("@updateSubmissionStatus", submissionId, status, _error);
   const supabase = await createClient();
-  const updateData: any = {
-    status,
-    processed_at: error ? null : new Date().toISOString(),
-  };
-  
-  if (error) {
-    updateData.error_message = error;
-  }
-  
-  await supabase
+
+  // Only update `status`, not error_message or processed_at
+  const { error } = await supabase
     .from("submissions")
-    .update(updateData)
+    .update({ status })
     .eq("id", submissionId);
+
+  if (error) {
+    console.error("@updateSubmissionStatus DB error:", error);
+    throw error;
+  }
+
+  if (_error) {
+    // Just log error but don’t store it
+    console.error("@updateSubmissionStatus Runtime Error:", _error);
+  }
 }

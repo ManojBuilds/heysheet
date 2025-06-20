@@ -1,225 +1,227 @@
-import React, { useState } from "react";
-import { Check, Palette } from "lucide-react";
-import { FormTheme } from "@/types/form-builder";
-import { DEFAULT_FORM_THEMES } from "@/lib/form-builder";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
+import {
+  Check,
+  LightbulbIcon,
+  Loader2,
+  MoonIcon,
+  Palette,
+  SunIcon,
+} from "lucide-react";
+import { FormData, FormTheme } from "@/types/form-builder";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { useMutation } from "@tanstack/react-query";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { generateTheme } from "@/lib/theme";
 
 interface ThemeSelectorProps {
   selectedTheme: FormTheme;
   onSelectTheme: (theme: FormTheme) => void;
   onCustomizeTheme: (theme: FormTheme) => void;
   className?: string;
+  formData: FormData;
 }
+
+const presetColors = [
+  "#607AFB",
+  "#39E079",
+  "#359EFF",
+  "#EA2831",
+  "#FAC638",
+  "#019863",
+  "#F4C753",
+];
 
 export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   selectedTheme,
   onSelectTheme,
   onCustomizeTheme,
   className,
+  formData,
 }) => {
-  const [customTheme, setCustomTheme] = useState<FormTheme>({
-    ...selectedTheme,
+  const { user } = useUser();
+  const supabase = createClient();
+  const [theme, setTheme] = useState<"light" | "dark">(
+    selectedTheme.mode || "dark",
+  );
+  const [color, setColor] = useState(selectedTheme.primary || "#3f30e8");
+  const [radius, setRadius] = useState(selectedTheme.radius || "lg");
+  const [font, setFont] = useState(selectedTheme.font || "Outfit");
+
+  const applyThemeMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id || !formData.id) return;
+      const { data, error } = await supabase
+        .from("forms")
+        .update({
+          builder_config: {
+            pages: formData.pages,
+            components: formData.components,
+            active_page: formData.activePage,
+            success_page: formData.successPage,
+            theme: {
+              mode: theme,
+              color,
+              radius,
+              font,
+            },
+          },
+        })
+        .eq("id", formData.id)
+        .eq("user_id", user?.id)
+        .select();
+      if (error) {
+        throw error;
+      }
+      return data;
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
   });
-  const [isCustomizing, setIsCustomizing] = useState(false);
 
-  const handleSelectTheme = (theme: FormTheme) => {
-    onSelectTheme(theme);
-    setCustomTheme({ ...theme });
-  };
+  useEffect(() => {
+    const colorPallet = generateTheme(color, font, radius, theme);
+    onSelectTheme(colorPallet);
+  }, [color, font, radius, theme, onSelectTheme]);
 
-  const handleCustomizeTheme = () => {
-    onCustomizeTheme(customTheme);
-    setIsCustomizing(false);
-  };
-
-  const handleChange = (field: keyof FormTheme, value: string) => {
-    setCustomTheme((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-  const handleRandomizeTheme = () => {
-    function randomHue() {
-      return Math.floor(Math.random() * 360);
-    }
-    function hsl(h: number, s: number, l: number) {
-      return `hsl(${h}, ${s}%, ${l}%)`;
-    }
-    const hue = randomHue();
-    const primaryColor = hsl(hue, 70, 50);
-    const secondaryColor = hsl(hue, 60, 60);
-    const accentColor = hsl((hue + 120) % 360, 70, 50);
-    const backgroundColor = hsl(hue, 10, 98);
-    const backgroundSecondary = hsl(hue, 15, 95);
-    const textColor = hsl(hue, 15, 15);
-    const textColorSecondary = hsl(hue, 10, 30);
-    const borderColor = hsl(hue, 15, 90);
-    const errorColor = "#DC2626";
-
-    const randomTheme: FormTheme = {
-      id: `random-${Date.now()}`,
-      name: "Random",
-      primaryColor,
-      secondaryColor,
-      accentColor,
-      backgroundColor,
-      backgroundSecondary,
-      textColor,
-      textColorSecondary,
-      borderColor,
-      errorColor,
-    };
-    handleSelectTheme(randomTheme);
+  const handleApplyTheme = () => {
+    const colorPallet = generateTheme(color, font, radius, theme);
+    onSelectTheme(colorPallet);
+    applyThemeMutation.mutate();
   };
 
   return (
-    <div className={cn('h-[calc(100svh-9rem)] overflow-y-auto',className)}>
-      <div className="mb-4">
-        <div className="grid grid-cols-2 gap-4">
-          {DEFAULT_FORM_THEMES.map((theme) => (
-            <button
-              key={theme.id}
-              onClick={() => handleSelectTheme(theme)}
-              className={`relative flex flex-col items-center justify-center h-24 rounded-lg border-2 transition-colors cursor-pointer ${
-                selectedTheme.id === theme.id
-                  ? "border ring-2 ring-primary/30"
-                  : "border-muted"
-              }`}
-              style={{
-                background: `linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor})`,
-                color: "#fff",
-              }}
-              aria-label={`Select ${theme.name} theme`}
-            >
-              {/* Light black overlay for better text contrast */}
-              <span className="absolute inset-0 bg-black/30 rounded-lg pointer-events-none" />
-              <span className="absolute top-2 right-2 z-10">
-                {selectedTheme.id === theme.id && (
-                  <Check className="w-4 h-4 text-white drop-shadow" />
-                )}
-              </span>
-              <Palette className="w-6 h-6 mb-1 z-10" />
-              <span className="font-semibold text-center text-xs pointer-events-none z-10">
-                {theme.name}
-              </span>
-            </button>
-          ))}
-          <div className="col-span-2">
-            <Button
-              type="button"
-              className="flex flex-col items-center justify-center h-20 w-full"
-              // style={{ color: "#fff", backgroundColor: "#222" }}
-              onClick={handleRandomizeTheme}
-            >
-              <Palette />
-              <span className="text-xs">Randomize</span>
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-4 mt-6">
-          <h4 className="font-medium">Customize Theme</h4>
-
-          {/* Primary Colors Section */}
-          <div className="space-y-4">
-            <h5 className="text-sm font-medium text-muted-foreground">Primary Colors</h5>
-            <ColorInput
-              label="Primary Color"
-              value={customTheme.primaryColor}
-              onChange={(value) => handleChange("primaryColor", value)}
-            />
-            <ColorInput
-              label="Secondary Color"
-              value={customTheme.secondaryColor}
-              onChange={(value) => handleChange("secondaryColor", value)}
-            />
-            <ColorInput
-              label="Accent Color"
-              value={customTheme.accentColor}
-              onChange={(value) => handleChange("accentColor", value)}
-            />
-          </div>
-
-          {/* Background Colors Section */}
-          <div className="space-y-4">
-            <h5 className="text-sm font-medium text-muted-foreground">Background Colors</h5>
-            <ColorInput
-              label="Background"
-              value={customTheme.backgroundColor}
-              onChange={(value) => handleChange("backgroundColor", value)}
-            />
-            <ColorInput
-              label="Background Secondary"
-              value={customTheme.backgroundSecondary}
-              onChange={(value) => handleChange("backgroundSecondary", value)}
-            />
-          </div>
-
-          {/* Text Colors Section */}
-          <div className="space-y-4">
-            <h5 className="text-sm font-medium text-muted-foreground">Text Colors</h5>
-            <ColorInput
-              label="Text Color"
-              value={customTheme.textColor}
-              onChange={(value) => handleChange("textColor", value)}
-            />
-            <ColorInput
-              label="Text Color Secondary"
-              value={customTheme.textColorSecondary}
-              onChange={(value) => handleChange("textColorSecondary", value)}
-            />
-          </div>
-
-          {/* Other Colors Section */}
-          <div className="space-y-4">
-            <h5 className="text-sm font-medium text-muted-foreground">Other Colors</h5>
-            <ColorInput
-              label="Border Color"
-              value={customTheme.borderColor}
-              onChange={(value) => handleChange("borderColor", value)}
-            />
-            <ColorInput
-              label="Error Color"
-              value={customTheme.errorColor}
-              onChange={(value) => handleChange("errorColor", value)}
-            />
-          </div>
-
-          <Button onClick={handleCustomizeTheme} className="w-full">
-            Apply Theme
+    <div className={cn("w-[240px] p-4 space-y-4", className)}>
+      {/* <div className="space-y-2">
+        <Label className="block text-muted-foreground">Appearance</Label>
+        <div className="flex items-center gap-2">
+          <Button
+            variant={theme === "light" ? "secondary" : "outline"}
+            onClick={() => setTheme("light")}
+            leftIcon={<SunIcon />}
+          >
+            Light
+          </Button>
+          <Button
+            variant={theme === "dark" ? "secondary" : "outline"}
+            onClick={() => setTheme("dark")}
+            leftIcon={<MoonIcon />}
+          >
+            Dark
           </Button>
         </div>
+      </div> */}
+      <div className="space-y-2">
+        <Label className="block text-muted-foreground">Color</Label>
+        <div className="grid grid-cols-4 gap-2">
+          {presetColors.map((preset) => (
+            <Button
+              key={preset}
+              onClick={() => setColor(preset)}
+              className="flex items-center justify-center"
+              variant={color === preset ? "secondary" : "outline"}
+            >
+              <div
+                className={cn("h-6 aspect-square rounded")}
+                style={{
+                  backgroundColor: preset,
+                  borderColor: preset === color ? "#000" : "#ccc",
+                }}
+              />
+            </Button>
+          ))}
+        </div>
+        <Label htmlFor="color">
+          <div
+            className={buttonVariants({
+              variant: "outline",
+              className: "flex items-center !justify-between gap-2 w-full",
+            })}
+          >
+            <p className="text-muted-foreground">Custom</p>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              {color}
+              <input
+                type="color"
+                id="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="w-4 h-4 rounded border-none outline-none"
+              />
+            </div>
+          </div>
+        </Label>
       </div>
-    </div>
-  );
-};
 
-// Add this new ColorInput component at the end of the file
-interface ColorInputProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}
-
-const ColorInput: React.FC<ColorInputProps> = ({ label, value, onChange }) => {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={label.toLowerCase().replace(/\s+/g, '-')}>{label}</Label>
-      <div className="flex gap-2">
-        <div
-          className="w-8 h-8 border rounded"
-          style={{ backgroundColor: value }}
-        />
-        <Input
-          id={label.toLowerCase().replace(/\s+/g, '-')}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="flex-1"
-        />
+      <div className="space-y-2">
+        <Label className="block text-muted-foreground">Corner Radius</Label>
+        <div className="flex gap-2">
+          {["sm", "md", "lg", "xl"].map((r) => (
+            <Button
+              key={r}
+              onClick={() => setRadius(r)}
+              className="flex items-center justify-center"
+              variant={radius === r ? "secondary" : "outline"}
+            >
+              <div
+                className={cn("w-4 h-4 border-l-2 border-t-2 border-white/50", {
+                  "rounded-tl-sm": r === "sm",
+                  "rounded-tl-md": r === "md",
+                  "rounded-tl-lg": r === "lg",
+                  "rounded-tl-xs": r === "xs",
+                  "rounded-tl-xl": r === "xl",
+                  "rounded-tl-2xl": r === "2xl",
+                })}
+              />
+            </Button>
+          ))}
+        </div>
       </div>
+      <div className="space-y-2 w-full max-w-sm">
+        <Label className="block text-muted-foreground">Font</Label>
+        <Select onValueChange={setFont} value={font}>
+          <SelectTrigger className="w-full border">
+            <SelectValue placeholder="Select font" className="w-full" />
+          </SelectTrigger>
+          <SelectContent className="w-full">
+            <SelectItem value="Outfit">Outfit</SelectItem>
+            <SelectItem value="Inter">Inter</SelectItem>
+            <SelectItem value="Poppins">Poppins</SelectItem>
+            <SelectItem value="Roboto">Roboto</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button
+        className="w-full mt-2"
+        disabled={applyThemeMutation.isPending}
+        leftIcon={
+          applyThemeMutation.isPending && (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          )
+        }
+        onClick={handleApplyTheme}
+      >
+        Apply theme
+      </Button>
     </div>
   );
 };

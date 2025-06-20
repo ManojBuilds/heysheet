@@ -9,7 +9,7 @@ import { sendMessage } from "@/lib/slack/sendMessage";
 import { toast } from "sonner";
 import {
   addAppToASlackChannel,
-  getSlackAccountAndNotificationAndToken,
+  getSlackAccountToken,
   listAllSlackChannel,
 } from "@/lib/slack/client";
 import {
@@ -24,42 +24,43 @@ import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+import Image from "next/image";
+import { SlackIcon } from "lucide-react";
+import { updateForm } from "@/actions";
 
-export function ConnectToSlackBtn() {
+// TODO: ADD REMOVE SLACK ACCOUNT FEATURE
+
+export function ConnectToSlackBtn({ form }: { form: any }) {
   const { user } = useUser();
   const supabase = createClient();
-  const {} = useMutation({
-    mutationFn: async () => {
-      await fetch("/api/slack/send-message");
-    },
-    onError: (e) => toast.error(e.message),
-  });
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["slack-account", user?.id],
-    queryFn: getSlackAccountAndNotificationAndToken,
+  const { data: slackAccount } = useQuery({
+    queryKey: ["slack-account"],
+    queryFn: getSlackAccountToken,
     enabled: !!user?.id,
   });
+
   const { data: channels } = useQuery({
     queryKey: ["slack-channels"],
-    queryFn: listAllSlackChannel,
-    enabled: !!user?.id,
+    queryFn: () => listAllSlackChannel(slackAccount?.slack_token),
+    enabled: !!user?.id || !!slackAccount?.slack_token,
   });
-  const isSlackAccountConnected = data?.slack_accounts?.id;
+  const isSlackAccountConnected =
+    !!form.slack_account || slackAccount?.slack_token;
 
   // Search state
   const [search, setSearch] = useState("");
 
   const activeChannelId = useMemo(() => {
-    if (!channels || !data?.slack_channel) return "";
+    if (!channels || !form?.slack_channel) return "";
     const activeChannel = channels.find(
-      (channel: any) => channel.name === data.slack_channel
+      (channel: any) => channel.name === form.slack_channel,
     );
     return activeChannel?.id || "";
-  }, [channels, data?.slack_channel]);
+  }, [channels, form?.slack_channel]);
 
   const [selectedChannel, setSelectedChannel] = useState(activeChannelId);
 
-  const [isEnabled, setIsEnabled] = useState(data?.enabled || false);
+  const [isEnabled, setIsEnabled] = useState(form?.slack_enabled || false);
 
   useEffect(() => {
     if (activeChannelId) {
@@ -67,90 +68,86 @@ export function ConnectToSlackBtn() {
     }
   }, [activeChannelId]);
 
-  useEffect(() => {
-    if (data?.enabled) {
-      setIsEnabled(data.enabled);
-    }
-  }, [data?.enabled]);
-
   // Filtered channels
   const filteredChannels = useMemo(() => {
     if (!channels) return [];
     return channels.filter((channel: any) =>
-      channel.name.toLowerCase().includes(search.toLowerCase())
+      channel.name.toLowerCase().includes(search.toLowerCase()),
     );
   }, [channels, search]);
-  console.log(data);
 
   const toggleSlackAlert = async (enabled: boolean) => {
-    setIsEnabled(enabled);
-    const { error } = await supabase
-      .from("slack_notifications")
-      .update({ enabled })
-      .eq("id", data?.id)
-      .eq("user_id", user?.id);
-
-    if (error) {
-      toast.error("Failed to update notification settings");
-      setIsEnabled(!enabled); // revert on error
-      return;
+    try {
+      setIsEnabled(enabled);
+      await updateForm({ slack_enabled: enabled }, form.id);
+      toast.success(enabled ? "Slack alerts enabled" : "Slack alerts disabled");
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message);
+      setIsEnabled(!enabled);
     }
-
-    toast.success(enabled ? "Slack alerts enabled" : "Slack alerts disabled");
   };
 
   const updateSlackNotification = async (
     channel_name: string,
-    channel_id: string
+    channel_id: string,
   ) => {
-    const { data: updatedData, error } = await supabase
-      .from("slack_notifications")
-      .update({ slack_channel: channel_name, enabled: true })
-      .eq("id", data?.id)
-      .eq("user_id", user?.id)
-      .select("*")
-      .single();
-    if (error) {
-      console.log(error);
-      toast.error(error.message);
-      return;
+    try {
+      await updateForm(
+        { slack_channel: channel_name, slack_account_id: slackAccount?.id },
+        form.id,
+      );
+      toast.success("Slack alert setting updated!");
+      await addAppToASlackChannel(channel_id, slackAccount?.slack_token);
+      sendMessage(channel_id, "Hey I'm heysheet bot!", slackAccount?.slack_token);
+    } catch (e: any) {
+      toast.error(e.message);
+      throw e;
     }
-
-    toast.success("Slack alert setting updated!");
-    await addAppToASlackChannel(channel_id);
-    sendMessage(channel_id, "Hey I'm heysheet bot!");
   };
 
   return (
-    <>
-      {isSlackAccountConnected ? (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Slack Notifications</Label>
-              <div className="text-sm text-muted-foreground">
-                Receive alerts in your Slack channel
-              </div>
+    <div className="w-full">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-12 h-12 bg-muted rounded grid place-items-center p-2">
+              <Image
+                src={"/slack-icon.svg"}
+                alt="Slack"
+                width={256}
+                height={256}
+                className="w-full h-full object-contain"
+              />
             </div>
-            <Switch
-              checked={isEnabled}
-              onCheckedChange={toggleSlackAlert}
-              aria-label="Toggle Slack alerts"
-            />
+            <div className="space-y-0.5">
+              <Label>Slack Alerts</Label>
+              <div className="text-sm text-muted-foreground">Choose a channel to receive real-time alerts</div>
+            </div>
           </div>
+          <Switch
+            checked={isEnabled}
+            onCheckedChange={toggleSlackAlert}
+            aria-label="Toggle Slack alerts"
+            disabled={!isSlackAccountConnected}
+          />
+        </div>
+
+        {isSlackAccountConnected ? (
           <div className="flex items-center gap-2">
             <Select
               value={selectedChannel}
               onValueChange={(value) => {
+                setSelectedChannel(value);
                 const channel = filteredChannels.find(
-                  (c: any) => c.id === value
+                  (c: any) => c.id === value,
                 );
                 if (channel) {
                   updateSlackNotification(channel.name, channel.id);
                 }
               }}
             >
-              <SelectTrigger className="w-[240px]">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a Slack channel" />
               </SelectTrigger>
               <SelectContent>
@@ -175,12 +172,15 @@ export function ConnectToSlackBtn() {
               </SelectContent>
             </Select>
 
-            <Badge>Connected</Badge>
+            <Badge className="rounded-full">Connected</Badge>
           </div>
-        </div>
-      ) : (
-        <Button onClick={handleSlackAuth}>Connect to slack</Button>
-      )}
-    </>
+        ) : (
+          <Button onClick={handleSlackAuth}>
+            <SlackIcon />
+            Connect to slack
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }

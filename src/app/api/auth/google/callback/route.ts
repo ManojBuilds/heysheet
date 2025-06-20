@@ -31,7 +31,10 @@ export async function GET(request: NextRequest) {
 
   try {
     // Handle the callback
-    return await handleGoogleCallback(userId, code, redirectUri);
+    const {success } =  await handleGoogleCallback(userId, code, redirectUri);
+    if(success) return NextResponse.redirect(
+      new URL("/dashboard?connection=success", request.url)
+)
   } catch (error) {
     console.error("Error in Google callback:", error);
     return NextResponse.redirect(

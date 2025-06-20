@@ -1,24 +1,27 @@
+import { EmailTemplate, FormSubmissionData } from "@/components/email-template";
+
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 export async function sendEmail({
-  data,
+  dataToSend,
   toEmail,
 }: {
-  data: Record<string, any>;
+  dataToSend: FormSubmissionData;
   toEmail: string;
 }) {
   try {
-    const res = await fetch(
-      process.env.NEXT_PUBLIC_APP_URL + "/api/send-email",
-      {
-        method: "POST",
-        body: JSON.stringify({ data, toEmail }),
-      }
-    );
-    if (res.status === 500) {
-      return {
-        success: false,
-        message: "Something went wrong while sending email",
-      };
-    }
+    const emailTemplate = EmailTemplate({ data: dataToSend });
+    const { data, error } = await resend.emails.send({
+      from: "Heysheet <onboarding@resend.dev>",
+      to: [toEmail],
+      subject: `📥 New Submission on ${dataToSend.form.name}`,
+      react: emailTemplate,
+    });
+    if (error) throw error;
+    console.log("Email send success:", data, dataToSend);
+
     return { success: true, message: "Email has been sent successfully" };
   } catch (error: any) {
     console.log("Error while sending email", error);

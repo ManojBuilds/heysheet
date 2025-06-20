@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { createClient } from "../supabase/server";
 
 interface FormSubmissionData {
-  endpoint: {
+  form: {
     name: string;
     spreadsheet_id: string;
   };
@@ -25,11 +25,8 @@ interface FormSubmissionData {
   };
 }
 
-export async function addAppToASlackChannel(channel: string) {
+export async function addAppToASlackChannel(channel: string, token: string) {
   console.log('channel', channel)
-  const slackData = await getSlackAccountAndNotificationAndToken();
-  const token = await slackData.slack_accounts.slack_token;
-
   const response = await fetch("https://slack.com/api/conversations.join", {
     method: "POST",
     headers: {
@@ -48,10 +45,7 @@ export async function addAppToASlackChannel(channel: string) {
   return data;
 }
 
-export async function listAllSlackChannel() {
-  const slackData = await getSlackAccountAndNotificationAndToken();
-  const token = await slackData.slack_accounts.slack_token;
-
+export async function listAllSlackChannel(token: string) {
   const response = await fetch("https://slack.com/api/conversations.list", {
     method: "GET",
     headers: {
@@ -63,18 +57,18 @@ export async function listAllSlackChannel() {
   const data = await response.json();
 
   if (!data.ok) {
+    console.log(data)
     throw new Error(data.error || "Failed to list channels");
   }
-
   return data.channels;
 }
 
-export async function getSlackAccountAndNotificationAndToken() {
+export async function getSlackAccountToken() {
   const supabase = await createClient();
   const { userId } = await auth();
   const { data, error } = await supabase
-    .from("slack_notifications")
-    .select("*, slack_accounts(*)")
+    .from("slack_accounts")
+    .select("id, slack_token")
     .eq("user_id", userId)
     .single();
   if (error) throw error;
@@ -104,7 +98,7 @@ export async function createFormSubmissionMessage(data: FormSubmissionData) {
         fields: [
           {
             type: "mrkdwn",
-            text: `🗂️ *Form:*\n${data.endpoint.name}`
+            text: `🗂️ *Form:*\n${data.form.name}`
           },
           {
             type: "mrkdwn",
@@ -161,7 +155,7 @@ export async function createFormSubmissionMessage(data: FormSubmissionData) {
         elements: [
           {
             type: "mrkdwn",
-            text: `🔗 <https://docs.google.com/spreadsheets/d/${data.endpoint.spreadsheet_id}|View in Google Sheets> &nbsp;•&nbsp; 🆔 Submission ID: \`${data.submission.id}\``
+            text: `🔗 <https://docs.google.com/spreadsheets/d/${data.form.spreadsheet_id}|View in Google Sheets> &nbsp;•&nbsp; 🆔 Submission ID: \`${data.submission.id}\``
           }
         ]
       },

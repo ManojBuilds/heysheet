@@ -1,33 +1,39 @@
+import { cn } from "@/lib/utils";
 import { FormData } from "@/types/form-builder";
-import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
-const Branding = ({ formData }: { formData: FormData }) => {
+const Branding = ({
+  formData,
+  className,
+}: {
+  formData: FormData;
+  className?: string;
+}) => {
+  const theme = formData.theme;
+
   return (
-    <div className="flex-shrink-0 w-fit mx-auto">
+    <div className={cn("flex-shrink-0 w-fit mx-auto", className)}>
       <Link
-        href={"/"}
+        href={process.env.NEXT_PUBLIC_APP_URL!}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg"
+        aria-label="Build forms with HeySheet"
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 transition-all duration-300 hover:scale-105 hover:shadow-lg !font-main",
+          `rounded-${theme.radius}`,
+        )}
         style={{
-          backgroundColor: formData.theme.backgroundSecondary,
-          border: `1px solid ${formData.theme.borderColor}`,
+          backgroundColor: theme.backgroundSecondary,
+          border: `1px solid ${theme.border}`,
         }}
       >
-        <span
+        <p
           className="text-sm font-medium"
-          style={{ color: formData.theme.textColorSecondary }}
+          style={{ color: theme.textSecondary }}
         >
-          Create forms like this with
-        </span>
-        <div
-          className="flex items-center gap-1.5 font-semibold"
-          style={{ color: formData.theme.primaryColor }}
-        >
-          HeySheet
-         <ExternalLink className="w-5 h-5"/> 
-        </div>
+          Want a form like this?{" "}
+          <span style={{ color: theme.primary }}>Build with HeySheet</span> 🚀
+        </p>
       </Link>
     </div>
   );

@@ -8,7 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Star } from "lucide-react";
+import { Star, Link } from "lucide-react";
+import PhoneInputComponent from "@/components/form-builder/form-components/phone-number"
 
 interface FormComponentPreviewProps {
   component: FormComponent;
@@ -65,8 +66,9 @@ const FormComponentPreview: React.FC<FormComponentPreviewProps> = ({ component, 
       );
     case "email":
       return <Input type="email" {...component.properties} disabled />;
-    case "phone":
-      return <Input type="tel" {...component.properties} disabled />;
+    // case "phone":
+    //   // return <Input type="tel" {...component.properties} disabled />;
+    //   return <PhoneInputComponent />
     case "number":
       return <Input type="number" {...component.properties} disabled />;
     case "date":
@@ -82,6 +84,52 @@ const FormComponentPreview: React.FC<FormComponentPreviewProps> = ({ component, 
             )
           )}
         </div>
+      );
+    case "url":
+      return (
+        <div className="flex w-full items-center space-x-2">
+          <Link className="h-4 w-4 text-muted-foreground" />
+          <Input type="url" placeholder={component.properties.placeholder || "https://example.com"} disabled />
+        </div>
+      );
+    case "heading":
+      return (
+        <h1 
+          className="text-2xl font-bold"
+          style={{ 
+            fontSize: component.properties.fontSize || '1.75rem',
+            textAlign: component.properties.alignment || 'left',
+            color: component.properties.color || 'inherit'
+          }}
+        >
+          {component.title || "Heading"}
+        </h1>
+      );
+    case "subheading":
+      return (
+        <h2 
+          className="text-xl font-semibold"
+          style={{ 
+            fontSize: component.properties.fontSize || '1.25rem',
+            textAlign: component.properties.alignment || 'left',
+            color: component.properties.color || 'inherit'
+          }}
+        >
+          {component.title || "Subheading"}
+        </h2>
+      );
+    case "paragraph":
+      return (
+        <p 
+          className="text-base"
+          style={{ 
+            fontSize: component.properties.fontSize || '1rem',
+            textAlign: component.properties.alignment || 'left',
+            color: component.properties.color || 'inherit'
+          }}
+        >
+          {component.description || "Enter your paragraph text here. This text can be used for instructions, explanations, or any additional information you want to provide to form respondents."}
+        </p>
       );
     // case "file-upload":
     //   return (

@@ -3,15 +3,14 @@ import { google, sheets_v4 } from "googleapis";
 import { getAuthenticatedClient } from "./auth";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "../email";
-import {
-  createFormSubmissionMessage,
-  getSlackAccountAndNotificationAndToken,
-} from "../slack/client";
+import { createFormSubmissionMessage } from "../slack/client";
 import { sendMessage } from "../slack/sendMessage";
+import { FormSubmissionData } from "@/components/email-template";
+import { planLimits } from "../planLimits";
 
 // Get Google Sheets client
 export async function getSheetsClient(
-  googleAccountId: string
+  googleAccountId: string,
 ): Promise<sheets_v4.Sheets> {
   const auth = await getAuthenticatedClient(googleAccountId);
   return google.sheets({ version: "v4", auth });
@@ -20,22 +19,34 @@ export async function getSheetsClient(
 // Create a new Google Sheet
 export async function createSheet(
   googleAccountId: string,
-  title: string,
-  sheetName: string = "Sheet1"
+  userSpreadsheetTitle: string,
+  headers: string[],
 ) {
-  console.log({ title, sheetName });
+  console.log("@createSheet", googleAccountId, userSpreadsheetTitle);
   const sheets = await getSheetsClient(googleAccountId);
-
   const response = await sheets.spreadsheets.create({
     requestBody: {
       properties: {
-        title: title + " By formsync",
+        title: userSpreadsheetTitle,
       },
       sheets: [
         {
           properties: {
-            title: sheetName,
+            title: userSpreadsheetTitle,
           },
+          data: [
+            {
+              startRow: 0,
+              startColumn: 0,
+              rowData: [
+                {
+                  values: headers?.map((header) => ({
+                    userEnteredValue: { stringValue: header },
+                  })),
+                },
+              ],
+            },
+          ],
         },
       ],
     },
@@ -47,7 +58,7 @@ export async function createSheet(
 // Get spreadsheet metadata
 export async function getSpreadsheet(
   googleAccountId: string,
-  spreadsheetId: string
+  spreadsheetId: string,
 ) {
   const sheets = await getSheetsClient(googleAccountId);
 
@@ -61,128 +72,218 @@ export async function getSpreadsheet(
 export async function appendToSheet(
   googleAccountId: string,
   spreadsheetId: string,
-  range: string,
-  values: any[][]
+  sheetName: string,
+  incomingData: Record<string, any>,
 ) {
-  console.log('Adding to sheet')
   const sheets = await getSheetsClient(googleAccountId);
-  try {
-    const response = await sheets.spreadsheets.values.append({
+
+  // Ensure sheet exists
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+  const sheetExists = spreadsheet.data.sheets?.some(
+    (sheet) => sheet.properties?.title === sheetName,
+  );
+
+  if (!sheetExists) {
+    await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
-      range,
-      valueInputOption: "USER_ENTERED",
-      insertDataOption: "INSERT_ROWS",
       requestBody: {
-        values,
+        requests: [
+          {
+            addSheet: {
+              properties: { title: sheetName },
+            },
+          },
+        ],
       },
     });
 
-    return response.data;
-  } catch (error) {
-    console.error("Error appending to sheet:", error);
-    throw error;
+    // Add headers (first row)
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!A1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [Object.keys(incomingData)],
+      },
+    });
   }
+
+  // Get current headers from first row
+  const headersRes = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${sheetName}!1:1`,
+  });
+
+  const currentHeaders: string[] = headersRes.data.values?.[0] || [];
+
+  // Normalize function for header comparison
+  const normalize = (str: string) =>
+    str
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "_")
+      .replace(/_+/g, "_");
+
+  // Build normalizedHeaderMap: normalized → actual
+  const normalizedHeaderMap: Record<string, string> = {};
+  for (const header of currentHeaders) {
+    normalizedHeaderMap[normalize(header)] = header;
+  }
+
+  // Identify and append any missing headers
+  const newKeys = Object.keys(incomingData);
+  const missingKeys = newKeys.filter(
+    (key) => !(normalize(key) in normalizedHeaderMap),
+  );
+
+  if (missingKeys.length > 0) {
+    for (const key of missingKeys) {
+      currentHeaders.push(key);
+      normalizedHeaderMap[normalize(key)] = key;
+    }
+
+    // Update the sheet header row
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!1:1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [currentHeaders],
+      },
+    });
+  }
+
+  // Generate row aligned to currentHeaders order
+  const row = currentHeaders.map((header) => {
+    const normalized = normalize(header);
+    const matchedKey = Object.keys(incomingData).find(
+      (key) => normalize(key) === normalized,
+    );
+    return matchedKey ? incomingData[matchedKey] : "";
+  });
+
+  // Append new row to the sheet
+  const response = await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: sheetName,
+    valueInputOption: "USER_ENTERED",
+    insertDataOption: "INSERT_ROWS",
+    requestBody: {
+      values: [row],
+    },
+  });
+
+  return response.data;
 }
 
-export async function processSubmission(submissionId: string) {
+export async function processSubmission(
+  submissionId: string,
+  formData: object,
+) {
   const supabase = await createClient();
 
   const { data: submission, error: submissionError } = await supabase
     .from("submissions")
     .select(
       `
-    * ,
-    endpoint:endpoint_id (
       *,
-      google_accounts:google_account_id (*)
-    )
-  `
+      form:forms (
+        *,
+        slack_account:slack_accounts (*)
+      )
+    `,
     )
     .eq("id", submissionId)
     .single();
 
-  if (submissionError || !submission?.endpoint) {
-    throw new Error("Submission or endpoint not found");
+  if (submissionError || !submission?.form) {
+    console.error("Submission or form not found", submissionError);
+    throw new Error("Submission or form not found");
   }
 
-  const { endpoint } = submission;
-  const formData = submission.data as Record<string, any>;
+  const { form } = submission;
 
   if (!formData || Object.keys(formData).length === 0) {
     throw new Error("Submission contains no data");
   }
 
+  console.log("@submission", submission);
+
+  // ✅ Fetch user subscription plan
+  const { data: subscriptionData } = await supabase
+    .from("subscriptions")
+    .select("plan")
+    .eq("clerk_user_id", form.user_id)
+    .single();
+
+  const plan = subscriptionData?.plan || "free";
+  const limits = planLimits[plan as keyof typeof planLimits];
+
   try {
-    const values = [Object.values(formData)];
-
-    if (endpoint.header_row) {
-      const { count } = await supabase
-        .from("submissions")
-        .select("id", { count: "exact", head: true })
-        .eq("endpoint_id", endpoint.id)
-        .eq("status", "completed")
-        .single();
-
-      if (count === 0) {
-        values.unshift(Object.keys(formData));
-      }
-    }
-
-    const result = await appendToSheet(
-      endpoint.google_account_id,
-      endpoint.spreadsheet_id,
-      "Sheet1",
-      values
+    // ✅ Append to Google Sheet (always allowed)
+    await appendToSheet(
+      form.google_account_id,
+      form.spreadsheet_id,
+      form.sheet_name,
+      formData,
     );
+    console.log("✅ Added to Google Sheet");
 
-    const rowNumber = result.updates?.updatedRange?.match(/!A(\d+):/)?.[1];
+    const messageData: FormSubmissionData = {
+      form: {
+        name: form.title,
+        spreadsheet_id: form.spreadsheet_id,
+      },
+      submission: {
+        created_at: submission.created_at,
+        data: formData,
+        id: submission.id,
+      },
+      analytics: {
+        referrer: submission.referrer,
+        country: submission.analytics.country,
+        city: submission.analytics.city,
+        timezone: submission.analytics.timezone,
+        deviceType: submission.analytics.device_type,
+        browser: submission.analytics.browser,
+        language: submission.analytics.language,
+        processed_at: submission.created_at,
+        created_at: submission.created_at,
+      },
+    };
 
-    const [emailNotif, slackAccount] = await Promise.all([
-      supabase
-        .from("email_notifications")
-        .select("enabled, email")
-        .eq("user_id", endpoint.user_id)
-        .single(),
-      getSlackAccountAndNotificationAndToken(),
-    ]);
-
-    await supabase
-      .from("submissions")
-      .update({
-        status: "completed",
-        sheet_row_number: rowNumber ? parseInt(rowNumber) : null,
-        processed_at: new Date().toISOString(),
-      })
-      .eq("id", submissionId);
-
-    if (slackAccount?.enabled && slackAccount.slack_accounts) {
-      const messagePayload = await createFormSubmissionMessage({
-        endpoint: {
-          name: endpoint.name,
-          spreadsheet_id: endpoint.spreadsheet_id,
-        },
-        submission: {
-          created_at: submission.created_at,
-          data: submission.data,
-          id: submission.id,
-        },
-        analytics: { ...submission },
-      });
-      sendMessage(slackAccount.slack_channel, messagePayload).catch(
-        console.error
-      );
+    // ✅ Send Slack notification (only if plan allows + properly configured)
+    if (
+      limits.features.slackIntegration &&
+      form.slack_enabled &&
+      form.slack_channel &&
+      form.slack_account
+    ) {
+      console.log("📤 Sending Slack message...", messageData);
+      const messagePayload = await createFormSubmissionMessage(messageData);
+      await sendMessage(
+        form.slack_channel,
+        messagePayload,
+        form.slack_account.slack_token,
+      ).catch(console.error);
     }
 
-    if (emailNotif.data?.enabled && emailNotif.data?.email) {
-      sendEmail({
-        data: submission.data,
-        toEmail: emailNotif.data.email,
+    // ✅ Send Email notification (only if plan allows + configured)
+    if (
+      limits.features.emailAlerts &&
+      form.email_enabled &&
+      form.notification_email
+    ) {
+      console.log("📤 Sending Email...", messageData);
+      await sendEmail({
+        dataToSend: messageData,
+        toEmail: form.notification_email,
       }).catch(console.error);
     }
 
-    return { success: true, rowNumber };
+    console.log("✅ Submission processed successfully");
+    return { success: true };
   } catch (error: any) {
-    console.error("Error processing submission:", error);
+    console.error("❌ Error processing submission:", error);
     throw error;
   }
 }
@@ -219,7 +320,7 @@ export async function getExistingSheets(googleAccountId: string) {
 
 export async function getSheetTabs(
   googleAccountId: string,
-  spreadsheetId: string
+  spreadsheetId: string,
 ) {
   const sheets = await getSheetsClient(googleAccountId);
   const response = await sheets.spreadsheets.get({

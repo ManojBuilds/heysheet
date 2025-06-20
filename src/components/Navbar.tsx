@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { UserButton, SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Plus, PlusCircle, RefreshCw, Settings } from "lucide-react";
-import NewEndpointForm from "./NewEndpointFormModal";
-import { ConnectToSlackBtn } from "./connect-to-slack-button";
+import { Logo } from "./Logo";
+// import NewEndpointForm from "./NewEndpointFormModal";
+// import { ConnectToSlackBtn } from "./connect-to-slack-button";
+// import { ModeToggle } from "./toggle-mode";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -19,18 +21,17 @@ export default function Navbar() {
   return (
     <header className="border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <div className="relative flex items-center">
-              <RefreshCw className="h-5 w-5 text-[#0F9D58]" />{" "}
-              {/* Google Sheets green color */}
-            </div>
-            <span className="font-heading">FormSync</span>
-          </Link>
-        </div>
+        <Logo />
 
         <div className="flex items-center gap-4">
           <nav className="hidden md:flex">
+            <a
+              href="https://heysheet.mintlify.app/"
+              className={buttonVariants({ variant: "link" })}
+              target="_blank"
+            >
+              Docs
+            </a>
             <SignedIn>
               <Link
                 href="/dashboard"
@@ -43,19 +44,6 @@ export default function Navbar() {
                 className={buttonVariants({ variant: "link" })}
               >
                 Manage Plan
-              </Link>
-              <Link
-                href="/settings"
-                className={buttonVariants({ variant: "link" })}
-              >
-                <Settings />
-                Settings
-              </Link>
-              <Link
-                href="/form-builder"
-                className={buttonVariants({ variant: "link" })}
-              >
-                Form Builder
               </Link>
             </SignedIn>
             <SignedOut>
@@ -77,15 +65,9 @@ export default function Navbar() {
             </SignedOut>
           </nav>
           <SignedIn>
-            <Link
-              href={"/endpoints/new"}
-              className={buttonVariants({ variant: "default" })}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Create new endpoint
-            </Link>
             <UserButton />
           </SignedIn>
+          {/* <ModeToggle/> */}
         </div>
       </div>
     </header>

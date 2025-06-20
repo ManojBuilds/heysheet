@@ -16,21 +16,18 @@ const SuccessPageSettings = ({
       <div className="space-y-2">
         <Label>Success Page Title</Label>
         <Input
-          value={formData.successPage?.title || "Thanks for your submission!"}
+          value={formData.successPage?.title}
           onChange={(e) => updateSuccessPage({ title: e.target.value })}
-          placeholder="Enter success page title"
+          placeholder="Thanks for your submission!"
         />
       </div>
 
       <div className="space-y-2">
         <Label>Description</Label>
         <Textarea
-          value={
-            formData.successPage?.description ||
-            "Your response has been recorded."
-          }
+          value={formData.successPage?.description}
           onChange={(e) => updateSuccessPage({ description: e.target.value })}
-          placeholder="Enter success message"
+          placeholder="Your response has been recorded."
           className="min-h-[100px]"
         />
       </div>

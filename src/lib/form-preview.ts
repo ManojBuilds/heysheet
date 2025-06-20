@@ -1,9 +1,10 @@
 import { FormComponent, FormPage } from "@/types/form-builder";
 import { z } from "zod";
 
+// TODO: Add support for nested objects
 export const getZodSchemasByPage = (
   pages: FormPage[],
-  fields: FormComponent[]
+  fields: FormComponent[],
 ): Record<string, z.ZodObject<any>> => {
   const result: Record<string, z.ZodObject<any>> = {};
 
@@ -13,11 +14,16 @@ export const getZodSchemasByPage = (
 
     for (const field of pageFields) {
       const { name, type, title, required, properties } = field;
+
+      // Skip layout-only components
+      if (["heading", "subheading", "paragraph"].includes(type)) continue;
+
       let schema: z.ZodTypeAny;
 
       switch (type) {
         case "short-text":
         case "long-text":
+        case "address":
           schema = required
             ? z.string().min(1, `${title} is required`)
             : z.string().optional();
@@ -80,8 +86,22 @@ export const getZodSchemasByPage = (
           break;
         }
 
+        case "file":
+          schema = required
+            ? z
+                .array(z.string().url("Invalid file URL"))
+                .min(1, `${title} is required`)
+            : z.array(z.string().url()).optional();
+          break;
+
+        case "url":
+          schema = required
+            ? z.string().url("Invalid URL")
+            : z.string().url().optional();
+          break;
+
         default:
-          schema = z.any();
+          schema = z.any(); // fallback for unknown types
       }
 
       shape[name] = schema;

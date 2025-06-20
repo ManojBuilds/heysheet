@@ -2,10 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { google } from 'googleapis';
 
-// Google OAuth scopes needed for Sheets API
+// Google OAuth scopes needed for Sheets API and Drive Picker
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/drive.readonly',
   'email',
   'profile',
 ];
@@ -13,7 +14,7 @@ const SCOPES = [
 // Create OAuth2 client
 function getOAuth2Client(redirectUri?: string) {
   return new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID!,
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
     process.env.GOOGLE_CLIENT_SECRET!,
     redirectUri
   );
@@ -21,7 +22,7 @@ function getOAuth2Client(redirectUri?: string) {
 
 // Generate Google OAuth URL
 export function getGoogleAuthUrl(redirectUri: string, state: string) {
-  const oauth2Client = getOAuth2Client(redirectUri);
+  const oauth2Client =getOAuth2Client(redirectUri);
   
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
@@ -31,7 +32,7 @@ export function getGoogleAuthUrl(redirectUri: string, state: string) {
   });
 }
 
-// Exchange code for tokens
+// awaitExchange code for tokens
 export async function getGoogleTokens(code: string, redirectUri: string) {
   const oauth2Client = getOAuth2Client(redirectUri);
   
@@ -133,11 +134,13 @@ export async function handleGoogleCallback(userId: string, code: string, redirec
     await saveGoogleAccount(userId, tokenData, userInfo);
     
     // Redirect to dashboard
-    return redirect('/dashboard?google_connected=true');
-  } catch (error) {
+    // return redirect('/dashboard?google_connected=true');
+    return {success: true}
+  } catch (error: any) {
     console.error('Error handling Google callback:', error);
-    return redirect('/dashboard?error=google_connection_failed');
+    throw error;
   }
+  
 }
 
 // Get authenticated OAuth2 client for a user

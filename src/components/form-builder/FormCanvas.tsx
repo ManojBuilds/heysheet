@@ -1,18 +1,11 @@
 import React, { SetStateAction, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   FormComponent,
-  FormComponentType,
   FormTheme,
   FormPage,
   FormData,
 } from "@/types/form-builder";
 import { Button } from "@/components/ui/button";
-import { Trash, Edit, MoveVertical } from "lucide-react";
-import { toast } from "sonner";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import FormComponentPreview from "./FormComponentPreview";
-import DropZone from "./Dropzone";
 import PageTabs from "./PageTabs";
 import PageComponentCard from "./PageComponentCard";
 import {
@@ -31,7 +24,8 @@ import {
   useDroppable,
   DragEndEvent,
 } from "@dnd-kit/core";
-import ComponentSettingsSidebar from "./ComponentSettingsSidebar";
+import { Separator } from "../ui/separator";
+import { SPREADSHEET_TEMPLATES } from "@/lib/spreadsheet-templates";
 
 interface FormCanvasProps {
   components: FormComponent[];
@@ -43,7 +37,8 @@ interface FormCanvasProps {
   onAddPage: () => void;
   onChangePage: (pageId: string) => void;
   onUpdateFormData: React.Dispatch<SetStateAction<FormData>>;
-  onRemovePage: (pageId: string)=>void;
+  onRemovePage: (pageId: string) => void;
+  formId: string;
 }
 
 const FormCanvas: React.FC<FormCanvasProps> = ({
@@ -56,7 +51,8 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
   onAddPage,
   onChangePage,
   onUpdateFormData,
-  onRemovePage
+  onRemovePage,
+  formId,
 }) => {
   const { setNodeRef } = useDroppable({
     id: "form-canvas",
@@ -69,18 +65,17 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Filter components for the current page
   const pageComponents = components.filter(
-    (c) => c.pageId === activePage || !c.pageId
+    (c) => c.pageId === activePage || !c.pageId,
   );
 
   const handleDeleteComponent = (id: string) => {
     const newComponents = components.filter((c) => c.id !== id);
     onUpdateComponents(newComponents);
-    toast.success("Component deleted!");
   };
 
   const handleOpenSettings = (component: FormComponent) => {
@@ -88,7 +83,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     setIsDrawerOpen(true);
     onEditComponent(component);
   };
-
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -98,13 +92,13 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
     if (active.id !== over?.id) {
       onUpdateFormData((formData) => {
         const oldIndex = formData.components.findIndex(
-          (c) => c.id === active.id
+          (c) => c.id === active.id,
         );
         const newIndex = formData.components.findIndex((c) => c.id === over.id);
         const newComponents = arrayMove(
           formData.components,
           oldIndex,
-          newIndex
+          newIndex,
         );
         return { ...formData, components: newComponents };
       });
@@ -112,7 +106,6 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
   }
   return (
     <div className="flex">
-      {/* Main Form Canvas */}
       <div className="flex-1">
         <div className="flex flex-col w-full">
           <PageTabs
@@ -121,8 +114,8 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
             onChangePage={onChangePage}
             onAddPage={onAddPage}
             onRemovePage={onRemovePage}
+            onClearAllPage={() => onUpdateComponents([])}
           />
-
           <div ref={setNodeRef} className="min-h-44">
             <DndContext
               sensors={sensors}
@@ -138,13 +131,16 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                     key={`${component.id}`}
                     component={component}
                     onEditSettings={() => handleOpenSettings(component)}
-                    onDeleteComponent={() => handleDeleteComponent(component.id)}
+                    onDeleteComponent={() =>
+                      handleDeleteComponent(component.id)
+                    }
                     theme={theme}
                     currentComponent={currentComponent}
+                    formId={formId}
                   />
                 ))}
-                {
-                  pageComponents.length === 0 && (
+                {pageComponents.length === 0 && (
+                  <div className="space-y-2 max-w-4xl mx-auto">
                     <div
                       aria-label="Drag and drop form component here"
                       className="h-52 w-full border-2 border-dashed flex flex-col items-center justify-center gap-3 bg-muted/50 shadow-inner transition-colors"
@@ -153,20 +149,40 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                         Drag and drop form elements here
                       </h3>
                       <p className="text-sm text-muted-foreground text-center max-w-xs">
-                        Start building your form by dragging components from the sidebar. You can rearrange them anytime.
+                        Start building your form by dragging components from the
+                        sidebar. You can rearrange them anytime.
                       </p>
                     </div>
-                  )
-                }
+                    <div className="flex items-center gap-2 text-muted-foreground justify-center">
+                      OR Start with a template
+                    </div>
+                    <div className="space-y-2 flex flex-col max-w-sm mx-auto">
+                      {Object.keys(SPREADSHEET_TEMPLATES).map((title) => (
+                        <Button
+                          key={title}
+                          variant={"secondary"}
+                          className="border-dashed"
+                          onClick={() => {
+                            onUpdateComponents(
+                              SPREADSHEET_TEMPLATES[
+                                title as keyof typeof SPREADSHEET_TEMPLATES
+                              ].builderConfig.components as FormComponent[],
+                            );
+                          }}
+                        >
+                          {title}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </SortableContext>
             </DndContext>
           </div>
         </div>
       </div>
-     
     </div>
   );
 };
-
 
 export default FormCanvas;

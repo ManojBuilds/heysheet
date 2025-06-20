@@ -68,7 +68,7 @@ const RichTextEditor = ({ value, onChange, theme }: RichTextEditorProps) => {
 
       <EditorContent 
         editor={editor} 
-        className="p-4 min-h-[200px] prose prose-sm max-w-none focus:outline-none"
+        className="p-4 min-h-[200px] max-w-none focus:outline-none"
       />
 
       {editor && (

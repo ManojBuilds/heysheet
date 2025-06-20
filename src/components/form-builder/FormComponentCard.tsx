@@ -13,6 +13,11 @@ import {
   Upload,
   CircleCheck,
   Search,
+  File,
+  Link,
+  Heading,
+  Heading2,
+  AlignLeft
 } from "lucide-react";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -32,6 +37,11 @@ const iconMap: Record<string, React.ReactNode> = {
   calendar: <Calendar className="h-5 w-5" />,
   star: <Star className="h-5 w-5" />,
   upload: <Upload className="h-5 w-5" />,
+  file: <File className="h-5 w-5" />,
+  link: <Link className="h-5 w-5" />,
+  heading: <Heading className="h-5 w-5" />,
+  "heading-2": <Heading2 className="h-5 w-5" />,
+  "align-left": <AlignLeft className="h-5 w-5" />,
 };
 
 const FormComponentCard = ({ type, label, icon }: FormComponentCardProps) => {

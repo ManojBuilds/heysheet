@@ -1,15 +1,20 @@
-
-export type FormComponentType = 
-  | 'short-text'
-  | 'long-text'
-  | 'multiple-choice'
-  | 'single-choice'
-  | 'dropdown'
-  | 'email'
-  | 'phone'
-  | 'number'
-  | 'date'
-  | 'rating'
+export type FormComponentType =
+  | "short-text"
+  | "long-text"
+  | "multiple-choice"
+  | "single-choice"
+  | "dropdown"
+  | "email"
+  | "phone"
+  | "number"
+  | "date"
+  | "rating"
+  | "file"
+  | "url"
+  | "heading"
+  | "subheading"
+  | "paragraph"
+  | "address";
 
 export interface FormComponent {
   id: string;
@@ -17,24 +22,28 @@ export interface FormComponent {
   title: string;
   description?: string;
   required: boolean;
-  name: string
+  name: string;
   properties: Record<string, any>;
   pageId?: string;
 }
 
-
 export interface FormTheme {
-  id: string;
-  name: string;
-  primaryColor: string;         // Main action color
-  secondaryColor: string;       // Secondary actions/hover states
-  accentColor: string;         // Highlights and accents
-  backgroundColor: string;      // Main background
-  backgroundSecondary: string;  // Secondary background (cards, sections)
-  textColor: string;           // Primary text
-  textColorSecondary: string;  // Secondary/muted text
-  borderColor: string;         // Borders and dividers
-  errorColor: string;          // Error states
+  primary: string;
+  primaryForeground: string;
+  primaryHover: string;
+  accent: string;
+  accentForeground: string;
+  muted: string;
+  mutedForeground: string;
+  background: string;
+  backgroundSecondary: string;
+  text: string;
+  textSecondary: string;
+  border: string;
+  font: string;
+  radius: string;
+  mode: "light" | "dark";
+  error: string;
 }
 
 export interface FormPage {
@@ -45,7 +54,7 @@ export interface FormPage {
 export interface SuccessPage {
   title: string;
   description: string;
-  customContent?: string
+  customContent?: string;
 }
 
 export interface FormData {
@@ -56,5 +65,11 @@ export interface FormData {
   components: FormComponent[];
   pages: FormPage[];
   activePage: string;
-  successPage: SuccessPage
+  successPage: SuccessPage;
+}
+
+export interface TopFormsAnalyticsData {
+  id: string;
+  title: string;
+  submission_count: number;
 }

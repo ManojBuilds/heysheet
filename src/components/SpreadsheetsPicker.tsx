@@ -1,60 +1,73 @@
-import React, { useEffect } from "react";
+"use client";
+import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
 import { Button } from "./ui/button";
+import useDrivePicker from "react-google-drive-picker";
+import {
+  CallbackDoc,
+  PickerCallback,
+} from "react-google-drive-picker/dist/typeDefs";
+import { FileSpreadsheet, Loader2 } from "lucide-react";
+import { useState } from "react";
 
-declare global {
-  interface Window {
-    gapi: any;
-    google: any;
-  }
-}
-
-interface SpreadsheetPickerProps {
-  googleAccountId: string;
-  oauthToken: string; // You must fetch this from your backend for the user
-  onPicked: (spreadsheet: { id: string; name: string }) => void;
-}
-
-export const SpreadsheetPicker: React.FC<SpreadsheetPickerProps> = ({
-  googleAccountId,
-  oauthToken,
+const SpreadsheetsPicker = ({
   onPicked,
+  selectedSheet,
+}: {
+  onPicked: (data: PickerCallback) => void;
+  selectedSheet: CallbackDoc | null;
 }) => {
-    console.log("apiKey",process.env.NEXT_PUBLIC_GOOGLE_API_KEY)
-  useEffect(() => {
-    // Load the Google Picker script
-    const script = document.createElement("script");
-    script.src = "https://apis.google.com/js/api.js";
-    script.onload = () => {
-      window.gapi.load("picker", { callback: () => {} });
-    };
-    document.body.appendChild(script);
-  }, []);
+  const { selectedAccount } = useGoogleAccountsStore();
+  const [openPicker, authResponse] = useDrivePicker();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const openPicker = () => {
-    if (!window.gapi?.picker) return;
-
-    const view = new window.google.picker.DocsView(window.google.picker.ViewId.SPREADSHEETS)
-      .setMimeTypes("application/vnd.google-apps.spreadsheet")
-      .setSelectFolderEnabled(false);
-
-    const picker = new window.google.picker.PickerBuilder()
-      .addView(view)
-      .setOAuthToken(oauthToken)
-      .setDeveloperKey(process.env.NEXT_PUBLIC_GOOGLE_API_KEY) // Set your API key
-      .setCallback((data: any) => {
-        if (data.action === window.google.picker.Action.PICKED) {
-          const doc = data.docs[0];
-          onPicked({ id: doc.id, name: doc.name });
-        }
-      })
-      .build();
-
-    picker.setVisible(true);
+  const handleOpenPicker = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      openPicker({
+        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+        developerKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
+        viewId: "SPREADSHEETS",
+        token: selectedAccount?.access_token,
+        showUploadView: true,
+        showUploadFolders: false,
+        supportDrives: true,
+        multiselect: false,
+        callbackFunction: (data) => {
+          if (data.action === "cancel") {
+            setIsLoading(false);
+            return;
+          }
+          onPicked(data);
+          setIsLoading(false);
+        },
+      });
+    } catch (err) {
+      setError("Failed to open Google Drive Picker.");
+      setIsLoading(false);
+    }
   };
 
   return (
-    <Button type="button" onClick={openPicker}>
-      Pick a Google Spreadsheet
-    </Button>
+    <div>
+      <Button
+        type="button"
+        onClick={handleOpenPicker}
+        className="w-full"
+        leftIcon={
+          isLoading ? <Loader2 className="animate-spin" /> : <FileSpreadsheet />
+        }
+        variant={"secondary"}
+        disabled={isLoading}
+      >
+        {selectedSheet ? selectedSheet.name : "Pick an existing spreadsheet"}
+      </Button>
+      {error && (
+        <div className="text-red-500 text-sm mt-2">{error}</div>
+      )}
+    </div>
   );
 };
+
+export default SpreadsheetsPicker;

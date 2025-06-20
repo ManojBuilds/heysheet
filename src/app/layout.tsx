@@ -1,22 +1,20 @@
 import type { Metadata } from "next";
-import {
-  Plus_Jakarta_Sans,
-  Bricolage_Grotesque,
-} from "next/font/google";
+import { Outfit, Pacifico } from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/Provider";
 import { Toaster } from "sonner";
 import NextTopLoader from "nextjs-toploader";
+import { ThemeProvider } from "@/components/theme-provider";
+import UpgradeModal from "@/components/UpgradeModal";
 
-const sans = Plus_Jakarta_Sans({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
   subsets: ["latin"],
 });
 
-const grotesque = Bricolage_Grotesque({
-  variable: "--font-grotesque",
-
+const pacifico = Pacifico({
   subsets: ["latin"],
+  variable: "--font-pacifico",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -34,35 +32,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Provider>
-      <html lang="en">
-        <body
-          className={`${sans.variable} ${grotesque.variable}  antialiased`}
-        >
-          <main>{children}</main>
-          <Toaster
-            className="!font-main"
-            closeButton
-            expand={false}
-            position="top-center"
-          />
-          <NextTopLoader
-            color="#2299DD"
-            initialPosition={0.08}
-            crawlSpeed={200}
-            height={3}
-            crawl={true}
-            showSpinner={false}
-            easing="ease"
-            speed={200}
-            shadow="0 0 10px #2299DD,0 0 5px #2299DD"
-            template='<div class="bar" role="bar"><div class="peg"></div></div> 
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${outfit.className} ${pacifico.variable} antialiased`}>
+        <Provider>
+          <ThemeProvider>
+            <main>{children}</main>
+            <UpgradeModal />
+            <Toaster
+              className="!font-main"
+              closeButton
+              expand={false}
+              position="top-center"
+            />
+            <NextTopLoader
+              color="#2299DD"
+              initialPosition={0.08}
+              crawlSpeed={200}
+              height={3}
+              crawl={true}
+              showSpinner={false}
+              easing="ease"
+              speed={200}
+              shadow="0 0 10px #2299DD,0 0 5px #2299DD"
+              template='<div class="bar" role="bar"><div class="peg"></div></div> 
   <div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
-            zIndex={1600}
-            showAtBottom={false}
-          />
-        </body>
-      </html>
-    </Provider>
+              zIndex={1600}
+              showAtBottom={false}
+            />
+          </ThemeProvider>
+        </Provider>
+      </body>
+    </html>
   );
 }
