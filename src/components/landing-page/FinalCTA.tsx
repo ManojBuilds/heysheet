@@ -24,19 +24,12 @@ const FinalCTA = () => {
         </div>
 
         <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-8 leading-tight">
-          <span className="bg-gradient-to-br from-zinc-100 via-zinc-200 to-zinc-300 bg-clip-text text-transparent">
-            Start building forms that sync
-          </span>
-          <br />
-          <span className="bg-gradient-to-r from-green-400 via-emerald-400 to-green-500 bg-clip-text text-transparent">
-            with Sheets — in minutes
-          </span>
+            Start collecting submissions in minutes
         </h2>
 
         <p className="text-xl text-zinc-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-          Join thousands of makers who&apos;ve ditched complex form builders for
-          something that just works. Start collecting data that matters, right
-          where you need it.
+Create your form, share the link, and see the responses in Google Sheets instantly
+          
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -45,7 +38,7 @@ const FinalCTA = () => {
             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-12 py-6 text-xl font-semibold shadow-xl shadow-green-500/25 transition-all duration-300 hover:shadow-green-500/40 hover:scale-105 border-0"
             onClick={handleStartBuilding}
           >
-            Start Building Now
+            Try Heysheet Free
             <ArrowRight className="ml-2 h-6 w-6" />
           </Button>
         </div>

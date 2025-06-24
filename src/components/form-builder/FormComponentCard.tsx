@@ -1,31 +1,20 @@
 "use client";
+import useSubscription from "@/hooks/useSubscription";
 import { FormComponentType } from "@/types/form-builder";
 import { useDraggable } from "@dnd-kit/core";
 import {
-  Text,
-  Check,
-  ChevronDown,
-  Mail,
-  Phone,
-  Hash,
-  Calendar,
-  Star,
-  Upload,
-  CircleCheck,
-  Search,
-  File,
-  Link,
-  Heading,
-  Heading2,
-  AlignLeft
+  Text, Check, ChevronDown, Mail, Phone, Hash, Calendar, Star,
+  Upload, CircleCheck, File, Link, Heading, Heading2, AlignLeft, Lock
 } from "lucide-react";
-import { CSS } from "@dnd-kit/utilities";
 
 interface FormComponentCardProps {
   type: FormComponentType;
   label: string;
   icon: string;
+  isPaid?: boolean;
+  isDisabled?: boolean; // 💡 Add this
 }
+
 const iconMap: Record<string, React.ReactNode> = {
   text: <Text className="h-5 w-5" />,
   check: <Check className="h-5 w-5" />,
@@ -44,28 +33,45 @@ const iconMap: Record<string, React.ReactNode> = {
   "align-left": <AlignLeft className="h-5 w-5" />,
 };
 
-const FormComponentCard = ({ type, label, icon }: FormComponentCardProps) => {
+const FormComponentCard = ({
+  type,
+  label,
+  icon,
+  isPaid,
+  isDisabled,
+}: FormComponentCardProps) => {
+  const {data: subscription} = useSubscription()
   const { setNodeRef, listeners, attributes, transform } = useDraggable({
     id: type,
+    disabled: isDisabled, 
   });
+
   const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined;
+
   return (
     <div
-      key={type}
       ref={setNodeRef}
-      {...listeners}
+      {...(!isDisabled ? listeners : {})}
       {...attributes}
-      className={`flex items-center gap-2 p-2 rounded border border-border hover:bg-muted cursor-grab transition-colors`}
       style={style}
+      className={`flex items-center justify-between p-2 rounded border border-border transition-colors
+        ${isDisabled ? "opacity-60 cursor-not-allowed" : "hover:bg-muted cursor-grab"}`}
     >
-      <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
-        {iconMap[icon]}
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+          {iconMap[icon]}
+        </div>
+        <span className="text-sm">{label}</span>
       </div>
-      <span className="text-sm">{label}</span>
+
+      {isPaid && !(subscription?.plan) && (
+        <div className="flex items-center gap-1 text-xs bg-yellow-300 text-black px-2 py-0.5 rounded-full font-medium">
+          <Lock className="w-3 h-3" />
+          Pro
+        </div>
+      )}
     </div>
   );
 };

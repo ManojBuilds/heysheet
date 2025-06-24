@@ -6,6 +6,7 @@ import Pricing from "@/components/landing-page/Pricing";
 import FAQ from "@/components/landing-page/FAQ";
 import FinalCTA from "@/components/landing-page/FinalCTA";
 import Footer from "@/components/Footer";
+import UseCases from "@/components/landing-page/UseCases";
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <Hero />
       <Features />
       <HowItWorks />
+      <UseCases/>
       <Pricing />
       <FAQ />
       <FinalCTA />

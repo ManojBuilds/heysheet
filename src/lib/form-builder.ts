@@ -5,6 +5,7 @@ export const FORM_COMPONENT_TYPES: {
   label: string;
   icon: string;
   content?: string;
+  isPaid?: boolean;
 }[] = [
   { type: "short-text", label: "Short Text", icon: "text" },
   { type: "long-text", label: "Long Text", icon: "text" },
@@ -16,7 +17,7 @@ export const FORM_COMPONENT_TYPES: {
   { type: "number", label: "Number", icon: "hash" },
   { type: "date", label: "Date", icon: "calendar" },
   { type: "rating", label: "Rating", icon: "star" },
-  { type: "file", label: "File Upload", icon: "file" },
+  { type: "file", label: "File Upload", icon: "file", isPaid: true },
   { type: "url", label: "URL Input", icon: "link" },
   {
     type: "heading",

@@ -28,6 +28,7 @@ import { generateTheme } from "@/lib/theme";
 import { getDefaultProperties } from "./form-preview/RenderComponentInput";
 import SuccessPreview from "./form-preview/SuccessPreview";
 import { useAuth } from "@clerk/nextjs";
+import useSubscription from "@/hooks/useSubscription";
 
 async function fetchFormByFormId(formId: string) {
   const supabase = createClient();
@@ -73,6 +74,7 @@ async function upsertForm(formData: FormData & { formId: string }) {
 const FormBuilder = ({ formId }: { formId: string }) => {
   const router = useRouter();
   const { userId } = useAuth();
+  const {data: subscription} = useSubscription()
   const defaultPageId = "page-1";
   const [formData, setFormData] = useState<FormData>({
     activePage: defaultPageId,
@@ -167,10 +169,6 @@ const FormBuilder = ({ formId }: { formId: string }) => {
     router.push("/dashboard");
   }
 
-  if (existingForm?.user_id && existingForm.user_id === userId) {
-    router.push("/");
-  }
-
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
   };
@@ -243,6 +241,10 @@ const FormBuilder = ({ formId }: { formId: string }) => {
       (c) => c.type === formElementId,
     );
     if (!component) return;
+    if(component.isPaid && !subscription?.plan){
+      toast.warning("Please upgrade your plan to use this feature!")
+      return;
+    }
 
     const typeCount =
       formData.components.filter((c) => c.type === formElementId).length + 1;

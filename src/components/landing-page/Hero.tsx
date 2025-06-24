@@ -33,11 +33,11 @@ const Hero = () => {
         {/* Main headline with gradient text */}
         <h1 className="text-4xl sm:text-6xl font-bold mb-6 leading-tight">
           <span className="bg-gradient-to-br from-zinc-100 via-zinc-200 to-zinc-300 bg-clip-text text-transparent">
-            No Code form backend for
+            Build Forms. Collect Responses.
           </span>
           <br />
           <span className="bg-gradient-to-r from-green-400 via-emerald-400 to-green-500 bg-clip-text text-transparent">
-            Google Sheets.
+            All in Google Sheets.
           </span>
           <br />
           <span className="bg-gradient-to-br from-zinc-100 via-zinc-200 to-zinc-300 bg-clip-text text-transparent">
@@ -47,8 +47,7 @@ const Hero = () => {
 
         {/* Subheadline */}
         <p className="text-xl text-zinc-400 mb-12 max-w-xl mx-auto leading-relaxed">
-          HeySheet lets you build beautiful forms that update your spreadsheets
-          in real time. No complex integrations, no delays.
+          Heysheet is the easiest way to turn Google Sheets into a form backend. Create forms in minutes with drag-and-drop builder and get instant submissions—no coding required.
         </p>
 
         {/* CTA buttons */}

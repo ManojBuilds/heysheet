@@ -1,28 +1,12 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Text,
-  Check,
-  ChevronDown,
-  Mail,
-  Phone,
-  Hash,
-  Calendar,
-  Star,
-  Upload,
-  CircleCheck,
-  Search,
-  Link,
-  Heading,
-  Heading2,
-  AlignLeft,
-  File,
+  Search
 } from "lucide-react";
 import { FORM_COMPONENT_TYPES } from "@/lib/form-builder";
-import { FormComponentType } from "@/types/form-builder";
 import { Input } from "@/components/ui/input";
-import { DragOverlay, useDraggable } from "@dnd-kit/core";
+import { DragOverlay } from "@dnd-kit/core";
 import FormComponentCard from "./FormComponentCard";
+import useSubscription from "@/hooks/useSubscription";
 
 interface FormComponentsSidebarProps {
   activeId: string | null;
@@ -31,6 +15,7 @@ interface FormComponentsSidebarProps {
 const FormComponentsSidebar: React.FC<FormComponentsSidebarProps> = ({
   activeId,
 }) => {
+  const { data: subscription } = useSubscription()
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredComponents = FORM_COMPONENT_TYPES.sort((a, b) =>
@@ -63,7 +48,11 @@ const FormComponentsSidebar: React.FC<FormComponentsSidebarProps> = ({
         <div className="grid grid-cols-1 gap-2">
           {filteredComponents.length > 0 ? (
             filteredComponents.map((component) => (
-              <FormComponentCard key={component.type} {...component} />
+              <FormComponentCard
+                key={component.type}
+                {...component}
+                isPaid={component.isPaid}
+                isDisabled={component.isPaid && (!subscription?.plan)} />
             ))
           ) : (
             <div className="text-center py-4 text-muted-foreground">
@@ -75,10 +64,11 @@ const FormComponentsSidebar: React.FC<FormComponentsSidebarProps> = ({
 
       {/* Drag Overlay outside scrollable container */}
       <DragOverlay>
-        {activeId && activeDraggingFormComponent ? (
+        {activeId && activeDraggingFormComponent && !(activeDraggingFormComponent.isPaid && (subscription?.plan) ) ? (
           <FormComponentCard {...activeDraggingFormComponent} />
         ) : null}
       </DragOverlay>
+
     </div>
   );
 };
