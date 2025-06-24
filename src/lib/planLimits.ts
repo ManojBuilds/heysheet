@@ -1,7 +1,7 @@
 export const planLimits = {
   free: {
-    maxForms: 2,
-    maxSubmissions: 50,
+    maxForms: 1,
+    maxSubmissions: 1,
     maxFileSizeMB: 0,
     features: {
       slackIntegration: false,
@@ -12,8 +12,8 @@ export const planLimits = {
   },
   starter: {
     maxForms: Infinity,
-    maxSubmissions: 5000,
-    maxFileSizeMB: 50,
+    maxSubmissions: 3000,
+    maxFileSizeMB: 10,
     features: {
       slackIntegration: true,
       emailAlerts: true,
@@ -23,8 +23,8 @@ export const planLimits = {
   },
   pro: {
     maxForms: Infinity,
-    maxSubmissions: 10000,
-    maxFileSizeMB: 100,
+    maxSubmissions: 100,
+    maxFileSizeMB: 10,
     features: {
       slackIntegration: true,
       emailAlerts: true,
@@ -33,7 +33,6 @@ export const planLimits = {
     },
   },
 } as const;
-
 
 export const PLANS = [
   {

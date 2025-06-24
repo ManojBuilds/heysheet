@@ -15,40 +15,6 @@ import { getGoogleAccounts } from "@/actions";
 import AllowGooglePermissions from "@/components/AllowGooglePermissions";
 import { getGoogleAuthUrl } from "@/lib/google/auth";
 
-const chartConfigs = {
-  browsers: {
-    value: { label: "Submissions" },
-    chrome: { label: "Chrome", color: "hsl(var(--chart-1))" },
-    safari: { label: "Safari", color: "hsl(var(--chart-2))" },
-    firefox: { label: "Firefox", color: "hsl(var(--chart-3))" },
-    edge: { label: "Edge", color: "hsl(var(--chart-4))" },
-    other: { label: "Other", color: "hsl(var(--chart-5))" },
-  },
-  devices: {
-    value: { label: "Users" },
-    desktop: { label: "Desktop", color: "hsl(var(--chart-1))" },
-    mobile: { label: "Mobile", color: "hsl(var(--chart-2))" },
-    tablet: { label: "Tablet", color: "hsl(var(--chart-3))" },
-  },
-  os: {
-    value: { label: "Sessions" },
-    windows: { label: "Windows", color: "hsl(var(--chart-1))" },
-    macos: { label: "macOS", color: "hsl(var(--chart-2))" },
-    linux: { label: "Linux", color: "hsl(var(--chart-3))" },
-    android: { label: "Android", color: "hsl(var(--chart-4))" },
-    ios: { label: "iOS", color: "hsl(var(--chart-5))" },
-  },
-  countries: {
-    value: { label: "Visitors" },
-    us: { label: "United States", color: "hsl(var(--chart-1))" },
-    uk: { label: "United Kingdom", color: "hsl(var(--chart-2))" },
-    canada: { label: "Canada", color: "hsl(var(--chart-3))" },
-    germany: { label: "Germany", color: "hsl(var(--chart-4))" },
-    france: { label: "France", color: "hsl(var(--chart-5))" },
-    others: { label: "Others", color: "hsl(var(--chart-6))" },
-  },
-};
-
 interface DashboardAnalyticsData {
   browsers: BrowserAnalyticsData[];
   devices: DeviceAnalyticsData[];
@@ -180,28 +146,16 @@ export default async function DashboardPage({
             <Topforms forms={data.top_forms} />
           </div>
           <div className="grid grid-cols-4 gap-4">
-            <ReusableChart
-              title="Browser Usage"
-              data={chartData.browsers}
-            />
+            <ReusableChart title="Browser Usage" data={chartData.browsers} />
 
-            <ReusableChart
-              title="Device Usage"
-              data={chartData.devices}
-                          />
+            <ReusableChart title="Device Usage" data={chartData.devices} />
 
-            <ReusableChart
-              title="Operating Systems"
-              data={chartData.os}
-                          />
-            <ReusableChart
-              title="Top Countries"
-              data={chartData.countries}
-                          />
+            <ReusableChart title="Operating Systems" data={chartData.os} />
+            <ReusableChart title="Top Countries" data={chartData.countries} />
           </div>
         </>
       ) : (
-        <AllowGooglePermissions url={googleAuthUrl} />
+        <AllowGooglePermissions url={googleAuthUrl} className="pt-12" />
       )}
     </div>
   );

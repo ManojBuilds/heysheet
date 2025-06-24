@@ -27,12 +27,13 @@ import SuccessPageSettings from "./SuccessPageSettings";
 import { generateTheme } from "@/lib/theme";
 import { getDefaultProperties } from "./form-preview/RenderComponentInput";
 import SuccessPreview from "./form-preview/SuccessPreview";
+import { useAuth } from "@clerk/nextjs";
 
-async function fetchFormByEndpoint(formId: string) {
+async function fetchFormByFormId(formId: string) {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("forms")
-    .select("id, title, builder_config")
+    .select("id, title, builder_config, user_id")
     .eq("id", formId)
     .single();
 
@@ -52,7 +53,12 @@ async function upsertForm(formData: FormData & { formId: string }) {
       title: formData.title,
       builder_config: {
         pages: formData.pages,
-        theme: formData.theme,
+        theme: {
+          font: formData.theme.font,
+          color: formData.theme.primary,
+          mode: formData.theme.mode,
+          radius: formData.theme.radius,
+        },
         components: formData.components,
         active_page: formData.activePage,
         success_page: formData.successPage,
@@ -66,6 +72,7 @@ async function upsertForm(formData: FormData & { formId: string }) {
 
 const FormBuilder = ({ formId }: { formId: string }) => {
   const router = useRouter();
+  const { userId } = useAuth();
   const defaultPageId = "page-1";
   const [formData, setFormData] = useState<FormData>({
     activePage: defaultPageId,
@@ -98,11 +105,11 @@ const FormBuilder = ({ formId }: { formId: string }) => {
     error,
   } = useQuery({
     queryKey: ["form", formId],
-    queryFn: () => fetchFormByEndpoint(formId),
+    queryFn: () => fetchFormByFormId(formId),
     enabled: !!formId,
     retry: false,
   });
-  console.log(existingForm);
+  console.log("formbuilder", formData.components);
 
   const saveFormMutation = useMutation({
     mutationFn: upsertForm,
@@ -147,8 +154,21 @@ const FormBuilder = ({ formId }: { formId: string }) => {
     }
   }, [activeSidebarTab]);
 
+  useEffect(() => {
+    if (formData.theme.font) {
+      const link = document.createElement("link");
+      link.href = `https://fonts.googleapis.com/css2?family=${formData.theme.font.replace(/ /g, "+")}&display=swap`;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+    }
+  }, [formData.theme.font]);
+
   if (!formId) {
     router.push("/dashboard");
+  }
+
+  if (existingForm?.user_id && existingForm.user_id === userId) {
+    router.push("/");
   }
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -183,6 +203,10 @@ const FormBuilder = ({ formId }: { formId: string }) => {
   };
 
   const handleSaveForm = () => {
+    console.log("@iM, sAVING THEME FORM BUILDER:", {
+      ...formData,
+      formId: formId,
+    });
     saveFormMutation.mutate({
       ...formData,
       formId: formId,

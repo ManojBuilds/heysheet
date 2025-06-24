@@ -7,8 +7,10 @@ import { useQuery } from "@tanstack/react-query";
 type SubscriptionData = {
   plan: string;
   status: string;
-  current_period_end: string;
-  paddle_id: string; 
+  next_billing: string;
+  customer_id: string;
+  billing_interval: "monthly" | "annually";
+  subscription_id: string;
 };
 
 const useSubscription = () => {
@@ -21,11 +23,13 @@ const useSubscription = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("subscriptions")
-        .select("plan, status, current_period_end, paddle_id")
-        .eq("clerk_user_id", userId)
-        .single()
+        .select(
+          "plan, status, customer_id, next_billing, billing_interval, subscription_id",
+        )
+        .eq("user_id", userId)
+        .single();
       if (error) throw error;
-      return data
+      return data;
     },
   });
 

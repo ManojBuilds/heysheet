@@ -15,13 +15,14 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CrownIcon } from "lucide-react";
+import { ManageBillingButton } from "@/components/ManageBillingButton";
 
 export default function ManagePlanPage() {
   const { data: subscription, isLoading } = useSubscription();
 
   const plan = subscription?.plan || "free";
   const isFree = plan === "free";
-  const renewalDate = subscription?.current_period_end;
+  const renewalDate = subscription?.next_billing;
 
   return (
     <div className="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -75,15 +76,7 @@ export default function ManagePlanPage() {
                   Upgrade plan
                 </Link>
 
-                {!isFree && (
-                  <Link
-                    href={process.env.NEXT_PUBLIC_CUSTOMER_PORTAL_LINK!}
-                    target="_blank"
-                    className={cn(buttonVariants({ variant: "outline" }))}
-                  >
-                    Manage Billing
-                  </Link>
-                )}
+                {!isFree && <ManageBillingButton />}
               </div>
             </>
           )}

@@ -1,12 +1,4 @@
-"use client";
-import {
-  ExternalLink,
-  Eye,
-  Loader2,
-  Palette,
-  Save,
-  Share2,
-} from "lucide-react";
+import { ExternalLink, Eye, Loader2, Palette, Save } from "lucide-react";
 import { Button, buttonVariants } from "../ui/button";
 import {
   DropdownMenu,
@@ -15,10 +7,8 @@ import {
 } from "../ui/dropdown-menu";
 import { ThemeSelector } from "./ThemeSelector";
 import { FormTheme, FormData } from "@/types/form-builder";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TooltipWrapper from "../TooltipWrapper";
-import { useEffect, useState } from "react";
 import { Logo } from "../Logo";
 
 interface FormBuilderHeaderProps {
@@ -40,24 +30,15 @@ const FormBuilderHeader = ({
   isSaving,
   formId,
 }: FormBuilderHeaderProps) => {
-  const router = useRouter();
-  const [origin, setOrigin] = useState('')
-
-  useEffect(() => {
-    if (window) {
-      setOrigin(window.location.origin)
-    }
-  }, [])
-
   return (
     <header className="border-b">
       <div className="flex justify-between items-center p-4">
-        <Logo/>
-      
+        <Logo />
+
         <div className="flex items-center gap-2">
           <TooltipWrapper content="Open preview in new tab">
             <Link
-              href={origin ? `${window?.location.origin}/f/${formId}` : '#'}
+              href={`${process.env.NEXT_PUBLIC_APP_URL}/f/${formId}`}
               target="_blank"
               aria-label="Open preview in new tab"
               className={buttonVariants({ variant: "outline" })}
@@ -98,12 +79,12 @@ const FormBuilderHeader = ({
             disabled={isSaving}
             onClick={handleSaveForm}
             className="gap-1.5"
-          >
-            {isSaving ? (
+            leftIcon={isSaving ?
               <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
+              :
               <Save className="h-4 w-4" />
-            )}
+            }
+          >
             Save
           </Button>
         </div>

@@ -14,8 +14,28 @@ import DeleteFormButton from "./delete-form-button";
 import FileUploadSettings from "@/components/FileUploadSettings";
 import { updateForm } from "@/actions";
 import { FormDetails as IFormDetails } from "@/types/form-details";
+import CodeBlock from "@/components/code-block";
 
-export const FormDetails = ({ data, endpointUrl, appUrl, id }: { data: IFormDetails, endpointUrl: string, appUrl: string, id: string }) => {
+export const FormDetails = ({
+  data,
+  endpointUrl,
+  appUrl,
+  id,
+}: {
+  data: IFormDetails;
+  endpointUrl: string;
+  appUrl: string;
+  id: string;
+}) => {
+  const formEmbeddingCode = `<iframe 
+src="${process.env.NEXT_PUBLIC_APP_URL}/f/${id}"
+width="100%"
+height="400"
+style="border: none;"
+title="Heysheet Form Embed"
+loading="lazy"
+></iframe>
+`;
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -57,19 +77,42 @@ export const FormDetails = ({ data, endpointUrl, appUrl, id }: { data: IFormDeta
         formId={id}
         redirectUrl={data.redirect_url ?? ""}
       />
-      <FileUploadSettings form={{
-        id: id,
-        file_upload_enabled: data.file_upload.enabled,
-        file_upload_max_files: data.file_upload.max_files,
-        file_upload_allowed_types: data.file_upload.allowed_file_types
-      }}
+      <FileUploadSettings
+        form={{
+          id: id,
+          file_upload_enabled: data.file_upload.enabled,
+          file_upload_max_files: data.file_upload.max_files,
+          file_upload_allowed_types: data.file_upload.allowed_file_types,
+        }}
         onSave={async (config) => {
-          await updateForm({ file_upload: { enabled: config.file_upload_enabled, max_files: config.file_upload_max_files, allowed_file_types: config.file_upload_allowed_types } }, id)
+          await updateForm(
+            {
+              file_upload: {
+                enabled: config.file_upload_enabled,
+                max_files: config.file_upload_max_files,
+                allowed_file_types: config.file_upload_allowed_types,
+              },
+            },
+            id,
+          );
         }}
       />
 
       <ConfigureIntegration data={data} />
       <CodeSnippet endpointUrl={endpointUrl} />
+      <Card>
+        <CardHeader className="border-b">
+          <CardTitle>
+            Embed Your Form Anywhere
+          </CardTitle>
+          <CardDescription>
+            Easily embed this form into your website by copying and pasting the code below. It’s responsive, lightweight, and works out of the box.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CodeBlock code={formEmbeddingCode} lang="html" />
+        </CardContent>
+      </Card>
       <DeleteFormButton id={id} isActive={data.is_active} />
     </div>
   );

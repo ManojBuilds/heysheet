@@ -1,7 +1,11 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
-// pages/terms.tsx
+export const metadata = {
+  title: "Terms of Service - HeySheet",
+  description: "Terms of Service for HeySheet, effective June 17, 2025.",
+}
+
 export default function TermsOfService() {
   return (
     <>

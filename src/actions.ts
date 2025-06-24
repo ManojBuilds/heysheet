@@ -8,6 +8,14 @@ import { createSheet } from "./lib/google/sheets";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { planLimits } from "./lib/planLimits";
+import dodo from "./lib/dodopayments";
+import { customAlphabet } from "nanoid";
+
+const nanoid = customAlphabet(
+  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+  10,
+);
+const formId = nanoid(); // e.g., "rX9azLmQwe"
 
 export const handleAddNewGoogleAccount = async () => {
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
@@ -29,14 +37,13 @@ export const handleRemoveGoogleAccount = async (accountId: string) => {
 };
 
 export const getGoogleAccounts = async (userId: string) => {
-  console.log("getGoogleAccounts", userId);
+  console.log('@getGoogleAccounts', userId)
   if (!userId) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("google_accounts")
     .select("id, email, access_token")
     .eq("user_id", userId);
-  console.log("getGoogleAccounts", data, error);
   if (error) throw error;
   return data || [];
 };
@@ -83,6 +90,7 @@ export const createFormHelper = async ({
   const { data, error } = await supabase
     .from("forms")
     .insert({
+      id: formId,
       user_id: user.id,
       title,
       google_account_id: googleAccountId,
@@ -182,8 +190,10 @@ export const getSubscription = async () => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("plan, status, current_period_end, paddle_id")
-    .eq("clerk_user_id", userId)
+    .select(
+      "plan, status, customer_id, subscription_id, next_billing, billing_interval",
+    )
+    .eq("user_id", userId)
     .single();
   if (error) throw error;
   return data;
@@ -200,4 +210,33 @@ export const canCreateForm = async () => {
   const planLimit = planLimits[plan as keyof typeof planLimits].maxForms ?? 1;
 
   return (data?.length ?? 0) <= planLimit;
+};
+
+export const fetchGoogleFonts = async () => {
+  try {
+    const API_KEY = process.env.GOOGLE_FONTS_API_KEY;
+    const response = await fetch(
+      `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`,
+    );
+    const data = await response.json();
+    return data.items?.slice(0, 100);
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+};
+
+export const createCustomerPortalSession = async () => {
+  await auth.protect();
+  const { userId } = await auth();
+  const supabase = await createClient();
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("customer_id")
+    .eq("user_id", userId)
+    .single();
+  const customerPortalSession = await dodo.customers.customerPortal.create(
+    subscription?.customer_id,
+  );
+  return redirect(customerPortalSession.link);
 };

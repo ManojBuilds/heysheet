@@ -8,7 +8,7 @@ export async function getForm(formId: string) {
     .select(
       `
      redirect_url,
-     title, builder_config, id
+     title, builder_config, id, is_active
     `,
     )
     .eq("id", formId)

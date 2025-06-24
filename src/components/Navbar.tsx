@@ -2,24 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, SignedIn, SignedOut, SignUpButton } from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Plus, PlusCircle, RefreshCw, Settings } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Logo } from "./Logo";
+// import { ModeToggle } from "./toggle-mode";
 // import NewEndpointForm from "./NewEndpointFormModal";
 // import { ConnectToSlackBtn } from "./connect-to-slack-button";
 // import { ModeToggle } from "./toggle-mode";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const isPaidUser = false;
-
-  const isActive = (path: string) => {
-    return pathname === path;
-  };
 
   return (
-    <header className="border-b">
+    <header className="border-b sticky top-0 z-20 bg-background/80 backdrop-blur">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
 
@@ -30,7 +26,8 @@ export default function Navbar() {
               className={buttonVariants({ variant: "link" })}
               target="_blank"
             >
-              Docs
+              <ExternalLink />
+              Documentation
             </a>
             <SignedIn>
               <Link
@@ -59,15 +56,15 @@ export default function Navbar() {
               >
                 Pricing
               </Link>
-              <SignUpButton mode="modal">
+              <SignInButton mode="modal" >
                 <Button>Get Started</Button>
-              </SignUpButton>
+              </SignInButton>
             </SignedOut>
           </nav>
           <SignedIn>
             <UserButton />
           </SignedIn>
-          {/* <ModeToggle/> */}
+          {/* <ModeToggle /> */}
         </div>
       </div>
     </header>

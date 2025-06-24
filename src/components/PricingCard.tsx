@@ -1,39 +1,33 @@
 "use client";
-import { useUser } from "@clerk/nextjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PLANS } from "@/lib/planLimits";
 import useSubscription from "@/hooks/useSubscription";
-import { usePaymentButton } from "@/components/usePaymentButton";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { toast } from "sonner";
+import { CheckoutButton } from "./CheckoutButton";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { useRouter } from "nextjs-toploader/app";
 
 const PricingCard = () => {
-  const [isAnnual, setIsAnnual] = useState(false);
-  const { user } = useUser();
   const { data: subscription } = useSubscription();
-  const { handlePayment } = usePaymentButton();
+  const [isAnnual, setIsAnnual] = useState(
+    subscription?.billing_interval === "annually",
+  );
+  const router = useRouter();
+  const { openSignIn } = useClerk();
+  const { isSignedIn } = useUser();
 
-  const handleUpgrade = async (plan: any, isAnnual: boolean) => {
-    try {
-      if (!user?.id) return;
-      const billing = isAnnual ? "annually" : "monthly";
-      const priceId = plan.price[billing].priceId;
-
-      if (!priceId) {
-        console.error("Missing priceId");
-        return;
-      }
-
-      await handlePayment(priceId);
-    } catch (error: any) {
-      console.log(error);
-      toast.error(error?.message);
+  const handleStartBuilding = () => {
+    if (!isSignedIn) {
+      openSignIn();
+      return;
     }
+    router.push("/dashboard");
   };
+
+  const getPriceId = (plan: any): string =>
+    plan.price[isAnnual ? "annually" : "monthly"].priceId;
 
   return (
     <div>
@@ -133,14 +127,18 @@ const PricingCard = () => {
 
               <div className="mt-8">
                 {plan.name === "Free" ? (
-                  <Button variant="outline" className="w-full py-6">
+                  <Button
+                    onClick={handleStartBuilding}
+                    variant="outline"
+                    className="w-full py-6"
+                  >
                     {isCurrent ? "Current Plan" : plan.cta}
                   </Button>
                 ) : (
-                  <Button
+                  <CheckoutButton
+                    key={getPriceId(plan)}
+                    productId={getPriceId(plan)}
                     disabled={!priceInfo.priceId || isCurrent}
-                    onClick={() => handleUpgrade(plan, isAnnual)}
-                    variant="outline"
                     className={cn(
                       "w-full py-6 font-semibold transition-all duration-300",
                       plan.popular &&
@@ -155,7 +153,7 @@ const PricingCard = () => {
                     ) : (
                       `Upgrade to ${plan.cta}`
                     )}
-                  </Button>
+                  </CheckoutButton>
                 )}
               </div>
             </div>

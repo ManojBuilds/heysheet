@@ -27,7 +27,7 @@ export default function ReusableChart({
           data?.map(({ key, value }) => (
             <div
               key={key}
-              className="flex items-center justify-between gap-2 px-4 py-1.5 rounded text-white text-sm bg-muted"
+              className="flex items-center justify-between gap-2 px-4 py-1.5 rounded text-sm bg-muted"
             >
               <p className="capitalize">{key}</p>
               <p className="font-semibold">{value}</p>

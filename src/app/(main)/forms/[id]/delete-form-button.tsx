@@ -10,6 +10,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useState } from "react";
 import useSubscription from "@/hooks/useSubscription";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DeleteFormButtonProps {
   id: string;
@@ -17,7 +28,7 @@ interface DeleteFormButtonProps {
 }
 
 const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
-  const { data: subscription } = useSubscription()
+  const { data: subscription } = useSubscription();
   const [active, setActive] = useState(isActive);
   const router = useRouter();
   const supabase = createClient();
@@ -76,20 +87,44 @@ const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
           This action is irreversible. Deleting this form will remove all
           associated data.
         </p>
-        <Button
-          variant="destructive"
-          onClick={() => deleteFormMutation.mutate()}
-          disabled={deleteFormMutation.isPending || subscription?.plan === "free"}
-        >
-          {deleteFormMutation.isPending ? (
-            <>
-              <Loader2 className="animate-spin mr-2 h-4 w-4" />
-              Deleting...
-            </>
-          ) : (
-            "Delete Form"
-          )}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="destructive"
+              disabled={
+                deleteFormMutation.isPending || subscription?.plan === "free"
+              }
+            >
+              Delete Form
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Do you really want to delete?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your
+                form and any request will result in 404.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction asChild>
+                <Button
+                  variant={"destructive"}
+                  disabled={deleteFormMutation.isPending}
+                  onClick={() => deleteFormMutation.mutate()}
+                  leftIcon={
+                    deleteFormMutation.isPending ? (
+                      <Loader2 className="animate-spin" />
+                    ) : undefined
+                  }
+                >
+                  Continue
+                </Button>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

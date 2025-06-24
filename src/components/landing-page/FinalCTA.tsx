@@ -1,7 +1,21 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { useRouter } from "nextjs-toploader/app";
 
 const FinalCTA = () => {
+  const router = useRouter();
+  const { openSignIn } = useClerk();
+  const { isSignedIn } = useUser();
+
+  const handleStartBuilding = () => {
+    if (!isSignedIn) {
+      openSignIn();
+      return;
+    }
+    router.push("/dashboard");
+  };
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
       <div className="max-w-4xl mx-auto text-center relative">
@@ -29,6 +43,7 @@ const FinalCTA = () => {
           <Button
             size="lg"
             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-12 py-6 text-xl font-semibold shadow-xl shadow-green-500/25 transition-all duration-300 hover:shadow-green-500/40 hover:scale-105 border-0"
+            onClick={handleStartBuilding}
           >
             Start Building Now
             <ArrowRight className="ml-2 h-6 w-6" />
@@ -42,14 +57,12 @@ const FinalCTA = () => {
         {/* Social proof */}
         <div className="mt-16 flex items-center justify-center gap-8 text-zinc-500">
           <div className="text-center">
-            <div className="text-2xl font-bold text-zinc-200 mb-1">10,000+</div>
+            <div className="text-2xl font-bold text-zinc-200 mb-1">1,000+</div>
             <div className="text-sm">Forms created</div>
           </div>
           <div className="w-px h-12 bg-zinc-700" />
           <div className="text-center">
-            <div className="text-2xl font-bold text-zinc-200 mb-1">
-              500,000+
-            </div>
+            <div className="text-2xl font-bold text-zinc-200 mb-1">50,000+</div>
             <div className="text-sm">Submissions processed</div>
           </div>
           <div className="w-px h-12 bg-zinc-700" />

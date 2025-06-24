@@ -3,6 +3,11 @@ import { getFormsByUserId, getGoogleAccounts } from "@/actions";
 import FormsPageClient from "./forms-client";
 import { getGoogleAuthUrl } from "@/lib/google/auth";
 
+export const metadata = {
+  title: "Forms - HeySheet",
+  description: "Manage your forms and Google Sheets integrations.",
+};
+
 export default async function FormsPage() {
   const user = await currentUser();
   const userId = user?.id || "";

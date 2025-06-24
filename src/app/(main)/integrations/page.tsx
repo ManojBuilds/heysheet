@@ -22,9 +22,13 @@ async function fetchIntegrationsStatus() {
   return { googleAccount, slackAccount };
 }
 
+export const metadata = {
+  title: "Integrations - HeySheet",
+  description: "Connect your Google Sheets and Slack to receive form submissions.",
+};
+
 export default async function IntegrationsPage() {
   const { googleAccount, slackAccount } = await fetchIntegrationsStatus();
-  console.log('slackAccount', slackAccount)
 
   return (
     <div className="flex flex-col gap-4 max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">

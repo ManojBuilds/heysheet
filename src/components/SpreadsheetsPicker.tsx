@@ -29,7 +29,7 @@ const SpreadsheetsPicker = ({
         clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
         developerKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
         viewId: "SPREADSHEETS",
-        token: selectedAccount?.access_token,
+        // token: selectedAccount?.access_token,
         showUploadView: true,
         showUploadFolders: false,
         supportDrives: true,
@@ -48,6 +48,7 @@ const SpreadsheetsPicker = ({
       setIsLoading(false);
     }
   };
+  console.log(authResponse)
 
   return (
     <div>

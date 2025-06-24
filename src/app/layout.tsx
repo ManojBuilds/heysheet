@@ -1,28 +1,49 @@
 import type { Metadata } from "next";
-import { Outfit, Pacifico } from "next/font/google";
+import { Outfit, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/Provider";
 import { Toaster } from "sonner";
 import NextTopLoader from "nextjs-toploader";
 import { ThemeProvider } from "@/components/theme-provider";
 import UpgradeModal from "@/components/UpgradeModal";
+import { config } from "@/config";
 
-const outfit = Outfit({
+const outfit = DM_Sans({
   subsets: ["latin"],
-});
-
-const pacifico = Pacifico({
-  subsets: ["latin"],
-  variable: "--font-pacifico",
-  weight: "400",
 });
 
 export const metadata: Metadata = {
-  title: "FormSync - Connect Forms to Google Sheets",
+  title: "Forms that sync with Google Sheets Instantly.",
   description:
-    "Easily connect your forms to Google Sheets in seconds. No code required.",
+    "HeySheet lets you build beautiful forms that update your spreadsheets in real time. No complex integrations, no delays.",
   icons: {
-    icon: "/logo.webp",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
+  metadataBase: new URL(config.appUrl),
+
+  openGraph: {
+    title: "HeySheet – Connect Your Forms to Google Sheets",
+    description: "Easily sync form submissions to Google Sheets with no code.",
+    url: config.appUrl,
+    siteName: "HeySheet",
+    images: [
+      {
+        url: "/og-image.png", // Recommended: 1200x630 image in /public
+        width: 1200,
+        height: 630,
+        alt: "HeySheet Preview Image",
+      },
+    ],
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "HeySheet – Connect Your Forms to Google Sheets",
+    description: "Easily sync form submissions to Google Sheets with no code.",
+    images: ["/og-image.png"],
   },
 };
 
@@ -33,9 +54,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.className} ${pacifico.variable} antialiased`}>
+      <body className={`${outfit.className} antialiased`}>
         <Provider>
-          <ThemeProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <main>{children}</main>
             <UpgradeModal />
             <Toaster
@@ -45,7 +66,7 @@ export default function RootLayout({
               position="top-center"
             />
             <NextTopLoader
-              color="#2299DD"
+              color="#00c950"
               initialPosition={0.08}
               crawlSpeed={200}
               height={3}

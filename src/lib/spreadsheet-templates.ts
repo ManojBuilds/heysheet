@@ -239,8 +239,8 @@ export const SPREADSHEET_TEMPLATES = {
     },
   },
 
-  "Bug Report / Feedback": {
-    title: "Bug Report / Feedback",
+  "Bug Report": {
+    title: "Bug Report",
     description: "Let users submit bugs and general feedback.",
     headers: [
       "Name",
@@ -324,6 +324,113 @@ export const SPREADSHEET_TEMPLATES = {
         description: "Thanks for helping us improve.",
         customContent: "<p>We appreciate your input.</p>",
       },
+    },
+  },
+  "User Feedback": {
+    title: "User Feedback",
+    description:
+      "Collect structured feedback from users to improve your product or service.",
+    headers: [
+      "Name",
+      "Email",
+      "Product Rating",
+      "Most Liked Feature",
+      "Suggestions for Improvement",
+      "Would Recommend",
+    ],
+    builderConfig: {
+      theme: {
+        font: "Outfit",
+        mode: "dark",
+        color: "#10B981",
+        radius: "md",
+      },
+      pages: [
+        { id: "page-1", title: "Basic Info" },
+        { id: "page-2", title: "Your Feedback" },
+      ],
+      active_page: "page-1",
+      success_page: {
+        title: "Thanks for your feedback!",
+        description: "Your input helps us improve the product.",
+        customContent: "<p>We appreciate your time and support.</p>",
+      },
+      components: [
+        {
+          id: "heading-feedback",
+          name: "heading",
+          type: "heading",
+          title: "Share Your Feedback",
+          pageId: "page-1",
+          required: false,
+          properties: {
+            color: "#ffffff",
+            content: "We’d love to hear from you!",
+            fontSize: "2rem",
+            alignment: "center",
+          },
+        },
+        {
+          id: "short-text-name",
+          name: "name",
+          type: "short-text",
+          title: "Name (Optional)",
+          pageId: "page-1",
+          required: false,
+          properties: { placeholder: "Your name" },
+        },
+        {
+          id: "email-email",
+          name: "email",
+          type: "email",
+          title: "Email (Optional)",
+          pageId: "page-1",
+          required: false,
+          properties: { placeholder: "you@example.com" },
+        },
+        {
+          id: "rating-rating",
+          name: "rating",
+          type: "rating",
+          title: "How would you rate the product?",
+          pageId: "page-2",
+          required: true,
+          properties: { maxRating: 5 },
+        },
+        {
+          id: "long-text-liked",
+          name: "liked_feature",
+          type: "long-text",
+          title: "What do you like most?",
+          pageId: "page-2",
+          required: true,
+          properties: {
+            placeholder: "Share the features or experiences you enjoy most.",
+          },
+        },
+        {
+          id: "long-text-suggestions",
+          name: "suggestions",
+          type: "long-text",
+          title: "Any suggestions for improvement?",
+          pageId: "page-2",
+          required: false,
+          properties: {
+            placeholder: "Let us know how we can do better.",
+          },
+        },
+        {
+          id: "single-choice-recommend",
+          name: "recommend",
+          type: "single-choice",
+          title: "Would you recommend this product to others?",
+          pageId: "page-2",
+          required: true,
+          properties: {
+            options: ["Yes", "No", "Not Sure"],
+          },
+        },
+      ],
     },
   },
 };

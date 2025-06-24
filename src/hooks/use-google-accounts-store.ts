@@ -21,8 +21,6 @@ export const useGoogleAccounts = () => {
     }
   }, [user?.id, fetchAccounts]);
   
-  console.log({accounts, isLoading})
-
 
   return {
     accounts,

@@ -1,6 +1,11 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
+export const metadata = {
+  title: "Privacy Policy - HeySheet",
+  description: "Privacy Policy for HeySheet, effective June 17, 2025.",
+};
+
 export default function PrivacyPolicy() {
   return (
     <>

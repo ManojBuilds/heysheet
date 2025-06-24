@@ -1,9 +1,11 @@
 import FormBuilder from "@/components/form-builder/FormBuilder";
 import { Metadata } from "next";
 
+
 export const metadata: Metadata = {
-  title: "Build forms with drag an drop"
-}
+  title: "Form Builder - HeySheet",
+  description: "Create and manage forms with HeySheet's Form Builder.",
+};
 
 export default async function FormBuilderPage({
   params,
