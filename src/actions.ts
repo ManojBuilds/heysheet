@@ -227,13 +227,17 @@ export const fetchGoogleFonts = async () => {
 export const createCustomerPortalSession = async () => {
   await auth.protect();
   const { userId } = await auth();
+
   const supabase = await createClient();
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("customer_id")
     .eq("user_id", userId)
     .single();
-  return await dodo.customers.customerPortal.create(
-    subscription?.customer_id,
-  );
+
+  if (!subscription?.customer_id) {
+    throw new Error("No active subscription found.");
+  }
+
+  return await dodo.customers.customerPortal.create(subscription.customer_id);
 };
