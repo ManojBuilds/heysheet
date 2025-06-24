@@ -11,7 +11,10 @@ export function ManageBillingButton() {
     <form
       action={() => {
         startTransition(async () => {
-          await createCustomerPortalSession();
+          const session = await createCustomerPortalSession();
+          if(session){
+            window.location.href = session.link
+          }
         });
       }}
     >

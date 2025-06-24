@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { getGoogleAuthUrl } from "./lib/google/auth";
 import { createClient } from "./lib/supabase/server";
 import { SPREADSHEET_TEMPLATES } from "./lib/spreadsheet-templates";
@@ -17,11 +16,10 @@ const nanoid = customAlphabet(
 );
 const formId = nanoid(); // e.g., "rX9azLmQwe"
 
-export const handleAddNewGoogleAccount = async () => {
+export const getGoogleConnectUrl = async () => {
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
   const state = JSON.stringify({ redirectUrl: "/dashboard" });
-  const googleAuthUrl = getGoogleAuthUrl(redirectUri, state);
-  redirect(googleAuthUrl);
+  return getGoogleAuthUrl(redirectUri, state);
 };
 
 export const handleRemoveGoogleAccount = async (accountId: string) => {
@@ -235,8 +233,7 @@ export const createCustomerPortalSession = async () => {
     .select("customer_id")
     .eq("user_id", userId)
     .single();
-  const customerPortalSession = await dodo.customers.customerPortal.create(
+  return await dodo.customers.customerPortal.create(
     subscription?.customer_id,
   );
-  return redirect(customerPortalSession.link);
 };

@@ -9,16 +9,9 @@ import {
 } from "./ui/select";
 
 import { Mail, Plus } from "lucide-react";
-import { handleAddNewGoogleAccount } from "@/actions";
-import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
-import { useEffect } from "react";
+import { getGoogleConnectUrl } from "@/actions";
 import { useAuth } from "@clerk/nextjs";
-
-interface GoogleAccount {
-  access_token: string;
-  email: string;
-  id: string;
-}
+import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
 
 const GoogleAccountSwitcher = () => {
   const { userId } = useAuth();
@@ -28,22 +21,18 @@ const GoogleAccountSwitcher = () => {
     selectedAccount,
     setSelectedAccount,
     isLoading,
-    fetchAccounts,
-  } = useGoogleAccountsStore();
-
-  useEffect(() => {
-    console.log("fetchingaccounts", userId);
-    if (!userId) return;
-    fetchAccounts(userId);
-  }, [userId, fetchAccounts]);
+  } = useGoogleAccounts();
 
   if (isLoading)
     return <div className="bg-muted h-9 w-52 animate-pulse rounded-sm"></div>;
   if (accounts?.length === 0) return null;
 
-  const handleValueChange = (value: string) => {
+  const handleValueChange = async (value: string) => {
     if (value === "add-new") {
-      handleAddNewGoogleAccount();
+      const link = await getGoogleConnectUrl()
+      if (link) {
+        window.location.href = link;
+      }
     } else {
       setSelectedAccount(value);
     }

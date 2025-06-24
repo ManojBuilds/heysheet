@@ -1,6 +1,6 @@
 "use client";
 import {
-  handleAddNewGoogleAccount,
+  getGoogleConnectUrl,
   handleRemoveGoogleAccount,
 } from "@/actions";
 import IntegrationCard from "@/components/integrations/Integration-card";
@@ -15,6 +15,13 @@ export const IntegrationsList = ({ slackAccount, googleAccount }: {googleAccount
   const removeGoogleAccountMutation = useMutation({
     mutationFn: () => handleRemoveGoogleAccount(googleAccount.id),
   });
+
+  const handleGoogleAction = async()=>{
+    const link = await getGoogleConnectUrl()
+    if(link){
+      window.location.href = link;
+    }
+  }
 
   return (
     <div className="space-y-4 mt-6">
@@ -34,7 +41,7 @@ export const IntegrationsList = ({ slackAccount, googleAccount }: {googleAccount
         handleAction={
           googleAccount?.id
             ? removeGoogleAccountMutation.mutate
-            : handleAddNewGoogleAccount
+            : handleGoogleAction
         }
         isLoading={removeGoogleAccountMutation.isPending}
       />

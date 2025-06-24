@@ -63,6 +63,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscriptionError, setSubscriptionError] = useState("");
+  const [fullFormData, setFullFormData] = useState<FormValues>({});
+
   const router = useRouter();
 
   const schemas = useMemo(
@@ -101,25 +103,31 @@ const FormPreview: React.FC<FormPreviewProps> = ({
   const isMultiPage = pageComponents.length > 1;
 
   const onSubmit = async (data: FormValues) => {
+    // Merge all data
+    const mergedData = { ...fullFormData, ...data };
+
+    // Convert to FormData
     const formData = new FormData();
-    for (const key in data) {
-      const value = data[key];
+    for (const key in mergedData) {
+      const value = mergedData[key];
 
       if (Array.isArray(value) && value[0] instanceof File) {
-        // It's an array of File objects
         value.forEach((file) => {
-          formData.append(key, file); // Same key used for all files
+          formData.append(key, file);
         });
       } else {
         formData.append(key, value);
       }
     }
 
-    // setAllFormData(flattenedData);
+
 
     if (!isLastPage) {
       setCurrentPageIndex((prev) => prev + 1);
+      const currentData = methods.getValues();
+      setFullFormData((prev) => ({ ...prev, ...currentData }));
       methods.reset({});
+
       return;
     }
 
@@ -321,9 +329,8 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                     <div
                       className="h-full transition-all duration-300"
                       style={{
-                        width: `${
-                          ((currentPageIndex + 1) / pageComponents.length) * 100
-                        }%`,
+                        width: `${((currentPageIndex + 1) / pageComponents.length) * 100
+                          }%`,
                         backgroundColor: theme.primary,
                       }}
                     />
