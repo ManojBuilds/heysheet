@@ -225,8 +225,8 @@ export const fetchGoogleFonts = async () => {
 };
 
 export const createCustomerPortalSession = async () => {
+  await auth.protect();
   const { userId } = await auth();
-
   const supabase = await createClient();
   const { data: subscription } = await supabase
     .from("subscriptions")
