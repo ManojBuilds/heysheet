@@ -176,6 +176,7 @@ export async function POST(
 }
 
 async function processSubmissionAsync(submissionId: string, data: object) {
+  console.log('Starting process submission')
   const { updateSubmissionStatus } = await import("@/lib/background-processor");
   await updateSubmissionStatus(submissionId, "processing");
 
