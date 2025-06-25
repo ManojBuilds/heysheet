@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+import dynamic from "next/dynamic";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { FormComponent, FormData as IFormData } from "@/types/form-builder";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
@@ -7,12 +8,13 @@ import { ArrowLeft, ArrowRight, EyeOff, Loader2 } from "lucide-react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "./form-preview/FormField";
-import SuccessPreview from "./form-preview/SuccessPreview";
 import { getZodSchemasByPage } from "@/lib/form-preview";
-import Branding from "./form-preview/Branding";
 import { cn } from "@/lib/utils";
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+const SuccessPreview = dynamic(() => import("./form-preview/SuccessPreview"));
+const Branding = dynamic(() => import("./form-preview/Branding"));
 
 type FormValues = Record<string, any>;
 
@@ -64,26 +66,19 @@ const FormPreview: React.FC<FormPreviewProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscriptionError, setSubscriptionError] = useState("");
   const [fullFormData, setFullFormData] = useState<FormValues>({});
-
   const router = useRouter();
 
   const schemas = useMemo(
     () => getZodSchemasByPage(formData.pages, formData.components),
     [formData.pages, formData.components],
   );
-
   const currentPageId = formData.pages[currentPageIndex]?.id;
-
   const methods = useForm<any>({
     resolver: zodResolver(schemas[currentPageId] as any),
     mode: "onChange",
     reValidateMode: "onChange",
   });
-
-  const {
-    handleSubmit,
-    formState: { errors },
-  } = methods;
+  const { handleSubmit, formState: { errors } } = methods;
 
   const pageComponents = useMemo(() => {
     const pages: FormComponent[][] = [];
@@ -98,80 +93,73 @@ const FormPreview: React.FC<FormPreviewProps> = ({
     return pages.length ? pages : [formData.components];
   }, [formData.pages, formData.components]);
 
-  const currentPageComponents = pageComponents[currentPageIndex] || [];
+  const currentPageComponents = useMemo(
+    () => pageComponents[currentPageIndex] || [],
+    [pageComponents, currentPageIndex],
+  );
   const isLastPage = currentPageIndex === pageComponents.length - 1;
   const isMultiPage = pageComponents.length > 1;
 
-  const onSubmit = async (data: FormValues) => {
-    // Merge all data
+  const onSubmit = useCallback(async (data: FormValues) => {
     const mergedData = { ...fullFormData, ...data };
-
-    // Convert to FormData
-    const formData = new FormData();
+    const formDataObj = new FormData();
     for (const key in mergedData) {
       const value = mergedData[key];
-
       if (Array.isArray(value) && value[0] instanceof File) {
         value.forEach((file) => {
-          formData.append(key, file);
+          formDataObj.append(key, file);
         });
       } else {
-        formData.append(key, value);
+        formDataObj.append(key, value);
       }
     }
-
     if (!isLastPage) {
       setCurrentPageIndex((prev) => prev + 1);
       setFullFormData((prev) => ({ ...prev, ...data }));
       methods.reset({});
-
       return;
     }
-
     setIsSubmitting(true);
     setSubscriptionError("");
     try {
-      console.log("Sumitting with payload", formData);
       const response = await fetch(`/api/s/${formId}`, {
         method: "POST",
-        body: formData,
+        body: formDataObj,
       });
-
       const responseData = await response.json();
-
       if (!response.ok || !responseData.success) {
         setSubscriptionError(responseData.message);
         throw new Error(responseData.message || "Submission failed");
       }
-
       handleConfetti();
       setHasSubmitted(true);
     } catch (error) {
-      console.log(error)
-      // toast.error(
-      //   error instanceof Error
-      //     ? error.message
-      //     : "Something went wrong. Please try again.",
-      // );
+      // Optionally show a toast here
+      console.log(error);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [fullFormData, isLastPage, formId, methods]);
 
   useEffect(() => {
     if (formData.theme.font) {
-      const link = document.createElement("link");
-      link.href = `https://fonts.googleapis.com/css2?family=${formData.theme.font.replace(/ /g, "+")}&display=swap`;
-      link.rel = "stylesheet";
-      document.head.appendChild(link);
+      const fontHref = `https://fonts.googleapis.com/css2?family=${formData.theme.font.replace(/ /g, "+")}&display=swap`;
+      if (!document.querySelector(`link[href='${fontHref}']`)) {
+        const link = document.createElement("link");
+        link.href = fontHref;
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
+      }
     }
   }, [formData.theme.font]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentPageIndex > 0) {
       setCurrentPageIndex((prev) => prev - 1);
     }
-  };
+  }, [currentPageIndex]);
+
+  const theme = useMemo(() => formData.theme, [formData.theme]);
 
   if (hasSubmitted || showSuccessPreview) {
     return <SuccessPreview formData={formData} redirectUrl={redirectUrl} />;
@@ -190,7 +178,6 @@ const FormPreview: React.FC<FormPreviewProps> = ({
       </div>
     );
 
-  const theme = formData.theme;
   return (
     <div
       className={cn("flex flex-col min-h-screen relative p-4 gap-6", className)}
