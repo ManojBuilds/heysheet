@@ -6,6 +6,8 @@ import { collectAnalytics } from "@/lib/submission";
 import { extractUtmParams } from "@/lib/utm";
 import { processFileUploads } from "@/lib/processFileUpload";
 import { NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email";
+import { appendToSheet } from "@/lib/google/sheets";
 
 export async function POST(
   request: NextRequest,
@@ -125,15 +127,12 @@ export async function POST(
       );
     }
 
-    (async () => {
-      const { appendToSheet } = await import("@/lib/google/sheets");
-      await appendToSheet(
-        form.google_account_id,
-        form.spreadsheet_id,
-        form.sheet_name,
-        formDataObj,
-      );
-    })().catch(console.error);
+    void appendToSheet(
+      form.google_account_id,
+      form.spreadsheet_id,
+      form.sheet_name,
+      formDataObj,
+    );
 
     void supabase.functions.invoke("process-submissions", {
       body: {
@@ -169,13 +168,10 @@ export async function POST(
       form.email_enabled &&
       form.notification_email
     ) {
-      (async () => {
-        const { sendEmail } = await import("@/lib/email");
-        await sendEmail({
-          dataToSend: messageData,
-          toEmail: form.notification_email,
-        });
-      })().catch(console.error);
+      void sendEmail({
+        dataToSend: messageData,
+        toEmail: form.notification_email,
+      });
     }
 
     return NextResponse.json({ success: true, id: submission.id });
