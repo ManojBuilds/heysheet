@@ -127,12 +127,12 @@ export async function POST(
       );
     }
 
-    void appendToSheet(
-      form.google_account_id,
-      form.spreadsheet_id,
-      form.sheet_name,
-      formDataObj,
-    );
+    // void appendToSheet(
+    //   form.google_account_id,
+    //   form.spreadsheet_id,
+    //   form.sheet_name,
+    //   formDataObj,
+    // );
 
     void supabase.functions.invoke("process-submissions", {
       body: {
