@@ -1,14 +1,17 @@
 "use client";
-import {
-  getGoogleConnectUrl,
-  handleRemoveGoogleAccount,
-} from "@/actions";
+import { getGoogleConnectUrl, handleRemoveGoogleAccount } from "@/actions";
 import IntegrationCard from "@/components/integrations/Integration-card";
 import { handleRemoveSlackAccount, handleSlackAuth } from "@/lib/slack/auth";
 import { GoogleAccount, SlackAccount } from "@/types/form-details";
 import { useMutation } from "@tanstack/react-query";
 
-export const IntegrationsList = ({ slackAccount, googleAccount }: {googleAccount: GoogleAccount, slackAccount: SlackAccount}) => {
+export const IntegrationsList = ({
+  slackAccount,
+  googleAccount,
+}: {
+  googleAccount: GoogleAccount;
+  slackAccount: SlackAccount;
+}) => {
   const removeSlackAccountMutation = useMutation({
     mutationFn: () => handleRemoveSlackAccount(slackAccount.id),
   });
@@ -16,12 +19,19 @@ export const IntegrationsList = ({ slackAccount, googleAccount }: {googleAccount
     mutationFn: () => handleRemoveGoogleAccount(googleAccount.id),
   });
 
-  const handleGoogleAction = async()=>{
-    const link = await getGoogleConnectUrl()
-    if(link){
+  const handleGoogleAction = async () => {
+    const link = await getGoogleConnectUrl();
+    if (link) {
       window.location.href = link;
     }
-  }
+  };
+
+  const handleSlackAction = async () => {
+    const link = await handleSlackAuth();
+    if (link) {
+      window.location.href = link;
+    }
+  };
 
   return (
     <div className="space-y-4 mt-6">
@@ -30,7 +40,9 @@ export const IntegrationsList = ({ slackAccount, googleAccount }: {googleAccount
         iconImgSrc="/slack.png"
         isConnected={!!slackAccount?.id}
         handleAction={
-          slackAccount?.id ? removeSlackAccountMutation.mutate : handleSlackAuth
+          slackAccount?.id
+            ? removeSlackAccountMutation.mutate
+            : handleSlackAction
         }
         isLoading={removeSlackAccountMutation.isPending}
       />

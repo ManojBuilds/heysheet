@@ -99,10 +99,21 @@ export function ConnectToSlackBtn({ form }: { form: any }) {
       );
       toast.success("Slack alert setting updated!");
       await addAppToASlackChannel(channel_id, slackAccount?.slack_token);
-      sendMessage(channel_id, "Hey I'm heysheet bot!", slackAccount?.slack_token);
+      sendMessage(
+        channel_id,
+        "Hey I'm heysheet bot!",
+        slackAccount?.slack_token,
+      );
     } catch (e: any) {
       toast.error(e.message);
       throw e;
+    }
+  };
+
+  const handleConnectToSlack = async () => {
+    const link = await handleSlackAuth();
+    if (link) {
+      window.location.href = link;
     }
   };
 
@@ -122,7 +133,9 @@ export function ConnectToSlackBtn({ form }: { form: any }) {
             </div>
             <div className="space-y-0.5">
               <Label>Slack Alerts</Label>
-              <div className="text-sm text-muted-foreground">Choose a channel to receive real-time alerts</div>
+              <div className="text-sm text-muted-foreground">
+                Choose a channel to receive real-time alerts
+              </div>
             </div>
           </div>
           <Switch
@@ -175,7 +188,7 @@ export function ConnectToSlackBtn({ form }: { form: any }) {
             <Badge className="rounded-full">Connected</Badge>
           </div>
         ) : (
-          <Button onClick={handleSlackAuth}>
+          <Button onClick={handleConnectToSlack}>
             <SlackIcon />
             Connect to slack
           </Button>

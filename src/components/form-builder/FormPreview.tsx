@@ -120,12 +120,9 @@ const FormPreview: React.FC<FormPreviewProps> = ({
       }
     }
 
-
-
     if (!isLastPage) {
       setCurrentPageIndex((prev) => prev + 1);
-      const currentData = methods.getValues();
-      setFullFormData((prev) => ({ ...prev, ...currentData }));
+      setFullFormData((prev) => ({ ...prev, ...data }));
       methods.reset({});
 
       return;

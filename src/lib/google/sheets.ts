@@ -75,6 +75,12 @@ export async function appendToSheet(
   sheetName: string,
   incomingData: Record<string, any>,
 ) {
+  console.log("@appendToSheet", {
+    googleAccountId,
+    spreadsheetId,
+    sheetName,
+    incomingData,
+  });
   const sheets = await getSheetsClient(googleAccountId);
 
   // Ensure sheet exists
@@ -171,6 +177,7 @@ export async function appendToSheet(
       values: [row],
     },
   });
+  console.log("@endGetResponse: ", response.data);
 
   return response.data;
 }

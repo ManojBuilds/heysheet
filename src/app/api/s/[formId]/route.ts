@@ -1,8 +1,10 @@
 import { getUserLocationInfo } from "@/actions";
+import { FormSubmissionData } from "@/components/email-template";
+import { createClient } from "@/lib/supabase/server";
 import { planLimits } from "@/lib/planLimits";
 import { collectAnalytics } from "@/lib/submission";
-import { uploadFile } from "@/lib/supabase/s3";
-import { createClient } from "@/lib/supabase/server";
+import { extractUtmParams } from "@/lib/utm";
+import { processFileUploads } from "@/lib/processFileUpload";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -18,10 +20,11 @@ export async function POST(
     const formData = await request.formData();
     const entries = Array.from(formData.entries());
 
-    // === Step 1: Fetch form & user info in parallel
     const { data: form, error: formError } = await supabase
       .from("forms")
-      .select("id, user_id, file_upload")
+      .select(
+        "id, user_id, file_upload, email_enabled, notification_email, title, spreadsheet_id, sheet_name, google_account_id",
+      )
       .eq("id", formId)
       .single();
 
@@ -58,8 +61,9 @@ export async function POST(
     const planLimit = planLimits[plan as keyof typeof planLimits];
     const formIds = userFormsRes.data?.map((f) => f.id) || [];
 
-    // === Step 2: Submission limit check
-    const startOfMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
+    const startOfMonth = new Date(
+      Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1),
+    ).toISOString();
     const { count: submissionCount } = await supabase
       .from("submissions")
       .select("*", { count: "exact", head: true })
@@ -68,52 +72,23 @@ export async function POST(
 
     if ((submissionCount ?? 0) >= planLimit.maxSubmissions) {
       return NextResponse.json(
-        { success: false, message: "Submission limit reached. Please upgrade." },
+        {
+          success: false,
+          message: "Submission limit reached. Please upgrade.",
+        },
         { status: 403 },
       );
     }
 
-    // === Step 3: Process inputs (parallel file uploads)
     const uploadConfig = form.file_upload || {};
-    const formDataObj: Record<string, any> = {};
-    let fileCount = 0;
+    const formDataObj = await processFileUploads({
+      entries,
+      uploadConfig,
+      planLimit,
+      formId,
+      supabase,
+    });
 
-    await Promise.all(entries.map(async ([key, value]) => {
-      if (value instanceof File) {
-        if (!uploadConfig.enabled)
-          throw new Error("File uploads are disabled for this form.");
-
-        fileCount++;
-        if (fileCount > (uploadConfig.max_files ?? Infinity)) {
-          throw new Error(`You can only upload ${uploadConfig.max_files} file(s).`);
-        }
-
-        if (
-          uploadConfig.allowed_file_types?.length &&
-          !uploadConfig.allowed_file_types.includes(value.type)
-        ) {
-          throw new Error(`File type ${value.type} not allowed.`);
-        }
-
-        const fileSizeMB = value.size / (1024 * 1024);
-        if (fileSizeMB > planLimit.maxFileSizeMB) {
-          throw new Error(`File too large. Max is ${planLimit.maxFileSizeMB}MB.`);
-        }
-
-        const filePath = `form-submissions/${formId}/${key}-${value.name}`;
-        await uploadFile("form-submissions", filePath, value);
-
-        const { data: signedUrlData } = await supabase.storage
-          .from("form-submissions")
-          .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
-
-        formDataObj[key] = signedUrlData?.signedUrl;
-      } else {
-        formDataObj[key] = value;
-      }
-    }));
-
-    // === Step 4: Enrich with metadata
     const ip = headers.get("x-forwarded-for") || "";
     const language = headers.get("accept-language") || "";
     const location = await getUserLocationInfo().catch(() => ({}));
@@ -127,16 +102,8 @@ export async function POST(
       location,
     });
 
-    const searchParams = request.nextUrl.searchParams;
-    const utm = {
-      utm_source: searchParams.get("utm_source"),
-      utm_medium: searchParams.get("utm_medium"),
-      utm_campaign: searchParams.get("utm_campaign"),
-      utm_term: searchParams.get("utm_term"),
-      utm_content: searchParams.get("utm_content"),
-    };
+    const utm = extractUtmParams(request.nextUrl.searchParams);
 
-    // === Step 5: Save submission
     const { data: submission, error: insertError } = await supabase
       .from("submissions")
       .insert({
@@ -158,12 +125,58 @@ export async function POST(
       );
     }
 
-    // === Step 6: Background task (non-blocking)
-    setTimeout(() => {
-      processSubmissionAsync(submission.id, formDataObj).catch((err) =>
-        console.error("❌ Background task error:", err),
+    (async () => {
+      const { appendToSheet } = await import("@/lib/google/sheets");
+      await appendToSheet(
+        form.google_account_id,
+        form.spreadsheet_id,
+        form.sheet_name,
+        formDataObj,
       );
-    }, 0);
+    })().catch(console.error);
+
+    void supabase.functions.invoke("process-submissions", {
+      body: {
+        submissionId: submission.id,
+        data: formDataObj,
+      },
+    });
+
+    const messageData: FormSubmissionData = {
+      form: {
+        name: form.title,
+        spreadsheet_id: form.spreadsheet_id,
+      },
+      submission: {
+        created_at: submission.created_at,
+        data: formDataObj,
+        id: submission.id,
+      },
+      analytics: {
+        referrer: referrer,
+        country: analytics.country,
+        city: analytics.city,
+        timezone: analytics.timezone,
+        deviceType: analytics.device_type,
+        browser: analytics.browser,
+        language: analytics.language,
+        processed_at: submission.created_at,
+        created_at: submission.created_at,
+      },
+    };
+    if (
+      planLimit.features.emailAlerts &&
+      form.email_enabled &&
+      form.notification_email
+    ) {
+      (async () => {
+        const { sendEmail } = await import("@/lib/email");
+        await sendEmail({
+          dataToSend: messageData,
+          toEmail: form.notification_email,
+        });
+      })().catch(console.error);
+    }
 
     return NextResponse.json({ success: true, id: submission.id });
   } catch (error: any) {
@@ -172,20 +185,5 @@ export async function POST(
       { success: false, message: error.message || "Server error" },
       { status: 500 },
     );
-  }
-}
-
-async function processSubmissionAsync(submissionId: string, data: object) {
-  console.log('Starting process submission')
-  const { updateSubmissionStatus } = await import("@/lib/background-processor");
-  await updateSubmissionStatus(submissionId, "processing");
-
-  try {
-    const { processSubmission } = await import("@/lib/google/sheets");
-    await processSubmission(submissionId, data);
-    await updateSubmissionStatus(submissionId, "completed");
-  } catch (error: any) {
-    await updateSubmissionStatus(submissionId, "failed");
-    console.error("❌ Submission processing error:", error.message || error);
   }
 }

@@ -19,6 +19,7 @@ export async function sendEmail({
       subject: `📥 New Submission on ${dataToSend.form.name}`,
       react: emailTemplate,
     });
+
     if (error) throw error;
     console.log("Email send success:", data, dataToSend);
 

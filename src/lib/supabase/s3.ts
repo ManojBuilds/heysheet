@@ -5,7 +5,7 @@ export async function uploadFile(bucketName: string, filePath: string, file: Fil
   const buffer = Buffer.from(arrayBuffer);
   const supabase = await createClient()
 
-  const { error } = await supabase.storage
+  const { error,data } = await supabase.storage
     .from(bucketName)
     .upload(filePath, buffer, {
       contentType: file.type || "application/octet-stream",
