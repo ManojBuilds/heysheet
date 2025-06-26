@@ -41,6 +41,11 @@ export default clerkMiddleware(async (auth, req) => {
     // Set iframe-friendly headers for embeds
     res.headers.set("Content-Security-Policy", "frame-ancestors *");
     res.headers.set("X-Frame-Options", "ALLOWALL");
+    // Add CORS and CORP headers for public form embeds
+    res.headers.set("Access-Control-Allow-Origin", "*");
+    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.headers.set("Cross-Origin-Resource-Policy", "cross-origin");
     
     return res;
   }
