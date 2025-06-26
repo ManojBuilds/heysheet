@@ -42,7 +42,15 @@ export async function processFileUploads({
 
         if (
           uploadConfig.allowed_file_types?.length &&
-          !uploadConfig.allowed_file_types.includes(value.type)
+          !uploadConfig.allowed_file_types.some((allowedType) => {
+            if (allowedType.endsWith('/*')) {
+              // Allow wildcard match, e.g., image/* matches image/jpeg
+              const [allowedMainType] = allowedType.split('/');
+              const [fileMainType] = value.type.split('/');
+              return allowedMainType === fileMainType;
+            }
+            return allowedType === value.type;
+          })
         ) {
           throw new Error(`File type ${value.type} not allowed.`);
         }
