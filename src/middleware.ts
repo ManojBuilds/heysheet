@@ -25,10 +25,10 @@ export default clerkMiddleware(async (auth, req) => {
     console.log('🚫 Skip auth for public form submission endpoint', path);
     const res = NextResponse.next();
     
-    // Add CORS headers for API endpoints
-    res.headers.set("Access-Control-Allow-Origin", "*");
-    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    // // Add CORS headers for API endpoints
+    // res.headers.set("Access-Control-Allow-Origin", "*");
+    // res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    // res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
     
     return res;
   }
@@ -38,28 +38,16 @@ export default clerkMiddleware(async (auth, req) => {
     console.log('🌐 Public form embed route', path);
     const res = NextResponse.next();
     
-    // Set iframe-friendly headers for embeds
-    res.headers.set("Content-Security-Policy", "frame-ancestors *");
-    res.headers.set("X-Frame-Options", "ALLOWALL");
-    // Add CORS and CORP headers for public form embeds
-    res.headers.set("Access-Control-Allow-Origin", "*");
-    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.headers.set("Cross-Origin-Resource-Policy", "cross-origin");
+    // // Set iframe-friendly headers for embeds
+    // res.headers.set("Content-Security-Policy", "frame-ancestors *");
+    // res.headers.set("X-Frame-Options", "ALLOWALL");
+    // // Add CORS and CORP headers for public form embeds
+    // res.headers.set("Access-Control-Allow-Origin", "*");
+    // res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    // res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    // res.headers.set("Cross-Origin-Resource-Policy", "cross-origin");
     
     return res;
-  }
-
-  // Handle OPTIONS requests for CORS preflight
-  if (req.method === "OPTIONS") {
-    return new NextResponse(null, {
-      status: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-      },
-    });
   }
 
   // Protect other routes

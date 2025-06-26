@@ -1,32 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async headers() {
-    return [
-      {
-        // Apply CORS headers to all API routes
-        source: "/api/:path*",
-        headers: [
-          {
-            key: "Access-Control-Allow-Origin",
-            value: "*", // Allow all origins since users can submit from any website
-          },
-          {
-            key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, DELETE, OPTIONS",
-          },
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization, X-Requested-With",
-          },
-          {
-            key: "Access-Control-Allow-Credentials",
-            value: "false", // Set to false when using * for origin
-          },
-        ],
-      },
-    ];
-  },
+  crossOrigin: "anonymous", 
 };
 
 export default nextConfig;
