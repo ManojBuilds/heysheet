@@ -191,3 +191,9 @@ body {
     @apply text-xl font-semibold mb-3;
   }
 }
+
+@layer utilities {
+  .animate-spin {
+    animation: spin 0.3s linear infinite;
+  }
+}
