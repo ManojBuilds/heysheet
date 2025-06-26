@@ -64,7 +64,7 @@ export async function processFileUploads({
 
         const filePath = `form-submissions/${formId}/${key}-${value.name}-${randomUUID()}`;
         const formDataToUploadFile = new FormData();
-        formDataToUploadFile.append(key, value);
+        formDataToUploadFile.append('file', value);
         formDataToUploadFile.append("path", filePath);
         const { data } = await supabase.functions.invoke("upload-files", {
           body: formDataToUploadFile,
