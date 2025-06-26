@@ -1,30 +1,19 @@
 "use client";
-import { useEffect, useState } from "react";
-import { Check, Loader2, Star } from "lucide-react";
+import { useState } from "react";
+import { Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PLANS } from "@/lib/planLimits";
 import useSubscription from "@/hooks/useSubscription";
 import { CheckoutButton } from "./CheckoutButton";
-import { useClerk, useUser } from "@clerk/nextjs";
-import { useRouter } from "nextjs-toploader/app";
+import useLoginOrRedirect from "@/hooks/useLoginOrReditrect";
 
 const PricingCard = () => {
+  const loginOrRedirect = useLoginOrRedirect();
   const { data: subscription } = useSubscription();
   const [isAnnual, setIsAnnual] = useState(
     subscription?.billing_interval === "annually",
   );
-  const router = useRouter();
-  const { openSignIn } = useClerk();
-  const { isSignedIn } = useUser();
-
-  const handleStartBuilding = () => {
-    if (!isSignedIn) {
-      openSignIn();
-      return;
-    }
-    router.push("/dashboard");
-  };
 
   const getPriceId = (plan: any): string =>
     plan.price[isAnnual ? "annually" : "monthly"].priceId;
@@ -128,7 +117,7 @@ const PricingCard = () => {
               <div className="mt-8">
                 {plan.name === "Free" ? (
                   <Button
-                    onClick={handleStartBuilding}
+                    onClick={loginOrRedirect}
                     variant="outline"
                     className="w-full py-6"
                   >

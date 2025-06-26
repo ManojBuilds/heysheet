@@ -1,21 +1,11 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { useClerk, useUser } from "@clerk/nextjs";
-import { useRouter } from "nextjs-toploader/app";
+import useLoginOrRedirect from "@/hooks/useLoginOrReditrect";
 
 const FinalCTA = () => {
-  const router = useRouter();
-  const { openSignIn } = useClerk();
-  const { isSignedIn } = useUser();
-
-  const handleStartBuilding = () => {
-    if (!isSignedIn) {
-      openSignIn();
-      return;
-    }
-    router.push("/dashboard");
-  };
+  const loginOrRedirect = useLoginOrRedirect();
+ 
   return (
     <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
       <div className="max-w-4xl mx-auto text-center relative">
@@ -36,7 +26,7 @@ Create your form, share the link, and see the responses in Google Sheets instant
           <Button
             size="lg"
             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-12 py-6 text-xl font-semibold shadow-xl shadow-green-500/25 transition-all duration-300 hover:shadow-green-500/40 hover:scale-105 border-0"
-            onClick={handleStartBuilding}
+            onClick={loginOrRedirect}
           >
             Try Heysheet Free
             <ArrowRight className="ml-2 h-6 w-6" />

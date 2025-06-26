@@ -2,21 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { DemoVideoDialog } from "./DemoVideoModal";
-import { useClerk, useUser } from "@clerk/nextjs";
-import { useRouter } from "nextjs-toploader/app";
+import useLoginOrRedirect from "@/hooks/useLoginOrReditrect";
 
 const Hero = () => {
-  const router = useRouter();
-  const { openSignIn } = useClerk();
-  const { isSignedIn } = useUser();
-
-  const handleStartBuilding = () => {
-    if (!isSignedIn) {
-      openSignIn();
-      return;
-    }
-    router.push("/dashboard");
-  };
+  const loginOrRedirect = useLoginOrRedirect()
   return (
     <div className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
       {/* Subtle grid pattern overlay */}
@@ -55,7 +44,7 @@ const Hero = () => {
           <Button
             size="lg"
             className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-8 py-6 text-lg font-semibold shadow-xl shadow-green-500/25 transition-all duration-300 hover:shadow-green-500/40 hover:scale-105 border-0"
-            onClick={handleStartBuilding}
+            onClick={loginOrRedirect}
           >
             Start Building Forms
             <ArrowRight className="ml-2 h-5 w-5" />

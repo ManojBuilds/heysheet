@@ -1,18 +1,66 @@
 import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)", "/form-builder(.*)", "/manage-plan", "/checkout"]);
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/form-builder(.*)",
+  "/manage-plan",
+  "/checkout"
+]);
+
+const isPublicApiRoute = createRouteMatcher([
+  "/api/s/(.*)"
+]);
+
+const isPublicFormRoute = createRouteMatcher([
+  "/f/(.*)"
+]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isProtectedRoute(req)) await auth.protect();
+  const path = req.nextUrl.pathname;
+  console.log('Processing path:', path);
 
-  if (req.nextUrl.pathname.startsWith("/f/")) {
+  // Handle public API routes first (form submissions)
+  if (isPublicApiRoute(req)) {
+    console.log('🚫 Skip auth for public form submission endpoint', path);
     const res = NextResponse.next();
-    res.headers.set(
-      "Content-Security-Policy",
-      "frame-ancestors *"
-    );
+    
+    // Add CORS headers for API endpoints
+    res.headers.set("Access-Control-Allow-Origin", "*");
+    res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    
     return res;
+  }
+
+  // Handle public form embed routes (iframe-friendly)
+  if (isPublicFormRoute(req)) {
+    console.log('🌐 Public form embed route', path);
+    const res = NextResponse.next();
+    
+    // Set iframe-friendly headers for embeds
+    res.headers.set("Content-Security-Policy", "frame-ancestors *");
+    res.headers.set("X-Frame-Options", "ALLOWALL");
+    
+    return res;
+  }
+
+  // Handle OPTIONS requests for CORS preflight
+  if (req.method === "OPTIONS") {
+    return new NextResponse(null, {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    });
+  }
+
+  // Protect other routes
+  if (isProtectedRoute(req)) {
+    console.log('🔒 Protected route, requiring auth', path);
+    await auth.protect();
   }
 
   return NextResponse.next();

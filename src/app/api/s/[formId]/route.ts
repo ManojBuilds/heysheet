@@ -7,7 +7,6 @@ import { extractUtmParams } from "@/lib/utm";
 import { processFileUploads } from "@/lib/processFileUpload";
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
-import { appendToSheet } from "@/lib/google/sheets";
 
 export async function POST(
   request: NextRequest,
