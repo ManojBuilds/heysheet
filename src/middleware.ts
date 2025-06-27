@@ -13,11 +13,19 @@ export default clerkMiddleware(async (auth, req) => {
   const path = req.nextUrl.pathname;
   console.log("🔎 Processing path:", path);
 
+
+  // ✅ Skip Clerk for public form display
+  if (path.startsWith("/f/")) {
+    console.log("🚪 Skipping Clerk for public form route:", path);
+    return NextResponse.next();
+  }
+
   // ✅ Skip Clerk auth for public form submit API
   if (path.startsWith("/api/s/")) {
     console.log("🚪 Skipping auth for form submit:", path);
     return NextResponse.next();
   }
+
 
   // 🔒 Protect defined routes
   if (isProtectedRoute(req)) {
