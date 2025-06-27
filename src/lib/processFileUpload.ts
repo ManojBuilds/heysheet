@@ -43,10 +43,10 @@ export async function processFileUploads({
         if (
           uploadConfig.allowed_file_types?.length &&
           !uploadConfig.allowed_file_types.some((allowedType) => {
-            if (allowedType.endsWith('/*')) {
+            if (allowedType.endsWith("/*")) {
               // Allow wildcard match, e.g., image/* matches image/jpeg
-              const [allowedMainType] = allowedType.split('/');
-              const [fileMainType] = value.type.split('/');
+              const [allowedMainType] = allowedType.split("/");
+              const [fileMainType] = value.type.split("/");
               return allowedMainType === fileMainType;
             }
             return allowedType === value.type;
@@ -64,7 +64,7 @@ export async function processFileUploads({
 
         const filePath = `form-submissions/${formId}/${key}-${value.name}-${randomUUID()}`;
         const formDataToUploadFile = new FormData();
-        formDataToUploadFile.append('file', value);
+        formDataToUploadFile.append("file", value);
         formDataToUploadFile.append("path", filePath);
         const { data } = await supabase.functions.invoke("upload-files", {
           body: formDataToUploadFile,
@@ -73,7 +73,7 @@ export async function processFileUploads({
       } else {
         formDataObj[key] = value;
       }
-    })
+    }),
   );
   return formDataObj;
 }

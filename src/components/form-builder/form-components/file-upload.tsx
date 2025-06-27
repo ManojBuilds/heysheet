@@ -33,12 +33,10 @@ const FileUpload = ({
   } = component.properties;
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-  // Local state for upload progress (percentage 0-100)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  // Use your custom Uppy hook
   const { upload } = useUppyUploader({
-    bucketName: "form-submissions", // <- replace with actual bucket or pass as prop
+    bucketName: "form-submissions",
     onProgress: (percent) => {
       setUploadProgress(percent);
     },
@@ -69,7 +67,20 @@ const FileUpload = ({
         return;
       }
 
-      if (allowedTypes.length && !allowedTypes.includes(file.type)) {
+      if (
+        allowedTypes.length &&
+        !allowedTypes.some((allowedType: string) => {
+          if (allowedType.endsWith("/*")) {
+            // Allow wildcard match, e.g., image/* matches image/jpeg
+            const [allowedMainType] = allowedType.split("/");
+            const [fileMainType] = file.type.split("/");
+            return allowedMainType === fileMainType;
+          }
+          return allowedType === file.type;
+        })
+      ) {
+        console.log("allowdTypes", allowedTypes);
+        console.log("file.type", file.type);
         toast.error(`${file.name} is not an allowed file type.`);
         return;
       }

@@ -194,6 +194,6 @@ body {
 
 @layer utilities {
   .animate-spin {
-    animation: spin 0.3s linear infinite;
+    animation: spin 0.5s linear infinite;
   }
 }
