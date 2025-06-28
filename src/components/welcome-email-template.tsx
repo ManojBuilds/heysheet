@@ -84,7 +84,7 @@ export const HeySheetWelcomeEmail = ({ userName }: WelcomeEmailProps) => {
                             <Text className="text-[15px] text-black leading-[24px]">
                                 After creation, you’ll be redirected to the form detail page. Here you’ll find your unique <strong>Form Action URL</strong> (API endpoint) to receive submissions. You can use this in your HTML forms or send POST requests directly.
                             </Text>
-                            <Container className="bg-[#f9fafb] rounded p-4 border border-[#e5e7eb] mt-3">
+                            <Container className="bg-[#f9fafb] rounded py-4 px-1 border border-[#e5e7eb] mt-3">
                                 <Text className="text-[14px] text-black font-semibold mb-1">HTML Example:</Text>
                                 <CodeBlock
                                     code={`<form action="https://heysheet.com/api/s/YOUR_FORM_ID" method="POST">
