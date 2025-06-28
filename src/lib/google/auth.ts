@@ -21,7 +21,7 @@ function getOAuth2Client(redirectUri?: string) {
 }
 
 // Generate Google OAuth URL
-export function getGoogleAuthUrl(redirectUri: string, state: string) {
+export async function getGoogleAuthUrl(redirectUri: string, state: string) {
   const oauth2Client = getOAuth2Client(redirectUri);
 
   return oauth2Client.generateAuthUrl({

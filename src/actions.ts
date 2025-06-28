@@ -35,7 +35,7 @@ export const handleRemoveGoogleAccount = async (accountId: string) => {
 };
 
 export const getGoogleAccounts = async (userId: string) => {
-  console.log('@getGoogleAccounts', userId)
+  console.log("@getGoogleAccounts", userId);
   if (!userId) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -46,16 +46,18 @@ export const getGoogleAccounts = async (userId: string) => {
   return data || [];
 };
 
-export const getFormsByUserId = async (userId: string) => {
-  console.log("@getFormsByUserId", userId);
-  if (!userId) return [];
+export const getFormsByUserId = async (userId: string, from = 0, to = 9) => {
+  if (!userId) return { forms: [], totalCount: 0 };
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data, error, count } = await supabase
     .from("forms")
-    .select("*")
-    .eq("user_id", userId);
+    .select("id, title, sheet_name, created_at, is_active, submission_count", { count: "exact" })
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
   if (error) throw error;
-  return data || [];
+  return { forms: data || [], totalCount: count || 0 };
 };
 
 export const createFormHelper = async ({

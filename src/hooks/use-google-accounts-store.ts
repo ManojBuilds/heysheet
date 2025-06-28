@@ -15,7 +15,6 @@ export const useGoogleAccounts = () => {
   } = useGoogleAccountsStore();
 
   useEffect(() => {
-    console.log('useGoogleAccounts hook:')
     if (user?.id && accounts.length === 0 && !isLoading) {
       fetchAccounts(user.id);
     }

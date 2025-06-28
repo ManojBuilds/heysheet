@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Uppy, { Uppy as UppyInstance, UppyFile } from "@uppy/core";
+import { useEffect, useState } from "react";
+import Uppy from "@uppy/core";
 import Tus from "@uppy/tus";
 import { createClient } from "@/lib/supabase/client";
 
@@ -88,7 +88,7 @@ export function useUppyUploader({
     return () => {
       uppy.destroy();
     };
-  }, [bucketName, uppy]);
+  }, [bucketName, uppy, anonKey, projectURL, onProgress, onSuccess, onError, supabase]);
 
   const upload = async (file: File, fileName: string) => {
     const { data } = await supabase.storage

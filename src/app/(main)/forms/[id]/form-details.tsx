@@ -31,7 +31,6 @@ export const FormDetails = ({
 src="${process.env.NEXT_PUBLIC_APP_URL}/f/${id}"
 width="100%"
 height="400"
-style="border: none;"
 title="Heysheet Form Embed"
 loading="lazy"
 ></iframe>

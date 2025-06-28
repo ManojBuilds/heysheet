@@ -1,11 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Loader } from "lucide-react";
-import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+import { Codepen } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,25 +11,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import CodeBlock from "@/components/code-block";
+import { Terminal } from "lucide-react";
+import { React, Python, SvelteJS, HTML5, JavaScript, } from "developer-icons";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   endpointUrl: string;
 };
 
 export default function CodeSnippet({ endpointUrl }: Props) {
-  const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("html");
-
-  const demoFormSubmissionMutation = useMutation({
-    mutationFn: (e: FormEvent) => demoFormSubmission(e),
-  });
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast.success("Code copied to clipboard");
-  };
 
   const htmlCode = `<form action="${endpointUrl}" method="POST">
   <input type="text" name="name" placeholder="Your name" required />
@@ -41,62 +29,13 @@ export default function CodeSnippet({ endpointUrl }: Props) {
   <button type="submit">Send</button>
 </form>`;
 
-  const demoFormSubmission = async (e: FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const res = await fetch(endpointUrl, {
-      method: "POST",
-      body: formData,
-    });
-  };
-  const renderHtmlForm = () => {
-    if (activeTab !== "html") return null;
-    return (
-      <div className="p-4 border-t bg-muted/10">
-        <form
-          onSubmit={demoFormSubmissionMutation.mutate}
-          className="space-y-2"
-        >
-          <input
-            type="text"
-            name="name"
-            placeholder="Your name"
-            required
-            className="block w-full border rounded px-2 py-1"
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Your email"
-            required
-            className="block w-full border rounded px-2 py-1"
-          />
-          <textarea
-            name="message"
-            placeholder="Your message"
-            required
-            className="block w-full border rounded px-2 py-1"
-          ></textarea>
-          <button
-            type="submit"
-            className="bg-primary text-white px-4 py-1 rounded"
-            disabled={demoFormSubmissionMutation.isPending}
-          >
-            {demoFormSubmissionMutation.isPending && (
-              <Loader className="animate-spin mr-2" />
-            )}
-            Send
-          </button>
-        </form>
-      </div>
-    );
-  };
 
-  const fetchCode = `// Using fetch API
-  const formData = new FormData();
-  formData.append("name", "John Doe");
-  formData.append("email", "john@example.com");
-  formData.append("message", "Hello world!");
+  const fetchCode = `// JavaScript (Fetch API)
+const formData = new FormData();
+formData.append("name", "John Doe");
+formData.append("email", "john@example.com");
+formData.append("message", "Hello world!");
+
 fetch("${endpointUrl}", {
   method: "POST",
   body: formData,
@@ -105,37 +44,72 @@ fetch("${endpointUrl}", {
   .then(data => console.log(data))
   .catch(error => console.error("Error:", error));`;
 
-  const reactCode = `// React example with fetch
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-
-  try {
-    const response = await fetch("${endpointUrl}", {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await response.json();
-    console.log(result);
-
-    // Reset form on success
-    if (result.success) {
-      e.target.reset();
+  const reactCode = `// React example
+function MyForm() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      const response = await fetch("${endpointUrl}", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await response.json();
+      console.log(result);
+      if (result.success) e.target.reset();
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-  } catch (error) {
-    console.error("Error submitting form:", error);
-  }
-};
+  };
+  return (
+    <form onSubmit={handleSubmit}>
+      <input name="name" placeholder="Your name" required />
+      <input name="email" type="email" placeholder="Your email" required />
+      <textarea name="message" placeholder="Your message" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+  );
+}`;
 
-return (
-  <form onSubmit={handleSubmit}>
-    <input name="name" placeholder="Your name" required />
-    <input name="email" type="email" placeholder="Your email" required />
-    <textarea name="message" placeholder="Your message" required></textarea>
-    <button type="submit">Send</button>
-  </form>
-);`;
+  const pythonCode = `import requests
+
+url = "${endpointUrl}"
+data = {
+    "name": "Manoj",
+    "email": "stack@x.com",
+    "message": "hi"
+}
+r = requests.post(url, data=data)
+print(r.json())`;
+
+  const svelteCode = `<!-- SvelteKit example -->
+<script>
+  let name = '';
+  let email = '';
+  let message = '';
+  async function submitForm(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const res = await fetch('${endpointUrl}', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+    console.log(result);
+  }
+<\/script>
+
+<form on:submit={submitForm}>
+  <input name="name" bind:value={name} required />
+  <input name="email" type="email" bind:value={email} required />
+  <textarea name="message" bind:value={message} required /><\/textarea>
+  <button type="submit">Send<\/button>
+<\/form>`;
+
+  const curlCode = `curl -X POST ${endpointUrl} \\
+  -F "name=Manoj" \\
+  -F "email=stack@x.com" \\
+  -F "message=hi"`;
 
   const getCodeForTab = () => {
     switch (activeTab) {
@@ -145,31 +119,94 @@ return (
         return fetchCode;
       case "react":
         return reactCode;
+      case "python":
+        return pythonCode;
+      case "svelte":
+        return svelteCode;
+      case "curl":
+        return curlCode;
       default:
         return htmlCode;
     }
   };
 
+  const tabList = [
+    { value: "html", label: "Basic HTML", icon: <HTML5 className="w-4 h-4 mr-2" /> },
+    { value: "fetch", label: "JavaScript (Fetch)", icon: <JavaScript className="w-4 h-4 mr-2" /> },
+    { value: "react", label: "React", icon: <React className="w-4 h-4 mr-2" /> },
+    { value: "python", label: "Python", icon: <Python className="w-4 h-4 mr-2" /> },
+    { value: "svelte", label: "Svelte", icon: <SvelteJS className="w-4 h-4 mr-2" /> },
+    { value: "curl", label: "cURL", icon: <Terminal className="w-4 h-4 mr-2" /> },
+  ];
+
+  // Function to open HTML code in CodePen
+  const openInCodePen = useCallback(() => {
+    const data = {
+      title: "Form Example",
+      html: htmlCode,
+      js: "",
+      css: "body { font-family: sans-serif; }",
+      editors: "100",
+    };
+    const form = document.createElement("form");
+    form.action = "https://codepen.io/pen/define";
+    form.method = "POST";
+    form.target = "_blank";
+    form.style.display = "none";
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "data";
+    input.value = JSON.stringify(data);
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+  }, [htmlCode]);
+
   return (
     <Card className="">
       <CardHeader>
-        <CardTitle>Embed Code</CardTitle>
-        <CardDescription>
-          Copy and paste this code into your website to connect the form.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Embed Code</CardTitle>
+            <CardDescription>
+              Copy and paste this code into your website to connect the form.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            onClick={openInCodePen}
+            title="Try in CodePen"
+            size={'sm'}
+            variant={'ghost'}
+            leftIcon={<Codepen />}
+          >
+            Try it in CodePen
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent className="relative border-t">
         <Tabs defaultValue="html" className="mt-4" onValueChange={setActiveTab}>
           <TabsList>
-            <TabsTrigger value="html">Basic HTML</TabsTrigger>
-            <TabsTrigger value="fetch">JavaScript (Fetch)</TabsTrigger>
-            <TabsTrigger value="react">React Sinppet</TabsTrigger>
+            {tabList.map(tab => (
+              <TabsTrigger key={tab.value} value={tab.value}>
+                <span className="flex items-center">{tab.icon}{tab.label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
         </Tabs>
         <CodeBlock
           code={getCodeForTab()}
-          lang={activeTab === "html" ? "html" : "javascript"}
+          lang={
+            activeTab === "html"
+              ? "html"
+              : activeTab === "python"
+                ? "python"
+                : activeTab === "svelte"
+                  ? "markup" // Use 'markup' for Svelte for better highlighting
+                  : "javascript"
+          }
         />
       </CardContent>
     </Card>

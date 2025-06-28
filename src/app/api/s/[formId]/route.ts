@@ -126,54 +126,64 @@ export async function POST(
       );
     }
 
-    // void appendToSheet(
-    //   form.google_account_id,
-    //   form.spreadsheet_id,
-    //   form.sheet_name,
-    //   formDataObj,
-    // );
+    // Respond to the client as soon as possible
+    const response = NextResponse.json({ success: true, id: submission.id });
 
-    void supabase.functions.invoke("process-submissions", {
-      body: {
-        submissionId: submission.id,
-        data: formDataObj,
-      },
+    // --- Fire-and-forget background tasks ---
+    Promise.resolve().then(async () => {
+      // Background: process file uploads, supabase function, and email
+      try {
+        const formDataObj = await processFileUploads({
+          entries,
+          uploadConfig,
+          planLimit,
+          formId,
+          supabase,
+        });
+        void supabase.functions.invoke("process-submissions", {
+          body: {
+            submissionId: submission.id,
+            data: formDataObj,
+          },
+        });
+        const messageData: FormSubmissionData = {
+          form: {
+            name: form.title,
+            spreadsheet_id: form.spreadsheet_id,
+          },
+          submission: {
+            created_at: submission.created_at,
+            data: formDataObj,
+            id: submission.id,
+          },
+          analytics: {
+            referrer: referrer,
+            country: analytics.country,
+            city: analytics.city,
+            timezone: analytics.timezone,
+            deviceType: analytics.device_type,
+            browser: analytics.browser,
+            language: analytics.language,
+            processed_at: submission.created_at,
+            created_at: submission.created_at,
+          },
+        };
+        if (
+          planLimit.features.emailAlerts &&
+          form.email_enabled &&
+          form.notification_email
+        ) {
+          void sendEmail({
+            dataToSend: messageData,
+            toEmail: form.notification_email,
+          });
+        }
+      } catch (err) {
+        console.error("Background task error:", err);
+      }
     });
 
-    const messageData: FormSubmissionData = {
-      form: {
-        name: form.title,
-        spreadsheet_id: form.spreadsheet_id,
-      },
-      submission: {
-        created_at: submission.created_at,
-        data: formDataObj,
-        id: submission.id,
-      },
-      analytics: {
-        referrer: referrer,
-        country: analytics.country,
-        city: analytics.city,
-        timezone: analytics.timezone,
-        deviceType: analytics.device_type,
-        browser: analytics.browser,
-        language: analytics.language,
-        processed_at: submission.created_at,
-        created_at: submission.created_at,
-      },
-    };
-    if (
-      planLimit.features.emailAlerts &&
-      form.email_enabled &&
-      form.notification_email
-    ) {
-      void sendEmail({
-        dataToSend: messageData,
-        toEmail: form.notification_email,
-      });
-    }
-
-    return NextResponse.json({ success: true, id: submission.id });
+    return response;
   } catch (error: any) {
     console.error("❌ Error:", error.message || error);
     return NextResponse.json(

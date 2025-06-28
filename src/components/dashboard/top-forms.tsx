@@ -8,10 +8,16 @@ import {
 } from "../ui/card";
 import { ArrowRightIcon, MousePointerClick } from "lucide-react";
 import { buttonVariants } from "../ui/button";
-import { TopFormsAnalyticsData } from "@/types/form-builder";
+import { auth } from "@clerk/nextjs/server";
+import { getTopForms } from "@/lib/data";
 
-const Topforms = ({ forms }: { forms: TopFormsAnalyticsData[] }) => {
-  console.log("forms", forms);
+const Topforms = async ({ fromDate, toDate }: { fromDate: string, toDate: string }) => {
+  const { userId } = await auth();
+  const forms = await getTopForms({
+    userId: userId as string,
+    fromDate,
+    toDate
+  })
   return (
     <Card className="bg-transparent w-full max-w-lg">
       <CardHeader className="border-b">
@@ -39,7 +45,7 @@ const Topforms = ({ forms }: { forms: TopFormsAnalyticsData[] }) => {
                   strokeWidth={1.5}
                   className="text-muted-foreground"
                 />
-                {form.submission_count}
+                {form.submissionCount}
               </p>
             </div>
           ))

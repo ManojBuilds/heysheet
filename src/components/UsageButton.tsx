@@ -6,11 +6,7 @@ import { planLimits } from "@/lib/planLimits";
 import { createClient } from "@/lib/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import UpgradeSheet from "./UpgradeSheet";
 import { Skeleton } from "./ui/skeleton";
-import Link from "next/link";
-import { buttonVariants } from "./ui/button";
-import { CrownIcon } from "lucide-react";
 import UpgradeCta from "./UpgradeCta";
 
 const UsageButton = () => {

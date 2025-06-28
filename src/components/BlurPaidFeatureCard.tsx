@@ -1,11 +1,7 @@
 "use client";
 
 import useSubscription from "@/hooks/useSubscription";
-import UpgradeSheet from "./UpgradeSheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
-import { CrownIcon } from "lucide-react";
-import { buttonVariants } from "./ui/button";
 import UpgradeCta from "./UpgradeCta";
 
 export const BlurPaidFeatureCard = ({

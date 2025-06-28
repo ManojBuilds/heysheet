@@ -17,7 +17,7 @@ const useLoginOrRedirect = () => {
         } else {
             router.push('/dashboard')
         }
-    }, [])
+    }, [isSignedIn, redirectToSignIn, router]);
 
     return loginOrRedirect;
 };

@@ -13,17 +13,39 @@ import CreateFormModal from "@/components/CreateFormModal";
 import GoogleSheetLogo from "@/components/GoogleSheetLogo";
 import { useState, useMemo } from "react";
 import AllowGooglePermissions from "@/components/AllowGooglePermissions";
-import { FormDetails, GoogleAccount } from "@/types/form-details";
+import { useUser } from "@clerk/nextjs";
+import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+
+type FormsPageClientProps = {
+  forms: {
+    id: string;
+    title: string;
+    sheet_name: string;
+    created_at: string;
+    is_active: string;
+    submission_count: number;
+  }[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+};
 
 export default function FormsPageClient({
-  userName,
   forms,
-  googleAccountsData,
-  googleAuthUrl,
-}: { userName: string; forms: FormDetails[], googleAccountsData: GoogleAccount[], googleAuthUrl: string }) {
+  page,
+  pageSize,
+  totalCount,
+}: FormsPageClientProps) {
+  const { accounts } = useGoogleAccounts();
+  const { user } = useUser();
+  const userName = user?.fullName || "User";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("created_at");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const filteredForms = useMemo(() => {
     return forms
@@ -48,13 +70,25 @@ export default function FormsPageClient({
           case "submission_count":
             return b.submission_count - a.submission_count;
           default:
-            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            return (
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+            );
         }
       });
   }, [forms, search, statusFilter, sortBy]);
 
-  if (googleAccountsData?.length === 0) {
-    return <AllowGooglePermissions url={googleAuthUrl} />;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  const goToPage = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(newPage));
+    params.set("pageSize", String(pageSize));
+    router.push(`?${params.toString()}`);
+  };
+
+  if (accounts?.length === 0) {
+    return <AllowGooglePermissions />;
   }
 
   return (
@@ -115,6 +149,27 @@ export default function FormsPageClient({
             {filteredForms.map((form) => (
               <FormCard key={form.id} form={form} />
             ))}
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <Button
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1}
+              variant={'outline'}
+            >
+              Previous
+            </Button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages}
+              variant={'outline'}
+            >
+              Next
+            </Button>
           </div>
         </>
       )}

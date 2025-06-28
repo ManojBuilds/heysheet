@@ -1,9 +1,10 @@
-import { ChartAreaInteractive } from "@/components/dashboard/chart-area";
 import DateFilter from "@/components/dashboard/date-filter";
 import StatisticCard from "@/components/dashboard/statistic-card";
 import { InboxIcon } from "lucide-react";
 import { Country } from "country-state-city";
 import ReusableChart from "@/components/dashboard/browser-chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import ChartAreaContent from "@/components/dashboard/chart-area-content";
 
 type FormAnalyticsData = {
   total_submissions: number;
@@ -13,42 +14,6 @@ type FormAnalyticsData = {
   os?: { os: string; count: number }[];
   countries?: { country: string; count: number }[];
 };
-
-const chartConfigs = {
-  browsers: {
-    value: { label: "Submissions" },
-    chrome: { label: "Chrome", color: "hsl(var(--chart-1))" },
-    safari: { label: "Safari", color: "hsl(var(--chart-2))" },
-    firefox: { label: "Firefox", color: "hsl(var(--chart-3))" },
-    edge: { label: "Edge", color: "hsl(var(--chart-4))" },
-    other: { label: "Other", color: "hsl(var(--chart-5))" },
-  },
-  devices: {
-    value: { label: "Users" },
-    desktop: { label: "Desktop", color: "hsl(var(--chart-1))" },
-    mobile: { label: "Mobile", color: "hsl(var(--chart-2))" },
-    tablet: { label: "Tablet", color: "hsl(var(--chart-3))" },
-  },
-  os: {
-    value: { label: "Sessions" },
-    windows: { label: "Windows", color: "hsl(var(--chart-1))" },
-    macos: { label: "macOS", color: "hsl(var(--chart-2))" },
-    linux: { label: "Linux", color: "hsl(var(--chart-3))" },
-    android: { label: "Android", color: "hsl(var(--chart-4))" },
-    ios: { label: "iOS", color: "hsl(var(--chart-5))" },
-  },
-  countries: {
-    value: { label: "Visitors" },
-    us: { label: "United States", color: "hsl(var(--chart-1))" },
-    uk: { label: "United Kingdom", color: "hsl(var(--chart-2))" },
-    canada: { label: "Canada", color: "hsl(var(--chart-3))" },
-    germany: { label: "Germany", color: "hsl(var(--chart-4))" },
-    france: { label: "France", color: "hsl(var(--chart-5))" },
-    others: { label: "Others", color: "hsl(var(--chart-6))" },
-  },
-};
-
-
 
 export const FormAnalytics = ({ data }: { data: FormAnalyticsData }) => {
   const chartData = {
@@ -88,7 +53,17 @@ export const FormAnalytics = ({ data }: { data: FormAnalyticsData }) => {
         value={data.total_submissions}
         tooltipContent="The total number of submissions received across all your forms."
       />
-      <ChartAreaInteractive data={data.submissions_over_time || []} />
+      <Card className="pt-0 bg-transparent">
+        <CardHeader className="flex items-center gap-2 space-y-0 py-5 sm:flex-row">
+          <div className="grid flex-1 gap-1">
+            <CardTitle>Submissions Over Time</CardTitle>
+            <CardDescription className="sr-only">Interactive area chart showing submission trends</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="px-2 sm:px-6">
+          <ChartAreaContent data={data.submissions_over_time || []} />
+        </CardContent>
+      </Card>
       <div className="grid grid-cols-2 gap-4">
         <ReusableChart
           title="Browser Usage"

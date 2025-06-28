@@ -120,7 +120,7 @@ export function CheckoutButton({
           error instanceof Error ? error.message : "Failed to open checkout",
       });
     }
-  }, []);
+  }, [isSignedIn, openSignIn, productId]);
 
   return (
     <Button

@@ -1,15 +1,17 @@
+"use client";
 import { Plus } from "lucide-react";
 import GoogleSheetLogo from "./GoogleSheetLogo";
 import { buttonVariants } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { getGoogleConnectUrl } from "@/actions";
 
-const AllowGooglePermissions = ({
-  url,
-  className,
-}: {
-  url: string;
-  className?: string;
-}) => {
+const AllowGooglePermissions = ({ className }: { className?: string }) => {
+  const handleClick = async () => {
+    const url = await getGoogleConnectUrl();
+    if (url) {
+      window.location.href = url;
+    }
+  };
   return (
     <div
       className={cn(
@@ -21,10 +23,13 @@ const AllowGooglePermissions = ({
       <p>
         To get started, connect your <b>Google Sheets account</b>.
       </p>
-      <a className={buttonVariants({ className: "mt-4" })} href={url}>
+      <button
+        className={buttonVariants({ className: "mt-4" })}
+        onClick={handleClick}
+      >
         <Plus className="mr-2 h-4 w-4" />
         Connect Google Account
-      </a>
+      </button>
     </div>
   );
 };

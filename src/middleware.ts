@@ -38,9 +38,7 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
   matcher: [
-    // Run middleware for all app routes except static files
-    "/((?!_next|.*\\..*|f\\/).*)",
-    // But explicitly skip /api/s/*
-    "/api/:path*",
+    // Exclude _next, static files, f/, and api/s/
+    "/((?!_next|.*\\..*|f\/|api\/s\/).*)",
   ],
 };

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Outfit, DM_Sans } from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/Provider";
 import { Toaster } from "sonner";
@@ -7,10 +6,7 @@ import NextTopLoader from "nextjs-toploader";
 import { ThemeProvider } from "@/components/theme-provider";
 import UpgradeModal from "@/components/UpgradeModal";
 import { config } from "@/config";
-
-const outfit = DM_Sans({
-  subsets: ["latin"],
-});
+import { dmSans } from "@/components/ui/fonts";
 
 export const metadata: Metadata = {
   title: "Forms that sync with Google Sheets Instantly.",
@@ -54,13 +50,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${outfit.className} antialiased`}>
+      <body className={`${dmSans.className} antialiased`}>
         <Provider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <main>{children}</main>
             <UpgradeModal />
             <Toaster
-              className="!font-main"
+              className={dmSans.className}
               closeButton
               expand={false}
               position="top-center"

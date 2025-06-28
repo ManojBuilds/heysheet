@@ -107,7 +107,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   useEffect(() => {
     const colorPallet = generateTheme(color, font, radius, theme);
     onSelectTheme(colorPallet);
-  }, [color, font, radius, theme]);
+  }, [color, font, radius, theme, onSelectTheme]);
 
   const handleApplyTheme = () => {
     const colorPallet = generateTheme(color, font, radius, theme);

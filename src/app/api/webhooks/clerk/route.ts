@@ -1,6 +1,11 @@
+import HeySheetWelcomeEmail from '@/components/welcome-email-template'
 import { createClient } from '@/lib/supabase/server'
 import { verifyWebhook } from '@clerk/nextjs/webhooks'
 import { NextRequest } from 'next/server'
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,18 +21,27 @@ export async function POST(req: NextRequest) {
       case 'user.created':
         // create a new user
         const data = evt.data
-        const {data: createdUser, error} = await supabase.from('users').insert({
+        const { data: createdUser, error } = await supabase.from('users').insert({
           clerk_user_id: data.id,
           email: data.email_addresses[0].email_address
         })
-        if(error){
+
+        if (error) {
           console.log('Error creating user:', error)
           return new Response('Error creating user', { status: 400 })
         }
         console.log('User created:', createdUser)
-        
+        const email = data.email_addresses?.[0].email_address
+        const emailTemplate = HeySheetWelcomeEmail({ userName: data.first_name! });
+        void resend.emails.send({
+          from: "Heysheet <onboarding@resend.dev>",
+          to: [email],
+          subject: `Welcome to HeySheet, ${data.first_name}!`,
+          react: emailTemplate,
+        });
+
         break;
-    
+
       default:
         break;
     }
