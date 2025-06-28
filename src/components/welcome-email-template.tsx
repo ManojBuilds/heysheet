@@ -50,7 +50,7 @@ export const HeySheetWelcomeEmail = ({ userName }: WelcomeEmailProps) => {
                                 width="48"
                                 height="48"
                                 alt="HeySheet Logo"
-                                className="mx-auto my-0 rounded scale-150"
+                                className="mx-auto my-0 rounded scale-200"
                             />
                         </Section>
                         <Heading className="mx-0 my-[18px] p-0 text-center font-semibold text-[22px] text-black">
