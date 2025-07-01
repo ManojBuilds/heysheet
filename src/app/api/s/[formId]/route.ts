@@ -20,7 +20,7 @@ export async function POST(
     const referrer = headers.get("referrer") || "";
     const formData = await request.formData();
     const entries = Array.from(formData.entries());
-    console.log('entries', entries)
+    console.log("entries", entries);
 
     const { data: form, error: formError } = await supabase
       .from("forms")
@@ -41,11 +41,10 @@ export async function POST(
     notion_accounts (
       access_token
     )
-    `
+    `,
       )
       .eq("id", formId)
       .single();
-
 
     if (!form || formError) {
       return NextResponse.json(
@@ -194,18 +193,26 @@ export async function POST(
             toEmail: form.notification_email,
           });
         }
-        // @ts-ignore
-        const notionAccessToken = form.notion_accounts?.access_token
+        // @ts-expect-error: notion_accounts might be null or undefined
+        const notionAccessToken = form.notion_accounts?.access_token;
         if (
-          planLimit.features.notionIntegration && form.notion_enabled && form.notion_database_id && notionAccessToken
+          planLimit.features.notionIntegration &&
+          form.notion_enabled &&
+          form.notion_database_id &&
+          notionAccessToken
         ) {
-          void supabase.functions.invoke("append-to-notion-db", {
-            body: {
-              accessToken: notionAccessToken,
-              databaseId: form.notion_database_id,
-              data: formDataObj,
+          const { data, error } = await supabase.functions.invoke(
+            "append-to-notion-db",
+            {
+              body: {
+                accessToken: notionAccessToken,
+                databaseId: form.notion_database_id,
+                data: formDataObj,
+              },
             },
-          })
+          );
+
+          console.log("notion: ", { data, error });
         }
       } catch (err) {
         console.error("Background task error:", err);

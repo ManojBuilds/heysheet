@@ -7,33 +7,20 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { updateForm } from "@/actions";
 import { Switch } from "@/components/ui/switch";
 import { getNotionAuthUrl } from "@/lib/notion/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   createNotionDatabase,
   listNotionDatabases,
   listNotionPages,
   createNotionPage,
 } from "@/lib/notion/server";
-import { ExternalLinkIcon } from "lucide-react";
+import { NotionDatabaseDialog } from "@/components/integrations/NotionDatabaseDialog";
+import { NotionPageDialog } from "@/components/integrations/NotionPageDialog";
+import { NotionDatabaseSelector } from "@/components/integrations/NotionDatabaseSelector";
+import { NOTION_DATABASE_TEMPLATES } from "@/lib/notion-database-templates";
 
 export function ConnectToNotionButton({ form }: { form: any }) {
   const { user } = useUser();
@@ -49,6 +36,7 @@ export function ConnectToNotionButton({ form }: { form: any }) {
   const [newDbName, setNewDbName] = useState("");
   const [openCreatePageDialog, setOpenCreatePageDialog] = useState(false);
   const [newPageName, setNewPageName] = useState("");
+  const [newDbTemplate, setNewDbTemplate] = useState("none");
 
   const { data: notionAccounts, isLoading: isLoadingNotionAccounts } = useQuery(
     {
@@ -90,19 +78,23 @@ export function ConnectToNotionButton({ form }: { form: any }) {
         if (!selectedPageId || !newDbName) {
           throw new Error("Page and database name are required.");
         }
+        let templateConfig = {};
+        if (newDbTemplate && newDbTemplate !== "none" && NOTION_DATABASE_TEMPLATES[newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES]) {
+          templateConfig = NOTION_DATABASE_TEMPLATES[newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES].properties;
+        }
         return createNotionDatabase(
           notionAccount.access_token,
           selectedPageId,
           newDbName,
-          {},
+          templateConfig,
         );
       },
       onSuccess: (newDb) => {
         toast.success(`Database created successfully!`);
+        setSelectedDatabase(newDb.id);
         queryClient.invalidateQueries({
           queryKey: ["notion-databases", notionAccount?.access_token],
         });
-        setSelectedDatabase(newDb.id);
         updateNotionIntegration(newDb.id, true);
         setIsEnabled(true);
         setOpenCreateDbDialog(false);
@@ -205,67 +197,15 @@ export function ConnectToNotionButton({ form }: { form: any }) {
           />
         </div>
         {isNotionAccountConnected ? (
-          <div className="flex items-center gap-2">
-            <Select
-              value={selectedDatabase}
-              onValueChange={(value) => {
-                if (value === "create-new") {
-                  setOpenCreateDbDialog(true);
-                } else {
-                  setSelectedDatabase(value);
-                  updateNotionIntegration(value, isEnabled);
-                }
-              }}
-              disabled={isLoadingDatabases}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a Notion database" />
-              </SelectTrigger>
-              <SelectContent className="w-full">
-                {isLoadingDatabases ? (
-                  <SelectItem value="loading" disabled>
-                    Loading databases...
-                  </SelectItem>
-                ) : databases && databases.length > 0 ? (
-                  databases.map((db: any) => (
-                    <SelectItem key={db.id} value={db.id}>
-                      {db.title}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-dbs" disabled>
-                    No databases found.
-                  </SelectItem>
-                )}
-                {!isLoadingDatabases && (
-                  <SelectItem value="create-new">
-                    + Create new database
-                  </SelectItem>
-                )}
-                {isLoadingDatabases === false &&
-                  databases &&
-                  databases.length === 0 && (
-                    <div className="text-xs text-muted-foreground p-2">
-                      Make sure Notion integration has access to databases.
-                    </div>
-                  )}
-              </SelectContent>
-            </Select>
-            {selectedDatabase && isEnabled && (
-              <Button
-                variant="secondary"
-                leftIcon={<ExternalLinkIcon />}
-                onClick={() =>
-                  window.open(
-                    `https://www.notion.so/${selectedDatabase.replace(/-/g, "")}`,
-                    "_blank",
-                  )
-                }
-              >
-                Open Notion Database
-              </Button>
-            )}
-          </div>
+          <NotionDatabaseSelector
+            databases={databases || []}
+            isLoadingDatabases={isLoadingDatabases}
+            selectedDatabase={selectedDatabase}
+            setSelectedDatabase={setSelectedDatabase}
+            setOpenCreateDbDialog={setOpenCreateDbDialog}
+            updateNotionIntegration={updateNotionIntegration}
+            isEnabled={isEnabled}
+          />
         ) : (
           <Button onClick={handleConnectToNotion}>
             <Image
@@ -279,115 +219,29 @@ export function ConnectToNotionButton({ form }: { form: any }) {
           </Button>
         )}
       </div>
-      <Dialog open={openCreateDbDialog} onOpenChange={setOpenCreateDbDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Notion Database</DialogTitle>
-            <DialogDescription>
-              This will create a new database in your Notion workspace. Select a
-              parent page for the new database.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Parent Page</Label>
-              {isLoadingPages ? (
-                <p>Loading pages...</p>
-              ) : pages && pages.length > 0 ? (
-                <Select
-                  onValueChange={setSelectedPageId}
-                  value={selectedPageId || ""}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a page" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pages.map((page) => (
-                      <SelectItem key={page.id} value={page.id}>
-                        {page.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <div className="text-sm text-muted-foreground p-4 text-center bg-muted rounded-md">
-                  <p>No pages found.</p>
-                  <p>
-                    Please create a page in Notion first and ensure you've given
-                    access to it.
-                  </p>
-                  <Button
-                    variant="link"
-                    onClick={() => setOpenCreatePageDialog(true)}
-                  >
-                    Or create a new page
-                  </Button>
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="db-name">Database Name</Label>
-              <Input
-                id="db-name"
-                value={newDbName}
-                onChange={(e) => setNewDbName(e.target.value)}
-                placeholder="e.g. My New Form Submissions"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setOpenCreateDbDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => createDatabase()}
-              disabled={!selectedPageId || !newDbName || isCreatingDatabase}
-            >
-              {isCreatingDatabase ? "Creating..." : "Create Database"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
+      <NotionDatabaseDialog
+        open={openCreateDbDialog}
+        onOpenChange={setOpenCreateDbDialog}
+        isLoadingPages={isLoadingPages}
+        pages={pages || []}
+        selectedPageId={selectedPageId}
+        setSelectedPageId={setSelectedPageId}
+        newDbName={newDbName}
+        setNewDbName={setNewDbName}
+        isCreatingDatabase={isCreatingDatabase}
+        createDatabase={createDatabase}
+        setOpenCreatePageDialog={setOpenCreatePageDialog}
+        newDbTemplate={newDbTemplate}
+        setNewDbTemplate={setNewDbTemplate}
+      />
+      <NotionPageDialog
         open={openCreatePageDialog}
         onOpenChange={setOpenCreatePageDialog}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Notion Page</DialogTitle>
-            <DialogDescription>
-              This will create a new page in your Notion workspace.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="page-name">Page Name</Label>
-            <Input
-              id="page-name"
-              value={newPageName}
-              onChange={(e) => setNewPageName(e.target.value)}
-              placeholder="e.g. My New Page"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setOpenCreatePageDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => createPage()}
-              disabled={!newPageName || isCreatingPage}
-            >
-              {isCreatingPage ? "Creating..." : "Create Page"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        newPageName={newPageName}
+        setNewPageName={setNewPageName}
+        isCreatingPage={isCreatingPage}
+        createPage={createPage}
+      />
     </div>
   );
 }

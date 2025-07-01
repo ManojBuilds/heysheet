@@ -40,8 +40,11 @@ export async function processFileUploads({
           );
         }
 
+        if (!uploadConfig.allowed_file_types?.length) {
+          throw new Error("No file types are allowed for this form.");
+        }
+
         if (
-          uploadConfig.allowed_file_types?.length &&
           !uploadConfig.allowed_file_types.some((allowedType) => {
             if (allowedType.endsWith("/*")) {
               // Allow wildcard match, e.g., image/* matches image/jpeg

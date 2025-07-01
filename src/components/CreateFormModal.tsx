@@ -125,7 +125,7 @@ const CreateFormModal = () => {
     }
   };
   return (
-    <Dialog modal={false} open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger onClick={handleDialogOpen} asChild>
         <Button>
           <Plus />

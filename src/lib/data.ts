@@ -15,8 +15,6 @@ export const getDashboardStats = async ({
     .from("forms")
     .select("id, is_active, submission_count, created_at")
     .eq("user_id", userId)
-    .gte("created_at", fromDate)
-    .lte("created_at", toDate);
 
   if (formsError)
     throw new Error(`Error fetching forms: ${formsError.message}`);
@@ -42,24 +40,49 @@ export const getTopForms = async ({
 
   const { data: forms, error: formsError } = await supabase
     .from("forms")
-    .select("id, title, submission_count, created_at")
-    .eq("user_id", userId)
+    .select("id, title")
+    .eq("user_id", userId);
+
+  if (formsError) {
+    throw new Error(`Error fetching forms: ${formsError.message}`);
+  }
+
+  if (!forms || forms.length === 0) {
+    return [];
+  }
+
+  const formIds = forms.map((f) => f.id);
+
+  const { data: submissions, error: submissionsError } = await supabase
+    .from("submissions")
+    .select("form_id")
+    .in("form_id", formIds)
     .gte("created_at", fromDate)
     .lte("created_at", toDate);
 
-  if (formsError)
-    throw new Error(`Error fetching forms: ${formsError.message}`);
+  if (submissionsError) {
+    throw new Error(`Error fetching submissions: ${submissionsError.message}`);
+  }
 
-  const topForms = (forms || [])
-    .sort((a, b) => (b.submission_count || 0) - (a.submission_count || 0))
-    .slice(0, 7)
-    .map((f) => ({
+  const submissionCounts = (submissions || []).reduce((acc, submission) => {
+    acc[submission.form_id] = (acc[submission.form_id] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const formsWithCounts = forms.map(form => ({
+      ...form,
+      submissionCount: submissionCounts[form.id] || 0,
+  }));
+
+  const topForms = formsWithCounts
+    .sort((a, b) => b.submissionCount - a.submissionCount)
+    .slice(0, 7);
+
+  return topForms.map((f) => ({
       id: f.id,
       title: f.title,
-      submissionCount: f.submission_count || 0,
-    }));
-
-  return topForms;
+      submissionCount: f.submissionCount,
+  }));
 };
 
 export const getSubmissionsOverTime = async ({

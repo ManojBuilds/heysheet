@@ -105,37 +105,55 @@ const FileUploadSettings = ({ form, onSave }: FileUploadSettingsProps) => {
           <Switch checked={enabled} onCheckedChange={setEnabled} />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Label>Allowed file types</Label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {ALLOWED_FILE_TYPES.map((file) => (
-              <div key={file.value} className="flex items-center gap-2">
+        <div
+          className={cn("space-y-6 transition-all duration-300", {
+            "pointer-events-none opacity-60": !enabled,
+          })}
+        >
+          <div className="flex flex-col gap-2">
+            <Label>Allowed file types</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-2">
                 <Checkbox
-                  id={file.value}
-                  checked={allowedTypes.includes(file.value)}
-                  onCheckedChange={() => toggleFileType(file.value)}
+                  id="select-all"
+                  checked={allowedTypes.length === ALLOWED_FILE_TYPES.length}
+                  onCheckedChange={(checked) => {
+                    setAllowedTypes(
+                      checked ? ALLOWED_FILE_TYPES.map((f) => f.value) : [],
+                    );
+                  }}
                 />
-                <Label htmlFor={file.value}>{file.label}</Label>
+                <Label htmlFor="select-all">Select All</Label>
               </div>
-            ))}
+              {ALLOWED_FILE_TYPES.map((file) => (
+                <div key={file.value} className="flex items-center gap-2">
+                  <Checkbox
+                    id={file.value}
+                    checked={allowedTypes.includes(file.value)}
+                    onCheckedChange={() => toggleFileType(file.value)}
+                  />
+                  <Label htmlFor={file.value}>{file.label}</Label>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="max-files">Max number of files</Label>
-          <Input
-            id="max-files"
-            type="number"
-            min={1}
-            max={5}
-            value={maxFiles}
-            onChange={(e) => setMaxFiles(Number(e.target.value))}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="max-files">Max number of files</Label>
+            <Input
+              id="max-files"
+              type="number"
+              min={1}
+              max={5}
+              value={maxFiles}
+              onChange={(e) => setMaxFiles(Number(e.target.value))}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2">
-          <Label>Max file size per file</Label>
-          <Input disabled value={`${planMaxFileSize} MB`} readOnly />
+          <div className="flex flex-col gap-2">
+            <Label>Max file size per file</Label>
+            <Input disabled value={`${planMaxFileSize} MB`} readOnly />
+          </div>
         </div>
 
         <Button onClick={handleSave} disabled={loading}>

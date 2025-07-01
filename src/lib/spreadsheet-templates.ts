@@ -381,7 +381,7 @@ export const SPREADSHEET_TEMPLATES = {
         },
         {
           id: "email-email",
-          name: "email",
+          name: "Email",
           type: "email",
           title: "Email (Optional)",
           pageId: "page-1",
@@ -390,7 +390,7 @@ export const SPREADSHEET_TEMPLATES = {
         },
         {
           id: "rating-rating",
-          name: "rating",
+          name: "Rating",
           type: "rating",
           title: "How would you rate the product?",
           pageId: "page-2",
@@ -399,7 +399,7 @@ export const SPREADSHEET_TEMPLATES = {
         },
         {
           id: "long-text-liked",
-          name: "liked_feature",
+          name: "Liked Feature",
           type: "long-text",
           title: "What do you like most?",
           pageId: "page-2",
@@ -410,7 +410,7 @@ export const SPREADSHEET_TEMPLATES = {
         },
         {
           id: "long-text-suggestions",
-          name: "suggestions",
+          name: "Suggestions",
           type: "long-text",
           title: "Any suggestions for improvement?",
           pageId: "page-2",
@@ -421,7 +421,7 @@ export const SPREADSHEET_TEMPLATES = {
         },
         {
           id: "single-choice-recommend",
-          name: "recommend",
+          name: "Recommend",
           type: "single-choice",
           title: "Would you recommend this product to others?",
           pageId: "page-2",

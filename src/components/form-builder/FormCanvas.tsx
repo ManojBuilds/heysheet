@@ -163,11 +163,18 @@ const FormCanvas: React.FC<FormCanvasProps> = ({
                           variant={"secondary"}
                           className="border-dashed"
                           onClick={() => {
-                            onUpdateComponents(
+                            const template =
                               SPREADSHEET_TEMPLATES[
                                 title as keyof typeof SPREADSHEET_TEMPLATES
-                              ].builderConfig.components as FormComponent[],
+                              ];
+                            onUpdateComponents(
+                              template.builderConfig
+                                .components as FormComponent[],
                             );
+                            onUpdateFormData((prev) => ({
+                              ...prev,
+                              pages: template.builderConfig.pages,
+                            }));
                           }}
                         >
                           {title}

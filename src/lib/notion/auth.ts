@@ -60,7 +60,7 @@ export const handleNotionCallback = async (userId: string, code: string) => {
   console.log("Saving Notion account to Supabase...");
   const { data: existingAccount } = await supabase
     .from("notion_accounts")
-    .select("access_token");
+    .select("access_token").maybeSingle();
   if (existingAccount?.access_token) {
     return { success: true };
   }

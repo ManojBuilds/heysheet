@@ -26,7 +26,7 @@ export const appendToNotionDatabase = async (
   data: Record<string, any>,
 ) => {
   const notion = new Client({ auth: accessToken });
-  const { properties: dbProperties } = await notion.databases.retrieve({
+  let { properties: dbProperties } = await notion.databases.retrieve({
     database_id: databaseId,
   });
 
@@ -34,9 +34,46 @@ export const appendToNotionDatabase = async (
   const titleKey = Object.keys(dbProperties).find(
     (k) => dbProperties[k].type === "title",
   );
-  if (!titleKey) {
+  if (titleKey) {
+    const dataTitleKey = Object.keys(data).find(
+      (k) => k.toLowerCase() === titleKey.toLowerCase(),
+    );
+    if (dataTitleKey && dataTitleKey !== titleKey) {
+      data[titleKey] = data[dataTitleKey];
+      delete data[dataTitleKey];
+    }
+  } else {
     throw new Error("Database is missing a title property.");
   }
+
+  const inferPropertyType = (value: any): Record<string, any> => {
+    if (Array.isArray(value)) return { multi_select: {} };
+    if (typeof value === 'boolean') return { checkbox: {} };
+    if (typeof value === 'number') return { number: {} };
+    if (typeof value === 'string') {
+      if (/^[\s\S]*@[\s\S]*\.[\s\S]*/.test(value)) return { email: {} };
+      if (/^https?:\/\//.test(value)) return { url: {} };
+      if (/^(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/.test(value)) return { phone_number: {} };
+      if (!isNaN(Date.parse(value)) && /\d{4}-\d{2}-\d{2}/.test(value)) return { date: {} };
+    }
+    return { rich_text: {} };
+  };
+
+  const newProperties: Record<string, any> = {};
+  for (const [field, value] of Object.entries(data)) {
+    if (!dbProperties[field]) {
+      newProperties[field] = inferPropertyType(value);
+    }
+  }
+
+  if (Object.keys(newProperties).length > 0) {
+    const updatedDb = await notion.databases.update({
+      database_id: databaseId,
+      properties: newProperties,
+    });
+    dbProperties = updatedDb.properties;
+  }
+
 
   for (const [field, value] of Object.entries(data)) {
     const prop = dbProperties[field];
@@ -126,20 +163,15 @@ export const createNotionDatabase = async (
 
   const fullProps = {
     ...propDefinitions,
-    title: { title: {} },
-    Description: { rich_text: {} },
-    Count: { number: {} },
-    Category: {
-      select: { options: [{ name: "Option A" }, { name: "Option B" }] },
-    },
-    Tags: { multi_select: { options: [{ name: "X" }, { name: "Y" }] } },
-    Due: { date: {} },
-    Done: { checkbox: {} },
-    Link: { url: {} },
-    Contact: { email: {} },
-    Phone: { phone_number: {} },
-    Assignees: { people: {} },
   };
+
+  const hasTitleProperty = Object.values(fullProps).some(
+    (prop) => "title" in prop,
+  );
+
+  if (!hasTitleProperty) {
+    fullProps["Name"] = { title: {} };
+  }
 
   const db = await notion.databases.create({
     parent: { type: "page_id", page_id: pageId },
@@ -213,13 +245,13 @@ export const createNotionPage = async (
   };
 
   const parent = parentPageId
-    ? { page_id: parentPageId, type: "page_id" }
+    ? { page_id: parentPageId, type: "page_id" as const }
     : {
         workspace: true,
-        type: "workspace",
       };
 
-  const response = await notion.pages.create({
+      const response = await notion.pages.create({
+    // @ts-expect-error - Notion API is missing this property
     parent,
     properties,
   });

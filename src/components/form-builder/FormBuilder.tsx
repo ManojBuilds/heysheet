@@ -133,28 +133,16 @@ const FormBuilder = ({ formId }: { formId: string }) => {
         theme.mode,
       );
       // Only update if the generated theme is different to prevent infinite loops
-      if (JSON.stringify(generatedTheme) !== JSON.stringify(formData.theme)) {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          id: existingForm.id,
-          title: existingForm.title,
-          theme: generatedTheme,
-          components: existingForm.builder_config.components,
-          pages: existingForm.builder_config.pages,
-          activePage: existingForm.builder_config.active_page,
-          successPage: existingForm.builder_config.success_page,
-        }));
-      } else {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          id: existingForm.id,
-          title: existingForm.title,
-          components: existingForm.builder_config.components,
-          pages: existingForm.builder_config.pages,
-          activePage: existingForm.builder_config.active_page,
-          successPage: existingForm.builder_config.success_page,
-        }));
-      }
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        id: existingForm.id,
+        title: existingForm.title,
+        theme: generatedTheme,
+        components: existingForm.builder_config.components,
+        pages: existingForm.builder_config.pages,
+        activePage: existingForm.builder_config.active_page,
+        successPage: existingForm.builder_config.success_page,
+      }));
       const firstComponentOfPageOne =
         existingForm.builder_config.components.filter(
           (c: { pageId: string }) => c.pageId === "page-1",

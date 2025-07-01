@@ -33,7 +33,7 @@ const FormBuilderHeader = ({
 }: FormBuilderHeaderProps) => {
   return (
     <header className="border-b">
-      <div className="flex justify-between items-center p-4">
+      <div className="flex justify-between items-center px-4">
         <Logo />
 
         <div className="flex items-center gap-2">
@@ -80,15 +80,17 @@ const FormBuilderHeader = ({
             disabled={isSaving}
             onClick={handleSaveForm}
             className="gap-1.5"
-            leftIcon={isSaving ?
-              <Loader2 className="w-4 h-4 animate-spin" />
-              :
-              <Save className="h-4 w-4" />
+            leftIcon={
+              isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )
             }
           >
             Save
           </Button>
-          <UserButton/>
+          <UserButton />
         </div>
       </div>
     </header>
