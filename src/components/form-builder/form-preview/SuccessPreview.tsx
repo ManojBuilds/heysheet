@@ -46,9 +46,8 @@ const SuccessPreview: React.FC<SuccessPreviewProps> = ({
 
   return (
     <div
-      className="min-h-svh flex flex-col items-center justify-center px-4 py-12"
+      className="flex flex-col items-center justify-center px-4 py-12"
       style={{
-        backgroundColor: theme.background,
         color: theme.text,
         fontFamily: theme.font,
       }}
@@ -95,26 +94,8 @@ const SuccessPreview: React.FC<SuccessPreviewProps> = ({
           )}
 
         {/* Redirect Message */}
-        {redirectUrl && (
-          <p className="mt-6 text-sm" style={{ color: theme.textSecondary }}>
-            You’ll be redirected in{" "}
-            <span style={{ color: theme.text, fontWeight: 600 }}>{timer}</span>{" "}
-            second{timer !== 1 ? "s" : ""}...
-            <br />
-            If nothing happens,{" "}
-            <a
-              href={redirectUrl}
-              style={{ color: theme.primary, textDecoration: "underline" }}
-            >
-              click here
-            </a>
-            .
-          </p>
-        )}
-        {/* Branding */}
-        <div className="pt-6">
-          <Branding formData={formData} />
-        </div>
+        
+        
       </div>
     </div>
   );

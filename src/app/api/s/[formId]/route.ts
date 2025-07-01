@@ -20,14 +20,32 @@ export async function POST(
     const referrer = headers.get("referrer") || "";
     const formData = await request.formData();
     const entries = Array.from(formData.entries());
+    console.log('entries', entries)
 
     const { data: form, error: formError } = await supabase
       .from("forms")
       .select(
-        "id, user_id, file_upload, email_enabled, notification_email, title, spreadsheet_id, sheet_name, google_account_id",
+        `
+    id, 
+    user_id, 
+    file_upload, 
+    email_enabled, 
+    notification_email, 
+    title, 
+    spreadsheet_id, 
+    sheet_name, 
+    google_account_id, 
+    notion_database_id, 
+    notion_enabled, 
+    notion_account_id,
+    notion_accounts (
+      access_token
+    )
+    `
       )
       .eq("id", formId)
       .single();
+
 
     if (!form || formError) {
       return NextResponse.json(
@@ -89,6 +107,7 @@ export async function POST(
       formId,
       supabase,
     });
+    console.log("Processed form data:", formDataObj);
 
     const ip = headers.get("x-forwarded-for") || "";
     const language = headers.get("accept-language") || "";
@@ -126,12 +145,9 @@ export async function POST(
       );
     }
 
-    // Respond to the client as soon as possible
     const response = NextResponse.json({ success: true, id: submission.id });
 
-    // --- Fire-and-forget background tasks ---
     Promise.resolve().then(async () => {
-      // Background: process file uploads, supabase function, and email
       try {
         const formDataObj = await processFileUploads({
           entries,
@@ -177,6 +193,19 @@ export async function POST(
             dataToSend: messageData,
             toEmail: form.notification_email,
           });
+        }
+        // @ts-ignore
+        const notionAccessToken = form.notion_accounts?.access_token
+        if (
+          planLimit.features.notionIntegration && form.notion_enabled && form.notion_database_id && notionAccessToken
+        ) {
+          void supabase.functions.invoke("append-to-notion-db", {
+            body: {
+              accessToken: notionAccessToken,
+              databaseId: form.notion_database_id,
+              data: formDataObj,
+            },
+          })
         }
       } catch (err) {
         console.error("Background task error:", err);

@@ -62,7 +62,7 @@ export default async function EndpointDetailPage({
     }),
     supabase
       .from("forms")
-      .select("*, slack_account:slack_account_id(*), file_upload")
+      .select("*, slack_account:slack_account_id(*), notion_account:notion_account_id(*), file_upload")
       .eq("id", id)
       .eq("user_id", userId)
       .single(),

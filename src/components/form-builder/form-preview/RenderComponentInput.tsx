@@ -311,6 +311,10 @@ export default function RenderComponentInput({
                     <RadioGroupItem
                       value={option}
                       id={`${component.name}-${i}`}
+                      style={{
+                        border: `1px solid ${theme.border}`
+                        
+                      }}
                     />
                     <label htmlFor={`${component.name}-${i}`}>{option}</label>
                   </div>

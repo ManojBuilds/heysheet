@@ -10,7 +10,6 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
-import { Loader } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Separator } from "../ui/separator";
 import FormCanvas from "./FormCanvas";
@@ -20,7 +19,7 @@ import FormComponentsSidebar from "./FormComponentsSidebar";
 import { DndContext, DragEndEvent, DragStartEvent } from "@dnd-kit/core";
 import ComponentSettingsSidebar from "./ComponentSettingsSidebar";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import FormBuilderHeader from "./FormBuilderHeader";
 import SuccessPageSettings from "./SuccessPageSettings";
@@ -74,7 +73,7 @@ async function upsertForm(formData: FormData & { formId: string }) {
 const FormBuilder = ({ formId }: { formId: string }) => {
   const router = useRouter();
   const { userId } = useAuth();
-  const {data: subscription} = useSubscription()
+  const { data: subscription } = useSubscription();
   const defaultPageId = "page-1";
   const [formData, setFormData] = useState<FormData>({
     activePage: defaultPageId,
@@ -133,15 +132,29 @@ const FormBuilder = ({ formId }: { formId: string }) => {
         theme.radius,
         theme.mode,
       );
-      setFormData({
-        id: existingForm.id,
-        title: existingForm.title,
-        theme: generatedTheme,
-        components: existingForm.builder_config.components,
-        pages: existingForm.builder_config.pages,
-        activePage: existingForm.builder_config.active_page,
-        successPage: existingForm.builder_config.success_page,
-      });
+      // Only update if the generated theme is different to prevent infinite loops
+      if (JSON.stringify(generatedTheme) !== JSON.stringify(formData.theme)) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          id: existingForm.id,
+          title: existingForm.title,
+          theme: generatedTheme,
+          components: existingForm.builder_config.components,
+          pages: existingForm.builder_config.pages,
+          activePage: existingForm.builder_config.active_page,
+          successPage: existingForm.builder_config.success_page,
+        }));
+      } else {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          id: existingForm.id,
+          title: existingForm.title,
+          components: existingForm.builder_config.components,
+          pages: existingForm.builder_config.pages,
+          activePage: existingForm.builder_config.active_page,
+          successPage: existingForm.builder_config.success_page,
+        }));
+      }
       const firstComponentOfPageOne =
         existingForm.builder_config.components.filter(
           (c: { pageId: string }) => c.pageId === "page-1",
@@ -241,8 +254,8 @@ const FormBuilder = ({ formId }: { formId: string }) => {
       (c) => c.type === formElementId,
     );
     if (!component) return;
-    if(component.isPaid && !subscription?.plan){
-      toast.warning("Please upgrade your plan to use this feature!")
+    if (component.isPaid && !subscription?.plan) {
+      toast.warning("Please upgrade your plan to use this feature!");
       return;
     }
 

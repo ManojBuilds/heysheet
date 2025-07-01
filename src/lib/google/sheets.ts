@@ -6,6 +6,7 @@ import { sendEmail } from "../email";
 import { createFormSubmissionMessage } from "../slack/client";
 import { sendMessage } from "../slack/sendMessage";
 import { FormSubmissionData } from "@/components/email-template";
+import { appendToNotionDatabase, listNotionPages, createNotionDatabase } from "../notion/server";
 import { planLimits } from "../planLimits";
 
 // Get Google Sheets client
@@ -195,7 +196,8 @@ export async function processSubmission(
       *,
       form:forms (
         *,
-        slack_account:slack_accounts (*)
+        slack_account:slack_accounts (*),
+        notion_account:notion_accounts (*)
       )
     `,
     )
@@ -285,6 +287,67 @@ export async function processSubmission(
         dataToSend: messageData,
         toEmail: form.notification_email,
       }).catch(console.error);
+    }
+
+    // ✅ Append to Notion database (only if plan allows + properly configured)
+    if (
+      limits.features.notionIntegration &&
+      form.notion_enabled &&
+      form.notion_account
+    ) {
+      let targetNotionDatabaseId = form.notion_database_id;
+
+      if (!targetNotionDatabaseId) {
+        console.log("Attempting to create new Notion database...");
+        try {
+          const notionAccessToken = form.notion_account.access_token;
+          const notionPages = await listNotionPages(notionAccessToken);
+
+          if (notionPages.length === 0) {
+            console.warn("No Notion pages found to create a new database under.");
+            return;
+          }
+
+          const parentPageId = notionPages[0].id;
+          const newDbTitle = `Form Submissions - ${form.title}`;
+          const newDb = await createNotionDatabase(
+            notionAccessToken,
+            parentPageId,
+            newDbTitle,
+            {
+              Name: { title: {} },
+            },
+          );
+          targetNotionDatabaseId = newDb.id;
+
+          const { error: updateError } = await supabase
+            .from("forms")
+            .update({ notion_database_id: targetNotionDatabaseId })
+            .eq("id", form.id);
+
+          if (updateError) {
+            console.error(
+              "Error updating form with new Notion database ID:",
+              updateError,
+            );
+          }
+          console.log(
+            `✅ Created new Notion database: ${newDbTitle} (${targetNotionDatabaseId})`,
+          );
+        } catch (createDbError) {
+          console.error("❌ Error creating new Notion database:", createDbError);
+          return;
+        }
+      }
+
+      if (targetNotionDatabaseId) {
+        console.log("📤 Appending to Notion database...");
+        await appendToNotionDatabase(
+          form.notion_account.access_token,
+          targetNotionDatabaseId,
+          formData,
+        ).catch(console.error);
+      }
     }
 
     console.log("✅ Submission processed successfully");

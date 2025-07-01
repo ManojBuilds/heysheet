@@ -1,13 +1,14 @@
 export const planLimits = {
   free: {
     maxForms: 1,
-    maxSubmissions: 1,
+    maxSubmissions: 100,
     maxFileSizeMB: 0,
     features: {
       slackIntegration: false,
       emailAlerts: false,
       fileUploads: false,
       analytics: false,
+      notionIntegration: true,
     },
   },
   starter: {
@@ -19,6 +20,7 @@ export const planLimits = {
       emailAlerts: true,
       fileUploads: true,
       analytics: true,
+      notionIntegration: true,
     },
   },
   pro: {
@@ -30,6 +32,7 @@ export const planLimits = {
       emailAlerts: true,
       fileUploads: true,
       analytics: true,
+      notionIntegration: true,
     },
   },
 } as const;

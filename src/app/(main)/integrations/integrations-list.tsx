@@ -1,22 +1,39 @@
 "use client";
-import { getGoogleConnectUrl, handleRemoveGoogleAccount } from "@/actions";
+import {
+  getGoogleConnectUrl,
+  handleRemoveGoogleAccount,
+  handleRemoveNotionAccount,
+} from "@/actions";
 import IntegrationCard from "@/components/integrations/Integration-card";
 import { handleRemoveSlackAccount, handleSlackAuth } from "@/lib/slack/auth";
-import { GoogleAccount, SlackAccount } from "@/types/form-details";
+import {
+  GoogleAccount,
+  SlackAccount,
+  NotionAccount,
+} from "@/types/form-details";
 import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
+import { getNotionAuthUrl } from "@/lib/notion/utils";
 
 export const IntegrationsList = ({
   slackAccount,
   googleAccount,
+  notionAccount,
 }: {
   googleAccount: GoogleAccount;
   slackAccount: SlackAccount;
+  notionAccount: NotionAccount;
 }) => {
+  const { userId } = useAuth();
   const removeSlackAccountMutation = useMutation({
     mutationFn: () => handleRemoveSlackAccount(slackAccount.id),
   });
   const removeGoogleAccountMutation = useMutation({
     mutationFn: () => handleRemoveGoogleAccount(googleAccount.id),
+  });
+
+  const removeNotionAccountMutation = useMutation({
+    mutationFn: () => handleRemoveNotionAccount(notionAccount.id),
   });
 
   const handleGoogleAction = async () => {
@@ -30,6 +47,18 @@ export const IntegrationsList = ({
     const link = await handleSlackAuth();
     if (link) {
       window.location.href = link;
+    }
+  };
+
+  const handleNotionAction = async () => {
+    try {
+      const redirectUrl = `/integrations`;
+      const url = await getNotionAuthUrl(redirectUrl, userId as string);
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -56,6 +85,17 @@ export const IntegrationsList = ({
             : handleGoogleAction
         }
         isLoading={removeGoogleAccountMutation.isPending}
+      />
+      <IntegrationCard
+        title="Notion"
+        iconImgSrc="/notion.svg"
+        isConnected={!!notionAccount?.id}
+        handleAction={
+          notionAccount?.id
+            ? removeNotionAccountMutation.mutate
+            : handleNotionAction
+        }
+        isLoading={removeNotionAccountMutation.isPending}
       />
     </div>
   );

@@ -10,6 +10,7 @@ interface CheckoutButtonProps {
   disabled?: boolean;
   children?: React.ReactNode;
   className?: string;
+  autoOpen?: boolean;
 }
 interface CheckoutState {
   status: "idle" | "loading" | "open" | "error";
@@ -21,9 +22,10 @@ export function CheckoutButton({
   disabled,
   children,
   className,
+  autoOpen,
 }: CheckoutButtonProps) {
   const { openSignIn } = useClerk();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser(); 
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     status: "idle",
@@ -74,31 +76,9 @@ export function CheckoutButton({
     });
   }, []);
 
-  // const handleCheckout = async () => {
-  //     try {
-  //         setIsLoading(true);
-  //         await DodoPayments.Checkout.open({
-  //             products: [
-  //                 {
-  //                     productId: "pdt_OzGLRmdGJ1qzvGyXdIpFL",
-  //                     quantity: 1,
-  //                 },
-  //             ],
-  //             redirectUrl: "https://app.dodopayments.com/home"
-
-  //             // redirectUrl: `${window.location.origin}/dashboard`,
-  //             // queryParams: {
-  //             //     email: user?.emailAddresses[0]?.emailAddress || "",
-  //             //     disableEmail: "true",
-  //             // },
-  //         });
-  //     } catch (error) {
-  //         console.error("Failed to open checkout:", error);
-  //         setIsLoading(false);
-  //     }
-  // };
   const handleCheckout = useCallback(() => {
     try {
+      if (!isLoaded) return; 
       if (!isSignedIn) {
         openSignIn();
         return;
@@ -120,13 +100,19 @@ export function CheckoutButton({
           error instanceof Error ? error.message : "Failed to open checkout",
       });
     }
-  }, [isSignedIn, openSignIn, productId]);
+  }, [isSignedIn, openSignIn, productId, isLoaded]);
+
+  useEffect(() => {
+    if (autoOpen && isLoaded) {
+      handleCheckout();
+    }
+  }, [autoOpen, handleCheckout, isLoaded]);
 
   return (
     <Button
       className={className}
       onClick={handleCheckout}
-      disabled={isLoading || disabled}
+      disabled={isLoading || disabled || !isLoaded} // <-- disable if user not loaded
     >
       {isLoading ? "Loading..." : children || "Checkout Now"}
     </Button>

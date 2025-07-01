@@ -26,12 +26,11 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { generateTheme } from "@/lib/theme";
-import { fetchGoogleFonts } from "@/actions";
 
 interface ThemeSelectorProps {
   selectedTheme: FormTheme;
@@ -67,10 +66,28 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   const [radius, setRadius] = useState(selectedTheme.radius || "lg");
   const [font, setFont] = useState(selectedTheme.font || "Outfit");
 
-  const { data: fonts, isLoading } = useQuery({
-    queryKey: ["fonts"],
-    queryFn: fetchGoogleFonts,
-  });
+  const popularGoogleFonts = [
+    "Roboto",
+    "Open Sans",
+    "Lato",
+    "Montserrat",
+    "Oswald",
+    "Source Sans Pro",
+    "Raleway",
+    "Poppins",
+    "Noto Sans",
+    "Ubuntu",
+    "Merriweather",
+    "Playfair Display",
+    "Lora",
+    "Nunito",
+    "PT Sans",
+    "Inter",
+    "Outfit",
+    "Roboto Mono",
+    "Space Mono",
+    "Inconsolata",
+  ];
 
   const applyThemeMutation = useMutation({
     mutationFn: async () => {
@@ -104,10 +121,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
     },
   });
 
-  useEffect(() => {
-    const colorPallet = generateTheme(color, font, radius, theme);
-    onSelectTheme(colorPallet);
-  }, [color, font, radius, theme, onSelectTheme]);
+  
 
   const handleApplyTheme = () => {
     const colorPallet = generateTheme(color, font, radius, theme);
@@ -205,13 +219,13 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       <div className="space-y-2 w-full max-w-sm">
         <Label className="block text-muted-foreground">Font</Label>
         <Select onValueChange={setFont} value={font}>
-          <SelectTrigger disabled={isLoading} className="w-full border">
+          <SelectTrigger className="w-full border">
             <SelectValue placeholder="Select font" className="w-full" />
           </SelectTrigger>
           <SelectContent className="w-full">
-            {fonts?.map((fontItem: { family: string }) => (
-              <SelectItem key={fontItem.family} value={fontItem.family}>
-                {fontItem.family}
+            {popularGoogleFonts.map((fontItem) => (
+              <SelectItem key={fontItem} value={fontItem}>
+                {fontItem}
               </SelectItem>
             ))}
           </SelectContent>

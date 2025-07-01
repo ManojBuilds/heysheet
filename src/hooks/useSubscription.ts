@@ -17,7 +17,7 @@ const useSubscription = () => {
   const { userId } = useAuth();
   const supabase = createClient();
 
-  const query = useQuery<SubscriptionData | null, Error>({
+  const query = useQuery<SubscriptionData, Error>({
     queryKey: ["subscription", userId],
     enabled: !!userId,
     queryFn: async () => {
@@ -27,9 +27,19 @@ const useSubscription = () => {
           "plan, status, customer_id, next_billing, billing_interval, subscription_id",
         )
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
       if (error) throw error;
-      return data;
+      if (data) {
+        return data;
+      }
+      return {
+        plan: "free",
+        status: "active",
+        next_billing: "",
+        customer_id: "",
+        billing_interval: "monthly",
+        subscription_id: "",
+      };
     },
   });
 

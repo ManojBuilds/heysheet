@@ -1,34 +1,39 @@
-'use client';
+"use client";
 
-import { Loader } from 'lucide-react';
-import { ConnectToSlackBtn } from '../connect-to-slack-button';
-import { Button } from '../ui/button';
-import { Label } from '../ui/label';
-import { Switch } from '../ui/switch';
-import { useEffect, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { useUser } from '@clerk/nextjs';
-import { Input } from '../ui/input';
+import { Loader } from "lucide-react";
+import { ConnectToSlackBtn } from "../connect-to-slack-button";
+import { ConnectToNotionButton } from "../ConnectToNotionButton";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
+import { Input } from "../ui/input";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../ui/card';
-import Image from 'next/image';
-import { updateForm } from '@/actions';
-import useSubscription from '@/hooks/useSubscription';
-import { useUpgradeModalStore } from '@/stores/upgradeModalStore';
-import { BlurPaidFeatureCard } from '../BlurPaidFeatureCard';
+} from "../ui/card";
+import Image from "next/image";
+import { updateForm } from "@/actions";
+import useSubscription from "@/hooks/useSubscription";
+import { useUpgradeModalStore } from "@/stores/upgradeModalStore";
+import { BlurPaidFeatureCard } from "../BlurPaidFeatureCard";
 
 const ConfigureIntegration = ({ data }: { data: any }) => {
   const { data: subscription } = useSubscription();
   const queryClient = useQueryClient();
-  const [isEmailAlertEnabled, setIsEmailAlertEnabled] = useState(data.email_enabled);
-  const [email, setEmail] = useState(data.notification_email || '');
-  const openUpgradeModal = useUpgradeModalStore((state) => state.openUpgradeModal);
+  const [isEmailAlertEnabled, setIsEmailAlertEnabled] = useState(
+    data.email_enabled,
+  );
+  const [email, setEmail] = useState(data.notification_email || "");
+  const openUpgradeModal = useUpgradeModalStore(
+    (state) => state.openUpgradeModal,
+  );
 
   const upsertEmailAlertMutation = useMutation({
     mutationFn: ({
@@ -39,22 +44,22 @@ const ConfigureIntegration = ({ data }: { data: any }) => {
       email_enabled: boolean;
     }) => updateForm({ notification_email, email_enabled }, data.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['email-alert'] });
-      toast.success('Alert settings updated');
+      queryClient.invalidateQueries({ queryKey: ["email-alert"] });
+      toast.success("Alert settings updated");
     },
     onError: (e) => {
       console.log(e);
     },
   });
 
-  const isFreePlan = !subscription || subscription.plan === 'free';
+  const isFreePlan = !subscription || subscription.plan === "free";
 
   const handleUpgradeClick = () => {
     openUpgradeModal({
-      heading: 'Upgrade to Unlock Alerts',
+      heading: "Upgrade to Unlock Alerts",
       subHeading:
-        'Slack & Email notifications are only available on Starter and Pro plans. Upgrade now to get real-time alerts.',
-      cta: 'Upgrade Now',
+        "Slack & Email notifications are only available on Starter and Pro plans. Upgrade now to get real-time alerts.",
+      cta: "Upgrade Now",
     });
   };
 
@@ -68,12 +73,14 @@ const ConfigureIntegration = ({ data }: { data: any }) => {
       </CardHeader>
 
       <CardContent
-        className={`transition-all ${isFreePlan ? 'opacity-50 pointer-events-none select-none' : ''
-          }`}
+        className={`transition-all space-y-6 ${
+          isFreePlan ? "opacity-50 pointer-events-none select-none" : ""
+        }`}
       >
         <ConnectToSlackBtn form={data} />
+        <ConnectToNotionButton form={data} />
 
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <div className="w-12 h-12 bg-muted rounded grid place-items-center">
               <Image

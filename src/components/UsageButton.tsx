@@ -6,7 +6,6 @@ import { planLimits } from "@/lib/planLimits";
 import { createClient } from "@/lib/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { Skeleton } from "./ui/skeleton";
 import UpgradeCta from "./UpgradeCta";
 
 const UsageButton = () => {
@@ -17,7 +16,10 @@ const UsageButton = () => {
   const plan = subscription?.plan || "free";
   const limits = planLimits[plan as keyof typeof planLimits];
 
-  const { data: usageData, isLoading: loadingUsage } = useQuery({
+  const {
+    data: usageData = { forms: 0, submissions: 0 },
+    isLoading: loadingUsage,
+  } = useQuery({
     queryKey: ["usage", userId],
     enabled: !!userId,
     queryFn: async () => {
@@ -56,23 +58,21 @@ const UsageButton = () => {
 
   const isLoading = loadingUsage || loadingSub;
 
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <div>
-          <Skeleton className="w-32 h-4 mb-2" />
-          <Skeleton className="h-2 w-full rounded" />
-        </div>
-        <div>
-          <Skeleton className="w-48 h-4 mb-2" />
-          <Skeleton className="h-2 w-full rounded" />
-        </div>
-        <Skeleton className="w-32 h-8 mt-4" />
-      </div>
-    );
-  }
-
-  if (!subscription || !usageData) return null;
+  // if (isLoading) {
+  //   return (
+  //     <div className="space-y-3">
+  //       <div>
+  //         <Skeleton className="w-32 h-4 mb-2" />
+  //         <Skeleton className="h-2 w-full rounded" />
+  //       </div>
+  //       <div>
+  //         <Skeleton className="w-48 h-4 mb-2" />
+  //         <Skeleton className="h-2 w-full rounded" />
+  //       </div>
+  //       <Skeleton className="w-32 h-8 mt-4" />
+  //     </div>
+  //   );
+  // }
 
   const formUsagePercent =
     limits.maxForms === Infinity

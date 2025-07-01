@@ -15,7 +15,8 @@ import { useState, useMemo } from "react";
 import AllowGooglePermissions from "@/components/AllowGooglePermissions";
 import { useUser } from "@clerk/nextjs";
 import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Button } from "@/components/ui/button";
 
 type FormsPageClientProps = {
@@ -87,10 +88,6 @@ export default function FormsPageClient({
     router.push(`?${params.toString()}`);
   };
 
-  if (accounts?.length === 0) {
-    return <AllowGooglePermissions />;
-  }
-
   return (
     <div className="space-y-4 flex flex-col items-center max-w-6xl mx-auto px-4">
       <div className="flex items-center justify-between w-full gap-4">
@@ -98,7 +95,9 @@ export default function FormsPageClient({
         <CreateFormModal />
       </div>
 
-      {forms?.length === 0 ? (
+      {accounts?.length === 0 ? (
+        <AllowGooglePermissions className="mt-12" />
+      ) : forms?.length === 0 ? (
         <div className="text-center mt-12">
           <GoogleSheetLogo className="mx-auto" />
           <h1 className="text-2xl font-semibold">
@@ -156,7 +155,7 @@ export default function FormsPageClient({
             <Button
               onClick={() => goToPage(page - 1)}
               disabled={page <= 1}
-              variant={'outline'}
+              variant={"outline"}
             >
               Previous
             </Button>
@@ -166,7 +165,7 @@ export default function FormsPageClient({
             <Button
               onClick={() => goToPage(page + 1)}
               disabled={page >= totalPages}
-              variant={'outline'}
+              variant={"outline"}
             >
               Next
             </Button>

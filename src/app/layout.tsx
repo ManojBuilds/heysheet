@@ -9,9 +9,9 @@ import { config } from "@/config";
 import { dmSans } from "@/components/ui/fonts";
 
 export const metadata: Metadata = {
-  title: "Forms that sync with Google Sheets Instantly.",
+  title: "HeySheet – The Developer's Form Backend for Google Sheets",
   description:
-    "HeySheet lets you build beautiful forms that update your spreadsheets in real time. No complex integrations, no delays.",
+    "Post your HTML forms to a simple endpoint and get submissions in Google Sheets – with file uploads, analytics, email & Slack notifications, and a visual builder.",
   icons: {
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -20,16 +20,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(config.appUrl),
 
   openGraph: {
-    title: "HeySheet – Connect Your Forms to Google Sheets",
-    description: "Easily sync form submissions to Google Sheets with no code.",
+    title: "HeySheet – The Developer's Form Backend for Google Sheets",
+    description:
+      "Plug in an API endpoint to your form and get submissions in Google Sheets. Built-in support for analytics, file uploads, and alerts.",
     url: config.appUrl,
     siteName: "HeySheet",
     images: [
       {
-        url: "/og-image.png", // Recommended: 1200x630 image in /public
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "HeySheet Preview Image",
+        alt: "HeySheet – Form backend that syncs with Google Sheets",
       },
     ],
     type: "website",
@@ -37,8 +38,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "HeySheet – Connect Your Forms to Google Sheets",
-    description: "Easily sync form submissions to Google Sheets with no code.",
+    title: "HeySheet – Developer-first Form Backend",
+    description:
+      "Build forms with an endpoint that sends data to Google Sheets – plus analytics, uploads & notifications.",
     images: ["/og-image.png"],
   },
 };

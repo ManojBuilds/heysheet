@@ -78,5 +78,17 @@ export interface SlackAccount {
   created_at: string
 }
 
+export interface NotionAccount {
+  id: string;
+  user_id: string;
+  access_token: string;
+  workspace_id: string;
+  workspace_name: string;
+  workspace_icon: string | null;
+  owner_id: string | null;
+  owner_type: string;
+  created_at: string;
+}
+
 
 

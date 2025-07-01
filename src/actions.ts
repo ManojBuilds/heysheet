@@ -4,6 +4,7 @@ import { getGoogleAuthUrl } from "./lib/google/auth";
 import { createClient } from "./lib/supabase/server";
 import { SPREADSHEET_TEMPLATES } from "./lib/spreadsheet-templates";
 import { createSheet } from "./lib/google/sheets";
+import { getNotionAccount, createNotionDatabase } from "./lib/notion/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { planLimits } from "./lib/planLimits";
@@ -34,6 +35,18 @@ export const handleRemoveGoogleAccount = async (accountId: string) => {
   return data;
 };
 
+export const handleRemoveNotionAccount = async (accountId: string) => {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("notion_accounts")
+    .delete()
+    .eq("id", accountId)
+    .select();
+  if (error) throw error;
+  revalidatePath("/integrations");
+  return data;
+};
+
 export const getGoogleAccounts = async (userId: string) => {
   console.log("@getGoogleAccounts", userId);
   if (!userId) return [];
@@ -51,7 +64,9 @@ export const getFormsByUserId = async (userId: string, from = 0, to = 9) => {
   const supabase = await createClient();
   const { data, error, count } = await supabase
     .from("forms")
-    .select("id, title, sheet_name, created_at, is_active, submission_count", { count: "exact" })
+    .select("id, title, sheet_name, created_at, is_active, submission_count", {
+      count: "exact",
+    })
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -67,13 +82,19 @@ export const createFormHelper = async ({
   googleAccountId,
   spreadsheetId,
   email,
+  // notionDatabaseId,
+  // notionAccountId,
+  // notionPageId,
 }: {
   title: string;
   sheetId?: string;
   template?: keyof typeof SPREADSHEET_TEMPLATES;
-  googleAccountId: string;
+  googleAccountId?: string;
   spreadsheetId?: string;
-  email: string;
+  email?: string;
+  // notionDatabaseId?: string;
+  // notionAccountId?: string;
+  // notionPageId?: string;
 }) => {
   const user = await currentUser();
   if (!user?.id) return { error: "User not authenticated" };
@@ -104,6 +125,10 @@ export const createFormHelper = async ({
       slack_account_id: existingSlackAccount?.id || null,
       slack_channel: null,
       slack_enabled: false,
+      // notion_database_id: notionDatabaseId,
+      // notion_account_id: notionAccountId,
+      // notion_enabled: !!notionDatabaseId,
+      // notion_page_id: notionPageId,
     })
     .select()
     .single();
@@ -122,12 +147,18 @@ export const createForm = async ({
   template,
   googleAccountId,
   email,
+  // notionDatabaseId,
+  // notionAccountId,
+  // notionPageId,
 }: {
   title: string;
   sheetId?: string;
   template?: keyof typeof SPREADSHEET_TEMPLATES;
-  googleAccountId: string;
-  email: string;
+  googleAccountId?: string;
+  email?: string;
+  // notionDatabaseId?: string;
+  // notionAccountId?: string;
+  // notionPageId?: string;
 }) => {
   try {
     let spreadsheetId = sheetId;
@@ -141,10 +172,24 @@ export const createForm = async ({
       headers = templateForm.headers;
     }
 
-    if (!sheetId) {
+    if (!sheetId && googleAccountId) {
       const sheet = await createSheet(googleAccountId, title, headers);
       spreadsheetId = sheet.spreadsheetId as string;
     }
+
+    // if (notionAccountId && !notionDatabaseId && notionPageId ) {
+    //   const notionAccount = await getNotionAccount(notionAccountId);
+    //   if (!notionAccount) {
+    //     return { error: "Notion account not found" };
+    //   }
+    //   const newDb = await createNotionDatabase(
+    //     notionAccount.access_token,
+    //     notionPageId,
+    //     title,
+    //     {},
+    //   );
+    //   notionDatabaseId = newDb.id;
+    // }
 
     const result = await createFormHelper({
       title,
@@ -153,6 +198,8 @@ export const createForm = async ({
       googleAccountId,
       spreadsheetId,
       email,
+      // notionDatabaseId,
+      // notionAccountId,
     });
 
     if (result.error) {
@@ -210,20 +257,6 @@ export const canCreateForm = async () => {
   const planLimit = planLimits[plan as keyof typeof planLimits].maxForms ?? 1;
 
   return (data?.length ?? 0) <= planLimit;
-};
-
-export const fetchGoogleFonts = async () => {
-  try {
-    const API_KEY = process.env.GOOGLE_FONTS_API_KEY;
-    const response = await fetch(
-      `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`,
-    );
-    const data = await response.json();
-    return data.items?.slice(0, 100);
-  } catch (error) {
-    console.log(error);
-    return [];
-  }
 };
 
 export const createCustomerPortalSession = async () => {

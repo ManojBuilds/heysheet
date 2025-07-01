@@ -40,16 +40,15 @@ export const BlurPaidFeatureCard = ({
     );
   }
 
-  // Don't show blur for non-free plans
   if (subscription?.plan !== "free") return null;
 
   return (
     <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-[2px] rounded-xl flex flex-col justify-center items-center text-center p-6 space-y-3">
-      <div className="text-left space-y-2">
+      <div className="space-y-2">
         <p className="text-lg font-semibold text-white">{title}</p>
         <p className="text-sm text-muted-foreground">{description}</p>
         {features?.length > 0 && (
-          <ul className="text-sm text-muted-foreground space-y-1 text-left">
+          <ul className="text-sm text-muted-foreground space-y-1">
             {features.map((feature, index) => (
               <li key={index}>
                 <span className="text-green-600">✓</span> {feature}

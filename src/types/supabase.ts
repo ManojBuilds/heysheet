@@ -153,6 +153,9 @@ export type Database = {
           theme: Json
           title: string
           updated_at: string
+          notion_account_id: string | null
+          notion_database_id: string | null
+          notion_enabled: boolean | null
         }
         Insert: {
           active_page?: string
@@ -165,6 +168,9 @@ export type Database = {
           theme?: Json
           title?: string
           updated_at?: string
+          notion_account_id?: string | null
+          notion_database_id?: string | null
+          notion_enabled?: boolean | null
         }
         Update: {
           active_page?: string
@@ -177,6 +183,9 @@ export type Database = {
           theme?: Json
           title?: string
           updated_at?: string
+          notion_account_id?: string | null
+          notion_database_id?: string | null
+          notion_enabled?: boolean | null
         }
         Relationships: [
           {
@@ -191,6 +200,57 @@ export type Database = {
             columns: ["endpoint_id"]
             isOneToOne: true
             referencedRelation: "endpoints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forms_notion_account_id_fkey"
+            columns: ["notion_account_id"]
+            isOneToOne: false
+            referencedRelation: "notion_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notion_accounts: {
+        Row: {
+          id: string
+          user_id: string
+          access_token: string
+          workspace_id: string
+          workspace_name: string | null
+          workspace_icon: string | null
+          owner_id: string | null
+          owner_type: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          access_token: string
+          workspace_id: string
+          workspace_name?: string | null
+          workspace_icon?: string | null
+          owner_id?: string | null
+          owner_type?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          access_token?: string
+          workspace_id?: string
+          workspace_name?: string | null
+          workspace_icon?: string | null
+          owner_id?: string | null
+          owner_type?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notion_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
