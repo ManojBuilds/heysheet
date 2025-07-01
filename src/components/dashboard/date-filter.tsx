@@ -82,7 +82,7 @@ const DateFilter = () => {
     to: Date | undefined;
   }>({ from: subDays(new Date(), 10), to: new Date() });
 
-  const [selectedOption, setSelectedOption] = useState<string>("All Time");
+  const [selectedOption, setSelectedOption] = useState<string>("This Week");
   const [open, setOpen] = useState(false);
 
   const handleSetRange = (from: Date, to: Date) => {

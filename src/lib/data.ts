@@ -4,15 +4,20 @@ export const getDashboardStats = async ({
   userId,
   fromDate,
   toDate,
-}: { userId: string, fromDate: string, toDate: string }) => {
+  formId,
+}: { userId: string; fromDate: string; toDate: string; formId?: string }) => {
   const supabase = await createClient();
 
-  const { data: forms, error: formsError } = await supabase
+  let query = supabase
     .from("forms")
     .select("id, is_active, submission_count, created_at")
-    .eq("user_id", userId)
-    .gte("created_at", fromDate)
-    .lte("created_at", toDate);
+    .eq("user_id", userId);
+  if (formId) {
+    query = query.eq("id", formId);
+  }
+  query = query.gte("created_at", fromDate).lte("created_at", toDate);
+
+  const { data: forms, error: formsError } = await query;
 
   if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
 
@@ -27,15 +32,20 @@ export const getTopForms = async ({
   userId,
   fromDate,
   toDate,
-}: { userId: string, fromDate: string, toDate: string }) => {
+  formId,
+}: { userId: string; fromDate: string; toDate: string; formId?: string }) => {
   const supabase = await createClient();
 
-  const { data: forms, error: formsError } = await supabase
+  let query = supabase
     .from("forms")
     .select("id, title, submission_count, created_at")
-    .eq("user_id", userId)
-    .gte("created_at", fromDate)
-    .lte("created_at", toDate);
+    .eq("user_id", userId);
+  if (formId) {
+    query = query.eq("id", formId);
+  }
+  query = query.gte("created_at", fromDate).lte("created_at", toDate);
+
+  const { data: forms, error: formsError } = await query;
 
   if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
 
@@ -51,17 +61,20 @@ export const getTopForms = async ({
   return topForms;
 };
 
-export const getSubmissionsOverTime = async ({ userId, fromDate, toDate }: { userId: string, fromDate: string, toDate: string }) => {
+export const getSubmissionsOverTime = async ({ userId, fromDate, toDate, formId }: { userId: string; fromDate: string; toDate: string; formId?: string }) => {
   const supabase = await createClient();
 
-  const { data: forms, error: formsError } = await supabase
-    .from("forms")
-    .select("id")
-    .eq("user_id", userId);
-
-  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
-
-  const formIds = forms?.map(f => f.id) || [];
+  let formIds: string[] = [];
+  if (formId) {
+    formIds = [formId];
+  } else {
+    const { data: forms, error: formsError } = await supabase
+      .from("forms")
+      .select("id")
+      .eq("user_id", userId);
+    if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
+    formIds = forms?.map(f => f.id) || [];
+  }
   if (formIds.length === 0) return [];
 
   const { data, error } = await supabase
@@ -88,21 +101,26 @@ export const getAllAnalyticsGroups = async ({
   userId,
   fromDate,
   toDate,
+  formId,
 }: {
   userId: string;
   fromDate: string;
   toDate: string;
+  formId?: string;
 }) => {
   const supabase = await createClient();
 
-  const { data: forms, error: formsError } = await supabase
-    .from("forms")
-    .select("id")
-    .eq("user_id", userId);
-
-  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
-
-  const formIds = forms?.map((f) => f.id) || [];
+  let formIds: string[] = [];
+  if (formId) {
+    formIds = [formId];
+  } else {
+    const { data: forms, error: formsError } = await supabase
+      .from("forms")
+      .select("id")
+      .eq("user_id", userId);
+    if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
+    formIds = forms?.map((f) => f.id) || [];
+  }
   if (formIds.length === 0) {
     return {
       os: [],

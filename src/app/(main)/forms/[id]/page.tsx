@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { FormTabs } from "./form-tabs";
-import { parseISO } from "date-fns";
 import { FormDetails } from "@/types/form-details";
 import type { Metadata } from "next";
+import { FormAnalytics } from "./form-analytics";
 
 export async function generateMetadata({
   params,
@@ -42,41 +42,26 @@ export default async function EndpointDetailPage({
 }) {
   const { id } = await params;
   const { userId } = await auth();
-  const { from, to } = await searchParams;
-  const fromDate = from
-    ? parseISO(from)
-    : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const toDate = to ? parseISO(to) : new Date();
 
   if (!userId) {
     return redirect("/sign-in");
   }
 
   const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("forms")
+    .select(
+      "*, slack_account:slack_account_id(*), notion_account:notion_account_id(*), file_upload",
+    )
+    .eq("id", id)
+    .eq("user_id", userId)
+    .single();
 
-  const [analyticsRes, formRes] = await Promise.all([
-    supabase.rpc("form_analytics_range", {
-      id,
-      from_date: fromDate.toISOString(),
-      to_date: toDate.toISOString(),
-    }),
-    supabase
-      .from("forms")
-      .select("*, slack_account:slack_account_id(*), notion_account:notion_account_id(*), file_upload")
-      .eq("id", id)
-      .eq("user_id", userId)
-      .single(),
-  ]);
-
-  const { data: analytics, error } = analyticsRes;
-  const { data, error: formError } = formRes;
-  console.log({ analytics, error, data, formError });
-
-  if (formError || !data) {
+  if (error || !data) {
     return notFound();
   }
 
-  if (formRes.data?.user_id !== userId) {
+  if (data?.user_id !== userId) {
     return redirect("/");
   }
 
@@ -91,12 +76,12 @@ export default async function EndpointDetailPage({
         </Link>
       </nav>
       <FormTabs
-        defaultTab="details"
+        defaultTab="overview"
         id={id}
         data={data as FormDetails}
         appUrl={appUrl}
         endpointUrl={endpointUrl}
-        analytics={analytics}
+        formAnalytics={<FormAnalytics id={id} searchParams={searchParams} />}
       />
     </main>
   );

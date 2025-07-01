@@ -2,8 +2,8 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FormDetails } from "./form-details";
-import { FormAnalytics } from "./form-analytics";
 import { FormDetails as IFormDetails } from "@/types/form-details";
+import { ReactNode } from "react";
 
 export function FormTabs({
   defaultTab,
@@ -11,22 +11,22 @@ export function FormTabs({
   appUrl,
   endpointUrl,
   id,
-  analytics,
+  formAnalytics,
 }: {
   defaultTab: string;
   data: IFormDetails;
   appUrl: string;
   endpointUrl: string;
   id: string;
-  analytics: any;
+  formAnalytics: ReactNode;
 }) {
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList>
-        <TabsTrigger value="details">Overview</TabsTrigger>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="analytics">Analytics</TabsTrigger>
       </TabsList>
-      <TabsContent value="details">
+      <TabsContent value="overview">
         <FormDetails
           data={data}
           appUrl={appUrl}
@@ -34,9 +34,7 @@ export function FormTabs({
           id={id}
         />
       </TabsContent>
-      <TabsContent value="analytics">
-        <FormAnalytics data={analytics} />
-      </TabsContent>
+      <TabsContent value="analytics">{formAnalytics}</TabsContent>
     </Tabs>
   );
 }

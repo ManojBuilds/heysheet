@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
   const [active, setActive] = useState(isActive);
   const router = useRouter();
   const supabase = createClient();
+  const queryClient = useQueryClient();
 
   const toggleActiveMutation = useMutation({
     mutationFn: async (newStatus: boolean) => {
@@ -59,6 +60,7 @@ const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
     },
     onSuccess: () => {
       toast.success("Form deleted.");
+      queryClient.invalidateQueries({ queryKey: ["usage"] });
       router.push("/forms");
     },
     onError: (error) => {
@@ -98,6 +100,12 @@ const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
               Delete Form
             </Button>
           </AlertDialogTrigger>
+          {subscription?.plan === "free" && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Deleting forms is only available on paid plans. Please upgrade to
+              delete forms.
+            </p>
+          )}
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Do you really want to delete?</AlertDialogTitle>

@@ -3,7 +3,7 @@ import { ChartAreaInteractive } from "@/components/dashboard/chart-area";
 import CreateFormModal from "@/components/CreateFormModal";
 import PageHeader from "@/components/pages/page-header";
 import Topforms from "@/components/dashboard/top-forms";
-import { parseISO } from "date-fns";
+import { parseISO, startOfWeek } from "date-fns";
 import DateFilter from "@/components/dashboard/date-filter";
 import { getGoogleAccounts } from "@/actions";
 import AllowGooglePermissions from "@/components/AllowGooglePermissions";
@@ -30,7 +30,7 @@ export default async function DashboardPage({
   const isGoogleAccountConnected = !!googleAccounts.length;
   const fromDate = from
     ? parseISO(from)
-    : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    : startOfWeek(new Date(), { weekStartsOn: 1 });
   const toDate = to ? parseISO(to) : new Date();
 
   const fromDateIso = fromDate.toISOString()
