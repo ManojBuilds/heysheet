@@ -4,25 +4,21 @@ export const getDashboardStats = async ({
   userId,
   fromDate,
   toDate,
-}: {
-  userId: string;
-  fromDate: string;
-  toDate: string;
-}) => {
+}: { userId: string, fromDate: string, toDate: string }) => {
   const supabase = await createClient();
 
   const { data: forms, error: formsError } = await supabase
     .from("forms")
     .select("id, is_active, submission_count, created_at")
     .eq("user_id", userId)
+    .gte("created_at", fromDate)
+    .lte("created_at", toDate);
 
-  if (formsError)
-    throw new Error(`Error fetching forms: ${formsError.message}`);
+  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
 
   const totalForms = forms?.length || 0;
-  const activeForms = forms?.filter((f) => f.is_active).length || 0;
-  const totalSubmissions =
-    forms?.reduce((sum, f) => sum + (f.submission_count || 0), 0) || 0;
+  const activeForms = forms?.filter(f => f.is_active).length || 0;
+  const totalSubmissions = forms?.reduce((sum, f) => sum + (f.submission_count || 0), 0) || 0;
 
   return { totalForms, activeForms, totalSubmissions };
 };
@@ -31,69 +27,31 @@ export const getTopForms = async ({
   userId,
   fromDate,
   toDate,
-}: {
-  userId: string;
-  fromDate: string;
-  toDate: string;
-}) => {
+}: { userId: string, fromDate: string, toDate: string }) => {
   const supabase = await createClient();
 
   const { data: forms, error: formsError } = await supabase
     .from("forms")
-    .select("id, title")
-    .eq("user_id", userId);
-
-  if (formsError) {
-    throw new Error(`Error fetching forms: ${formsError.message}`);
-  }
-
-  if (!forms || forms.length === 0) {
-    return [];
-  }
-
-  const formIds = forms.map((f) => f.id);
-
-  const { data: submissions, error: submissionsError } = await supabase
-    .from("submissions")
-    .select("form_id")
-    .in("form_id", formIds)
+    .select("id, title, submission_count, created_at")
+    .eq("user_id", userId)
     .gte("created_at", fromDate)
     .lte("created_at", toDate);
 
-  if (submissionsError) {
-    throw new Error(`Error fetching submissions: ${submissionsError.message}`);
-  }
+  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
 
-  const submissionCounts = (submissions || []).reduce((acc, submission) => {
-    acc[submission.form_id] = (acc[submission.form_id] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const formsWithCounts = forms.map(form => ({
-      ...form,
-      submissionCount: submissionCounts[form.id] || 0,
-  }));
-
-  const topForms = formsWithCounts
-    .sort((a, b) => b.submissionCount - a.submissionCount)
-    .slice(0, 7);
-
-  return topForms.map((f) => ({
+  const topForms = (forms || [])
+    .sort((a, b) => (b.submission_count || 0) - (a.submission_count || 0))
+    .slice(0, 7)
+    .map(f => ({
       id: f.id,
       title: f.title,
-      submissionCount: f.submissionCount,
-  }));
+      submissionCount: f.submission_count || 0,
+    }));
+
+  return topForms;
 };
 
-export const getSubmissionsOverTime = async ({
-  userId,
-  fromDate,
-  toDate,
-}: {
-  userId: string;
-  fromDate: string;
-  toDate: string;
-}) => {
+export const getSubmissionsOverTime = async ({ userId, fromDate, toDate }: { userId: string, fromDate: string, toDate: string }) => {
   const supabase = await createClient();
 
   const { data: forms, error: formsError } = await supabase
@@ -101,10 +59,9 @@ export const getSubmissionsOverTime = async ({
     .select("id")
     .eq("user_id", userId);
 
-  if (formsError)
-    throw new Error(`Error fetching forms: ${formsError.message}`);
+  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
 
-  const formIds = forms?.map((f) => f.id) || [];
+  const formIds = forms?.map(f => f.id) || [];
   if (formIds.length === 0) return [];
 
   const { data, error } = await supabase
@@ -143,8 +100,7 @@ export const getAllAnalyticsGroups = async ({
     .select("id")
     .eq("user_id", userId);
 
-  if (formsError)
-    throw new Error(`Error fetching forms: ${formsError.message}`);
+  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
 
   const formIds = forms?.map((f) => f.id) || [];
   if (formIds.length === 0) {
@@ -184,54 +140,9 @@ export const getAllAnalyticsGroups = async ({
   });
 
   return {
-    os: Object.entries(result.os).map(([os, count]) => ({
-      key: os,
-      value: count,
-    })),
-    browser: Object.entries(result.browser).map(([browser, count]) => ({
-      key: browser,
-      value: count,
-    })),
-    device_type: Object.entries(result.device_type).map(
-      ([device_type, count]) => ({ key: device_type, value: count }),
-    ),
-    country: Object.entries(result.country).map(([country, count]) => ({
-      key: country,
-      value: count,
-    })),
-  };
-};
-
-export const getUsage = async ({ userId }: { userId: string }) => {
-  const supabase = await createClient();
-  const now = new Date();
-  const firstDayOfMonth = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    1,
-  ).toISOString();
-
-  // Count forms
-  const { count: formCount } = await supabase
-    .from("forms")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId!);
-
-  // Get form IDs
-  const formIds =
-    (
-      await supabase.from("forms").select("id").eq("user_id", userId!)
-    ).data?.map((f) => f.id) ?? [];
-
-  // Count submissions for those forms
-  const { count: submissionCount } = await supabase
-    .from("submissions")
-    .select("id", { count: "exact", head: true })
-    .gte("created_at", firstDayOfMonth)
-    .in("form_id", formIds);
-
-  return {
-    forms: formCount ?? 0,
-    submissions: submissionCount ?? 0,
+    os: Object.entries(result.os).map(([os, count]) => ({ key: os, value: count })),
+    browser: Object.entries(result.browser).map(([browser, count]) => ({ key: browser, value: count })),
+    device_type: Object.entries(result.device_type).map(([device_type, count]) => ({ key: device_type, value: count })),
+    country: Object.entries(result.country).map(([country, count]) => ({ key: country, value: count })),
   };
 };
