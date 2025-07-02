@@ -5,7 +5,7 @@ import { createClient } from "./lib/supabase/server";
 import { SPREADSHEET_TEMPLATES } from "./lib/spreadsheet-templates";
 import { createSheet } from "./lib/google/sheets";
 import { getNotionAccount, createNotionDatabase } from "./lib/notion/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { planLimits } from "./lib/planLimits";
 import dodo from "./lib/dodopayments";
@@ -82,9 +82,8 @@ export const createFormHelper = async ({
   googleAccountId,
   spreadsheetId,
   email,
-  // notionDatabaseId,
-  // notionAccountId,
-  // notionPageId,
+  notionDatabaseId,
+  notionAccountId,
 }: {
   title: string;
   sheetId?: string;
@@ -92,9 +91,8 @@ export const createFormHelper = async ({
   googleAccountId?: string;
   spreadsheetId?: string;
   email?: string;
-  // notionDatabaseId?: string;
-  // notionAccountId?: string;
-  // notionPageId?: string;
+  notionDatabaseId?: string;
+  notionAccountId?: string;
 }) => {
   const user = await currentUser();
   if (!user?.id) return { error: "User not authenticated" };
@@ -125,10 +123,9 @@ export const createFormHelper = async ({
       slack_account_id: existingSlackAccount?.id || null,
       slack_channel: null,
       slack_enabled: false,
-      // notion_database_id: notionDatabaseId,
-      // notion_account_id: notionAccountId,
-      // notion_enabled: !!notionDatabaseId,
-      // notion_page_id: notionPageId,
+      notion_database_id: notionDatabaseId,
+      notion_account_id: notionAccountId,
+      notion_enabled: !!notionDatabaseId,
     })
     .select()
     .single();
@@ -147,18 +144,16 @@ export const createForm = async ({
   template,
   googleAccountId,
   email,
-  // notionDatabaseId,
-  // notionAccountId,
-  // notionPageId,
+  notionDatabaseId,
+  notionAccountId,
 }: {
   title: string;
   sheetId?: string;
   template?: keyof typeof SPREADSHEET_TEMPLATES;
   googleAccountId?: string;
   email?: string;
-  // notionDatabaseId?: string;
-  // notionAccountId?: string;
-  // notionPageId?: string;
+  notionDatabaseId?: string;
+  notionAccountId?: string;
 }) => {
   try {
     let spreadsheetId = sheetId;
@@ -177,20 +172,6 @@ export const createForm = async ({
       spreadsheetId = sheet.spreadsheetId as string;
     }
 
-    // if (notionAccountId && !notionDatabaseId && notionPageId ) {
-    //   const notionAccount = await getNotionAccount(notionAccountId);
-    //   if (!notionAccount) {
-    //     return { error: "Notion account not found" };
-    //   }
-    //   const newDb = await createNotionDatabase(
-    //     notionAccount.access_token,
-    //     notionPageId,
-    //     title,
-    //     {},
-    //   );
-    //   notionDatabaseId = newDb.id;
-    // }
-
     const result = await createFormHelper({
       title,
       sheetId,
@@ -198,8 +179,8 @@ export const createForm = async ({
       googleAccountId,
       spreadsheetId,
       email,
-      // notionDatabaseId,
-      // notionAccountId,
+      notionDatabaseId,
+      notionAccountId,
     });
 
     if (result.error) {
@@ -275,3 +256,36 @@ export const createCustomerPortalSession = async () => {
 
   return await dodo.customers.customerPortal.create(subscription.customer_id);
 };
+
+
+export async function getOauthConnection(oauthProvider: 'google' | 'notion' | 'slack') {
+  const { userId } = await auth()
+  const client = await clerkClient();
+
+  if (!userId) {
+    return null
+  }
+
+  const user = await client.users.getUser(userId);
+
+  const account = user.externalAccounts.find(
+    (acc) => acc.provider === oauthProvider,
+  );
+
+  if (!account) {
+    return null;
+  }
+
+  const tokenResponse = await client.users.getUserOauthAccessToken(
+    userId,
+    oauthProvider,
+  );
+
+  const accessToken = tokenResponse.data?.[0].token;
+
+  return {
+    accessToken: accessToken || null,
+    isConnected: !!accessToken,
+  };
+}
+

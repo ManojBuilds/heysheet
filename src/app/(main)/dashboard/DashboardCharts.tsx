@@ -1,6 +1,7 @@
 import ReusableChart from "@/components/dashboard/browser-chart";
+import { getGoogleAccessToken } from "@/lib/clerk";
 import { getAllAnalyticsGroups } from "@/lib/data";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { Country } from "country-state-city";
 
 export default async function DashboardCharts({
@@ -16,6 +17,8 @@ export default async function DashboardCharts({
     fromDate,
     toDate,
   });
+  const accessToken = await getGoogleAccessToken(userId);
+  console.log("accessToken", accessToken);
   return (
     <div className="grid grid-cols-4 gap-4">
       <ReusableChart title="Browser Usage" data={browser} />

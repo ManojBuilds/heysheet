@@ -22,8 +22,8 @@ export default async function DashboardPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const user = await currentUser();
-  if(!user) {
-    return redirect('/')
+  if (!user) {
+    return redirect("/");
   }
   const { from, to } = await searchParams;
   const googleAccounts = await getGoogleAccounts(user?.id || "");
@@ -33,8 +33,8 @@ export default async function DashboardPage({
     : startOfWeek(new Date(), { weekStartsOn: 1 });
   const toDate = to ? parseISO(to) : new Date();
 
-  const fromDateIso = fromDate.toISOString()
-  const toDateIso = toDate.toISOString()
+  const fromDateIso = fromDate.toISOString();
+  const toDateIso = toDate.toISOString();
 
   return (
     <div className="flex flex-col gap-4">
@@ -42,29 +42,26 @@ export default async function DashboardPage({
         title={user?.firstName ? `Holla, ${user.firstName}` : "Dashboard"}
         action={<CreateFormModal />}
       />
-      {isGoogleAccountConnected ? (
-        <>
-          <DateFilter />
-          <Suspense fallback={<DashboardStatsSkeleton />}>
-            <DashboardStats fromDate={fromDateIso} toDate={toDateIso} />
+      {/* Always show dashboard content, regardless of Google account connection */}
+      <DateFilter />
+      <Suspense fallback={<DashboardStatsSkeleton />}>
+        <DashboardStats fromDate={fromDateIso} toDate={toDateIso} />
+      </Suspense>
+      <div className="inline-flex gap-4">
+        <div className="flex-1">
+          <Suspense fallback={<ChartAreaSkeleton />}>
+            <ChartAreaInteractive fromDate={fromDateIso} toDate={toDateIso} />
           </Suspense>
-          <div className="inline-flex gap-4">
-            <div className="flex-1">
-              <Suspense fallback={<ChartAreaSkeleton />}>
-                <ChartAreaInteractive fromDate={fromDateIso} toDate={toDateIso} />
-              </Suspense>
-            </div>
-            <Suspense fallback={<TopFormsSkeleton />}>
-              <Topforms fromDate={fromDateIso} toDate={toDateIso} />
-            </Suspense>
-          </div>
-          <Suspense fallback={<DashboardChartsSkeleton />}>
-            <DashboardCharts fromDate={fromDateIso} toDate={toDateIso} />
-          </Suspense>
-        </>
-      ) : (
-        <AllowGooglePermissions className="pt-12" />
-      )}
+        </div>
+        <Suspense fallback={<TopFormsSkeleton />}>
+          <Topforms fromDate={fromDateIso} toDate={toDateIso} />
+        </Suspense>
+      </div>
+      <Suspense fallback={<DashboardChartsSkeleton />}>
+        <DashboardCharts fromDate={fromDateIso} toDate={toDateIso} />
+      </Suspense>
+      {/* Optionally, show AllowGooglePermissions if not connected, but do not block dashboard */}
+      {/* {!isGoogleAccountConnected && <AllowGooglePermissions className="pt-12" />} */}
     </div>
   );
 }

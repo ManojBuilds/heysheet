@@ -1,6 +1,6 @@
 "use client";
 import { UserButton } from "@clerk/nextjs";
-import GoogleAccountSwitcher from "./GoogleAccountSwitcher";
+// import GoogleAccountSwitcher from "./GoogleAccountSwitcher";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
 import { Logo } from "./Logo";
@@ -14,7 +14,7 @@ export default function Topbar() {
     <div className="border-b h-16 flex items-center justify-between px-4 bg-background/80 backdrop-blur sticky top-0 z-20">
       <div className="flex flex-1 gap-6 items-center">
         <Logo />
-        <GoogleAccountSwitcher />
+        {/* <GoogleAccountSwitcher /> */}
       </div>
       <div className="flex items-center gap-2">
         <a
