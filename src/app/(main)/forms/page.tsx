@@ -3,7 +3,7 @@ import { getFormsByUserId } from "@/actions";
 import FormsPageClient from "./forms-client";
 
 export const metadata = {
-  title: "Forms - HeySheet",
+  title: "Forms - Heysheet",
   description: "Manage your forms and Google Sheets integrations.",
 };
 

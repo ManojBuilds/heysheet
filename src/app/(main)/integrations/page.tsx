@@ -30,7 +30,7 @@ async function fetchIntegrationsStatus() {
 }
 
 export const metadata = {
-  title: "Integrations - HeySheet",
+  title: "Integrations - Heysheet",
   description:
     "Connect your Google Sheets and Slack to receive form submissions.",
 };

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import UpgradeModal from "@/components/UpgradeModal";
 import { config } from "@/config";
 import { dmSans } from "@/components/ui/fonts";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Heysheet – The Developer's Form Backend for Google Sheets & Notion",
@@ -63,6 +64,7 @@ export default function RootLayout({
               expand={false}
               position="top-center"
             />
+            <Analytics />
             <NextTopLoader
               color="#00c950"
               initialPosition={0.08}
