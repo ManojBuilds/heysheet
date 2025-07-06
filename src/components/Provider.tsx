@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PostHogProvider } from "./PostHogProvider";
 import { dark } from "@clerk/themes";
+import { config } from "@/config";
 
 const queryClient = new QueryClient();
 export default function Provider({ children }: { children: ReactNode }) {
@@ -12,11 +13,10 @@ export default function Provider({ children }: { children: ReactNode }) {
     <ClerkProvider appearance={{
       baseTheme: dark,
       layout: {
-        logoImageUrl: "/logo.png",
         logoLinkUrl: "/",
         logoPlacement: "inside",
-        termsPageUrl: "/terms",
-        privacyPageUrl: '/privacy-policy',
+        termsPageUrl: config.landingPageUrl +"/terms",
+        privacyPageUrl: config.landingPageUrl + '/privacy-policy',
         shimmer: true,
         socialButtonsVariant: "blockButton",
         socialButtonsPlacement: "top",

@@ -1,3 +1,4 @@
+"use client";
 import { BellIcon, FileSpreadsheetIcon } from "lucide-react";
 import CodeSnippet from "./CodeSnippet";
 import {
@@ -10,11 +11,20 @@ import {
 import ConfigureIntegration from "@/components/integrations/configure-integrations";
 import { FormSettings } from "./FormSettings";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import DeleteFormButton from "./delete-form-button";
+import { DomainManager } from "./DomainManager";
 import FileUploadSettings from "@/components/FileUploadSettings";
 import { updateForm } from "@/actions";
 import { FormDetails as IFormDetails } from "@/types/form-details";
 import CodeBlock from "@/components/code-block";
+import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
+import AllowGooglePermissions from "@/components/AllowGooglePermissions";
+import SpreadsheetsPicker from "@/components/SpreadsheetsPicker";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { createSheet } from "@/lib/google/sheets";
+import { useRouter } from "nextjs-toploader/app";
 
 export const FormDetails = ({
   data,
@@ -27,6 +37,11 @@ export const FormDetails = ({
   appUrl: string;
   id: string;
 }) => {
+  const { selectedAccount } = useGoogleAccounts();
+  const [isPending, startTransition] = useTransition();
+  const [newSpreadsheetTitle, setNewSpreadsheetTitle] = useState("");
+  const router = useRouter();
+
   const formEmbeddingCode = `<iframe 
 src="${process.env.NEXT_PUBLIC_APP_URL}/f/${id}"
 width="100%"
@@ -35,6 +50,55 @@ title="Heysheet Form Embed"
 loading="lazy"
 ></iframe>
 `;
+
+  const handleConnectSpreadsheet = async (
+    spreadsheetId: string,
+    sheetName: string,
+  ) => {
+    startTransition(async () => {
+      try {
+        await updateForm(
+          {
+            spreadsheet_id: spreadsheetId,
+            sheet_name: sheetName,
+            google_account_id: selectedAccount?.id,
+          },
+          id,
+        );
+        toast.success("Spreadsheet connected successfully!");
+        router.refresh();
+      } catch (error) {
+        toast.error("Failed to connect spreadsheet");
+      }
+    });
+  };
+
+  const handleCreateNewSpreadsheet = async (title: string) => {
+    if (!selectedAccount?.id || !title.trim()) return;
+
+    startTransition(async () => {
+      try {
+        const sheet = await createSheet(selectedAccount.id, title, [
+          "Name",
+          "Email",
+          "Message",
+        ]);
+        await updateForm(
+          {
+            spreadsheet_id: sheet.spreadsheetId,
+            sheet_name: title,
+            google_account_id: selectedAccount.id,
+          },
+          id,
+        );
+        toast.success("New spreadsheet created and connected!");
+        setNewSpreadsheetTitle("");
+        router.refresh();
+      } catch (error) {
+        toast.error("Failed to create spreadsheet");
+      }
+    });
+  };
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -54,19 +118,65 @@ loading="lazy"
         <CardHeader>
           <CardTitle>Connected spreadsheet</CardTitle>
           <CardDescription>
-            Responses are automatically saved to this spreadsheet.
+            Manage your Google Sheets connection below.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <a
-            href={`https://docs.google.com/spreadsheets/d/${data.spreadsheet_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button leftIcon={<FileSpreadsheetIcon className="w-5 h-5" />}>
-              Open {data.sheet_name} Spreadsheet
-            </Button>
-          </a>
+          {!selectedAccount ? (
+            <AllowGooglePermissions />
+          ) : data.spreadsheet_id ? (
+            <a
+              href={`https://docs.google.com/spreadsheets/d/${data.spreadsheet_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button leftIcon={<FileSpreadsheetIcon className="w-5 h-5" />}>
+                Open {data.sheet_name} Spreadsheet
+              </Button>
+            </a>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium mb-2">
+                  Select an existing spreadsheet:
+                </p>
+                <SpreadsheetsPicker
+                  onPicked={(pickedData) => {
+                    const spreadsheet = pickedData.docs?.[0];
+                    if (spreadsheet) {
+                      handleConnectSpreadsheet(
+                        spreadsheet.id,
+                        spreadsheet.name,
+                      );
+                    }
+                  }}
+                  selectedSheet={null}
+                  disabled={isPending}
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-2">
+                  Or create a new spreadsheet:
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter spreadsheet name"
+                    value={newSpreadsheetTitle}
+                    onChange={(e) => setNewSpreadsheetTitle(e.target.value)}
+                    disabled={isPending}
+                  />
+                  <Button
+                    onClick={() =>
+                      handleCreateNewSpreadsheet(newSpreadsheetTitle)
+                    }
+                    disabled={isPending || !newSpreadsheetTitle.trim()}
+                  >
+                    {isPending ? "Creating..." : "Create"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
       <FormSettings
@@ -97,15 +207,16 @@ loading="lazy"
         }}
       />
 
+      <DomainManager domains={data.domains} formId={id} />
+
       <ConfigureIntegration data={data} />
       <CodeSnippet endpointUrl={endpointUrl} />
       <Card>
         <CardHeader className="border-b">
-          <CardTitle>
-            Embed Your Form Anywhere
-          </CardTitle>
+          <CardTitle>Embed Your Form Anywhere</CardTitle>
           <CardDescription>
-            Easily embed this form into your website by copying and pasting the code below. It’s responsive, lightweight, and works out of the box.
+            Easily embed this form into your website by copying and pasting the
+            code below. It’s responsive, lightweight, and works out of the box.
           </CardDescription>
         </CardHeader>
         <CardContent>

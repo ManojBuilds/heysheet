@@ -19,7 +19,7 @@ export const getDashboardStats = async ({
 
   const { data: forms, error: formsError } = await query;
 
-  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
+  if (formsError) return { totalForms: 0, activeForms: 0, totalSubmissions: 0 };
 
   const totalForms = forms?.length || 0;
   const activeForms = forms?.filter(f => f.is_active).length || 0;
@@ -47,7 +47,7 @@ export const getTopForms = async ({
 
   const { data: forms, error: formsError } = await query;
 
-  if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
+  if (formsError) return [];
 
   const topForms = (forms || [])
     .sort((a, b) => (b.submission_count || 0) - (a.submission_count || 0))
@@ -72,7 +72,7 @@ export const getSubmissionsOverTime = async ({ userId, fromDate, toDate, formId 
       .from("forms")
       .select("id")
       .eq("user_id", userId);
-    if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
+    if (formsError) return [];
     formIds = forms?.map(f => f.id) || [];
   }
   if (formIds.length === 0) return [];
@@ -84,7 +84,7 @@ export const getSubmissionsOverTime = async ({ userId, fromDate, toDate, formId 
     .gte("created_at", fromDate)
     .lte("created_at", toDate);
 
-  if (error) throw new Error(`Error fetching submissions: ${error.message}`);
+  if (error) return [];
 
   const counts: Record<string, number> = {};
   (data || []).forEach((row: any) => {
@@ -118,7 +118,12 @@ export const getAllAnalyticsGroups = async ({
       .from("forms")
       .select("id")
       .eq("user_id", userId);
-    if (formsError) throw new Error(`Error fetching forms: ${formsError.message}`);
+    if (formsError) return ({
+      os: [],
+      browser: [],
+      device_type: [],
+      country: [],
+    })
     formIds = forms?.map((f) => f.id) || [];
   }
   if (formIds.length === 0) {
@@ -138,7 +143,12 @@ export const getAllAnalyticsGroups = async ({
     .lte("created_at", toDate)
     .not("analytics", "is", null);
 
-  if (error) throw new Error(`Error fetching submissions: ${error.message}`);
+  if (error) return ({
+    os: [],
+    browser: [],
+    device_type: [],
+    country: [],
+  });
 
   const result = {
     os: {} as Record<string, number>,

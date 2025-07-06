@@ -48,13 +48,19 @@ export const appendToNotionDatabase = async (
 
   const inferPropertyType = (value: any): Record<string, any> => {
     if (Array.isArray(value)) return { multi_select: {} };
-    if (typeof value === 'boolean') return { checkbox: {} };
-    if (typeof value === 'number') return { number: {} };
-    if (typeof value === 'string') {
+    if (typeof value === "boolean") return { checkbox: {} };
+    if (typeof value === "number") return { number: {} };
+    if (typeof value === "string") {
       if (/^[\s\S]*@[\s\S]*\.[\s\S]*/.test(value)) return { email: {} };
       if (/^https?:\/\//.test(value)) return { url: {} };
-      if (/^(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/.test(value)) return { phone_number: {} };
-      if (!isNaN(Date.parse(value)) && /\d{4}-\d{2}-\d{2}/.test(value)) return { date: {} };
+      if (
+        /^(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}$/.test(
+          value,
+        )
+      )
+        return { phone_number: {} };
+      if (!isNaN(Date.parse(value)) && /\d{4}-\d{2}-\d{2}/.test(value))
+        return { date: {} };
     }
     return { rich_text: {} };
   };
@@ -73,7 +79,6 @@ export const appendToNotionDatabase = async (
     });
     dbProperties = updatedDb.properties;
   }
-
 
   for (const [field, value] of Object.entries(data)) {
     const prop = dbProperties[field];
@@ -160,6 +165,7 @@ export const createNotionDatabase = async (
   propDefinitions: CreateDatabaseParameters["properties"],
 ) => {
   const notion = new Client({ auth: accessToken });
+  console.log("propDefinitions", propDefinitions);
 
   const fullProps = {
     ...propDefinitions,
@@ -169,9 +175,9 @@ export const createNotionDatabase = async (
     (prop) => "title" in prop,
   );
 
-  if (!hasTitleProperty) {
-    fullProps["Name"] = { title: {} };
-  }
+  // if (!hasTitleProperty) {
+  //   fullProps["Name"] = { title: {} };
+  // }
 
   const db = await notion.databases.create({
     parent: { type: "page_id", page_id: pageId },
@@ -250,7 +256,7 @@ export const createNotionPage = async (
         workspace: true,
       };
 
-      const response = await notion.pages.create({
+  const response = await notion.pages.create({
     // @ts-expect-error - Notion API is missing this property
     parent,
     properties,

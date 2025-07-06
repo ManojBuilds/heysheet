@@ -18,7 +18,7 @@ export default async function FormsPage({
 
   // Parse pagination params
   const page = Number(searchQuery?.page) || 1;
-  const pageSize = Number(searchQuery?.pageSize) || 1;
+  const pageSize = Number(searchQuery?.pageSize) || 10;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 

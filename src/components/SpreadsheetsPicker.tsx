@@ -12,9 +12,11 @@ import { useState } from "react";
 const SpreadsheetsPicker = ({
   onPicked,
   selectedSheet,
+  disabled,
 }: {
   onPicked: (data: PickerCallback) => void;
   selectedSheet: CallbackDoc | null;
+  disabled?: boolean;
 }) => {
   const { selectedAccount } = useGoogleAccountsStore();
   const [openPicker, authResponse] = useDrivePicker();
@@ -60,7 +62,7 @@ const SpreadsheetsPicker = ({
           isLoading ? <Loader2 className="animate-spin" /> : <FileSpreadsheet />
         }
         variant={"secondary"}
-        disabled={isLoading}
+        disabled={isLoading || disabled}
       >
         {selectedSheet ? selectedSheet.name : "Pick an existing spreadsheet"}
       </Button>

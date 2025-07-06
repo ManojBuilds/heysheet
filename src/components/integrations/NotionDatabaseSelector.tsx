@@ -6,10 +6,11 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ExternalLinkIcon } from "lucide-react";
 import { DatabaseSearchableList } from "./DatabaseSearchableList";
 import { Skeleton } from "../ui/skeleton";
+import Link from "next/link";
 
 interface NotionDatabaseSelectorProps {
   databases: any[];
@@ -70,18 +71,17 @@ export function NotionDatabaseSelector({
         </SelectContent>
       </Select>
       {selectedDatabase && isEnabled && (
-        <Button
-          variant="secondary"
-          leftIcon={<ExternalLinkIcon />}
-          onClick={() =>
-            window.open(
-              `https://www.notion.so/${selectedDatabase.replace(/-/g, "")}`,
-              "_blank",
-            )
-          }
+        <Link
+          href={`https://www.notion.so/${selectedDatabase.replace(/-/g, "")}`}
+          target="_blank"
+          className={buttonVariants({
+            className: "inline-flex items-center gap-1.5",
+            variant: "secondary",
+          })}
         >
+          <ExternalLinkIcon />
           Open Notion Database
-        </Button>
+        </Link>
       )}
     </div>
   );

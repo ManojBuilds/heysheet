@@ -34,7 +34,7 @@ export interface FormDetails {
     };
   };
   google_account_id: string;
-  spreadsheet_id: string;
+  spreadsheet_id: string | null;
   sheet_name: string;
   notification_email: string;
   email_enabled: boolean;
@@ -42,6 +42,7 @@ export interface FormDetails {
   slack_account_id: string | null;
   slack_channel: string | null;
   redirect_url: string | null;
+  domains: string[] | null;
   submission_count: number;
   last_submission_at: string;
   is_active: boolean;

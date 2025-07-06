@@ -1,3 +1,4 @@
+import { config } from '@/config';
 import {
     Body,
     Button,
@@ -124,7 +125,7 @@ export const HeySheetWelcomeEmail = ({ userName }: WelcomeEmailProps) => {
                         <Section className="mt-[18px]">
                             <Text className="text-[15px] text-black leading-[24px]">
                                 For more help, visit our{' '}
-                                <Link href="https://heysheet.mintlify.app" className="text-blue-600 no-underline font-semibold">documentation</Link>{' '}
+                                <Link href={config.documentationUrl} className="text-blue-600 no-underline font-semibold">documentation</Link>{' '}
                                 or reply to this email. I’m here to help you succeed!
                             </Text>
                         </Section>

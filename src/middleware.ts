@@ -1,42 +1,42 @@
-import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/form-builder(.*)",
-  "/manage-plan",
-  "/checkout",
+// These routes are publicly accessible and do not require authentication.
+const isPublicRoute = createRouteMatcher([
+  "/f/(.*)",
+  "/api/s/(.*)",
+  "/api/webhooks/(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const path = req.nextUrl.pathname;
-  console.log("🔎 Processing path:", path);
-
-  if (path === "/") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
-  if (path.startsWith("/f/")) {
-    console.log("🚪 Skipping Clerk for public form route:", path);
-    return NextResponse.next();
-  }
-
-  if (path.startsWith("/api/s/")) {
-    console.log("🚪 Skipping auth for form submit:", path);
-    return NextResponse.next();
-  }
-
-  if (isProtectedRoute(req)) {
-    console.log("🔒 Protected route:", path);
+  // If the route is not public, then it is protected.
+  if (!isPublicRoute(req)) {
     await auth.protect();
   }
 
-  return NextResponse.next();
+  // Allow embedding of the form page
+  if (req.nextUrl.pathname.startsWith("/f/")) {
+    const response = NextResponse.next();
+    response.headers.delete("x-frame-options");
+    return response;
+  }
+
+  // Redirect logged-in users from the root to the dashboard.
+  if (req.nextUrl.pathname === "/") {
+    const { userId } = await auth();
+    if (userId) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+  }
 });
 
 export const config = {
   matcher: [
-    // Exclude _next, static files, f/, and api/s/
-    "/((?!_next|.*\\..*|f\/|api\/s\/).*)",
+    // Match all routes except static files and Next.js internals
+    "/((?!.*\\..*|_next).*)",
+    // Re-include the root route
+    "/",
   ],
 };

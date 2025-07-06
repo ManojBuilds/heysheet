@@ -15,7 +15,6 @@ const nanoid = customAlphabet(
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
   10,
 );
-const formId = nanoid(); // e.g., "rX9azLmQwe"
 
 export const getGoogleConnectUrl = async () => {
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL}/api/auth/google/callback`;
@@ -109,7 +108,7 @@ export const createFormHelper = async ({
   const { data, error } = await supabase
     .from("forms")
     .insert({
-      id: formId,
+      id: nanoid(),
       user_id: user.id,
       title,
       google_account_id: googleAccountId,
@@ -257,35 +256,4 @@ export const createCustomerPortalSession = async () => {
   return await dodo.customers.customerPortal.create(subscription.customer_id);
 };
 
-
-export async function getOauthConnection(oauthProvider: 'google' | 'notion' | 'slack') {
-  const { userId } = await auth()
-  const client = await clerkClient();
-
-  if (!userId) {
-    return null
-  }
-
-  const user = await client.users.getUser(userId);
-
-  const account = user.externalAccounts.find(
-    (acc) => acc.provider === oauthProvider,
-  );
-
-  if (!account) {
-    return null;
-  }
-
-  const tokenResponse = await client.users.getUserOauthAccessToken(
-    userId,
-    oauthProvider,
-  );
-
-  const accessToken = tokenResponse.data?.[0].token;
-
-  return {
-    accessToken: accessToken || null,
-    isConnected: !!accessToken,
-  };
-}
 

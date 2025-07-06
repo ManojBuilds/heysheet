@@ -1,4 +1,4 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { ChartAreaInteractive } from "@/components/dashboard/chart-area";
 import CreateFormModal from "@/components/CreateFormModal";
 import PageHeader from "@/components/pages/page-header";
@@ -21,13 +21,14 @@ export default async function DashboardPage({
 }: {
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
-  const user = await currentUser();
-  if (!user) {
+  const { userId } = await auth()
+  if (!userId) {
     return redirect("/");
   }
+  const user = await currentUser()
   const { from, to } = await searchParams;
-  const googleAccounts = await getGoogleAccounts(user?.id || "");
-  const isGoogleAccountConnected = !!googleAccounts.length;
+  // const googleAccounts = await getGoogleAccounts(userid || "");
+  // const isGoogleAccountConnected = !!googleAccounts.length;
   const fromDate = from
     ? parseISO(from)
     : startOfWeek(new Date(), { weekStartsOn: 1 });

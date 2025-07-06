@@ -6,6 +6,7 @@ import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { Logo } from "./Logo";
+import { config } from "@/config";
 // import { ModeToggle } from "./toggle-mode";
 // import NewEndpointForm from "./NewEndpointFormModal";
 // import { ConnectToSlackBtn } from "./connect-to-slack-button";
@@ -22,7 +23,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           <nav className="hidden md:flex">
             <a
-              href="https://heysheet.mintlify.app/"
+              href={config.documentationUrl}
               className={buttonVariants({ variant: "link" })}
               target="_blank"
             >

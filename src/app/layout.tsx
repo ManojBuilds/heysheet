@@ -9,9 +9,9 @@ import { config } from "@/config";
 import { dmSans } from "@/components/ui/fonts";
 
 export const metadata: Metadata = {
-  title: "HeySheet – The Developer's Form Backend for Google Sheets",
+  title: "Heysheet – The Developer's Form Backend for Google Sheets & Notion",
   description:
-    "Post your HTML forms to a simple endpoint and get submissions in Google Sheets – with file uploads, analytics, email & Slack notifications, and a visual builder.",
+    "Post your HTML forms to a simple endpoint and get submissions in Google Sheets or Notion – with file uploads, analytics, email & Slack notifications, and a visual builder.",
   icons: {
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -20,17 +20,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(config.appUrl),
 
   openGraph: {
-    title: "HeySheet – The Developer's Form Backend for Google Sheets",
+    title: "Heysheet – The Developer's Form Backend for Google Sheets & Notion",
     description:
-      "Plug in an API endpoint to your form and get submissions in Google Sheets. Built-in support for analytics, file uploads, and alerts.",
+      "Plug in an API endpoint to your form and get submissions in Google Sheets or Notion. Built-in support for analytics, file uploads, and alerts.",
     url: config.appUrl,
-    siteName: "HeySheet",
+    siteName: "Heysheet",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "HeySheet – Form backend that syncs with Google Sheets",
+        alt: "Heysheet – Form backend that syncs with Google Sheets & Notion",
       },
     ],
     type: "website",
@@ -38,9 +38,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "HeySheet – Developer-first Form Backend",
+    title: "Heysheet – Developer-first Form Backend",
     description:
-      "Build forms with an endpoint that sends data to Google Sheets – plus analytics, uploads & notifications.",
+      "Build forms with an endpoint that sends data to Google Sheets or Notion – plus analytics, uploads & notifications.",
     images: ["/og-image.png"],
   },
 };
@@ -51,9 +51,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${dmSans.className} antialiased`}>
-        <Provider>
+    <Provider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${dmSans.className} antialiased`}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <main>{children}</main>
             <UpgradeModal />
@@ -79,8 +79,8 @@ export default function RootLayout({
               showAtBottom={false}
             />
           </ThemeProvider>
-        </Provider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </Provider>
   );
 }

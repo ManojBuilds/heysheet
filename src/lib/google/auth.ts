@@ -8,7 +8,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/drive.file",
   "https://www.googleapis.com/auth/drive.readonly",
   "email",
-  "profile",
+  // "profile",
 ];
 
 // Create OAuth2 client

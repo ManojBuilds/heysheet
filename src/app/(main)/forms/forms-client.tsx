@@ -88,6 +88,20 @@ export default function FormsPageClient({
     router.push(`?${params.toString()}`);
   };
 
+  if (forms.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center py-16 max-w-6xl mx-auto px-4 h-[calc(100vh-200px)]">
+        <GoogleSheetLogo className="w-24 h-24 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Create your first form</h2>
+        <p className="text-muted-foreground mb-6">
+          You haven&apos;t created any forms yet. Get started by creating your
+          first one.
+        </p>
+        <CreateFormModal />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 flex flex-col items-center max-w-6xl mx-auto px-4">
       <div className="flex items-center justify-between w-full gap-4">
@@ -95,82 +109,76 @@ export default function FormsPageClient({
         <CreateFormModal />
       </div>
 
-      {accounts?.length === 0 ? (
-        <AllowGooglePermissions className="mt-12" />
-      ) : forms?.length === 0 ? (
-        <div className="text-center mt-12">
-          <GoogleSheetLogo className="mx-auto" />
-          <h1 className="text-2xl font-semibold">
-            Let&apos;s create your first form 🚀
-          </h1>
-          <p className="text-muted-foreground mt-2 mb-6">
-            Start from scratch or use a template connected to your Google Sheet.
-          </p>
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+        <Input
+          type="text"
+          placeholder="Search forms..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full md:w-1/3"
+        />
+        <div className="flex gap-4">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_at">Newest</SelectItem>
+              <SelectItem value="title">Title</SelectItem>
+              <SelectItem value="submission_count">Submissions</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Form Cards */}
+      {filteredForms.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full mt-4">
+          {filteredForms.map((form) => (
+            <FormCard key={form.id} form={form} />
+          ))}
         </div>
       ) : (
-        <>
-          {/* Filters and Search */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
-            <Input
-              type="text"
-              placeholder="Search forms..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full md:w-1/3"
-            />
-            <div className="flex gap-4">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="w-full text-center py-16">
+          <h3 className="text-xl font-semibold">No Forms Found</h3>
+          <p className="text-muted-foreground mt-2">
+            No forms match your current search and filter criteria.
+          </p>
+        </div>
+      )}
 
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="created_at">Newest</SelectItem>
-                  <SelectItem value="title">Title</SelectItem>
-                  <SelectItem value="submission_count">Submissions</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Form Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full mt-4">
-            {filteredForms.map((form) => (
-              <FormCard key={form.id} form={form} />
-            ))}
-          </div>
-
-          {/* Pagination Controls */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <Button
-              onClick={() => goToPage(page - 1)}
-              disabled={page <= 1}
-              variant={"outline"}
-            >
-              Previous
-            </Button>
-            <span>
-              Page {page} of {totalPages}
-            </span>
-            <Button
-              onClick={() => goToPage(page + 1)}
-              disabled={page >= totalPages}
-              variant={"outline"}
-            >
-              Next
-            </Button>
-          </div>
-        </>
+      {/* Pagination Controls */}
+      {filteredForms.length > 0 && totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <Button
+            onClick={() => goToPage(page - 1)}
+            disabled={page <= 1}
+            variant={"outline"}
+          >
+            Previous
+          </Button>
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            onClick={() => goToPage(page + 1)}
+            disabled={page >= totalPages}
+            variant={"outline"}
+          >
+            Next
+          </Button>
+        </div>
       )}
     </div>
   );

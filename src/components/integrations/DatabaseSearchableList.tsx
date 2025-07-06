@@ -10,10 +10,24 @@ interface DatabaseSearchableListProps {
 export function DatabaseSearchableList({ databases, setSelectedDatabase }: DatabaseSearchableListProps) {
   const [search, setSearch] = useState("");
 
+  const getPlainText = (title: any): string => {
+    if (typeof title === 'string') {
+      return title;
+    }
+    if (Array.isArray(title) && title.length > 0) {
+      const text = title.map(t => t.plain_text).join('');
+      if (text) return text;
+    }
+    if (title && typeof title.plain_text === 'string') {
+        return title.plain_text;
+    }
+    return "Untitled Database";
+  };
+
   const filteredDatabases = useMemo(() => {
     if (!search) return databases;
     return databases.filter((db) =>
-      db.title.toLowerCase().includes(search.toLowerCase())
+      getPlainText(db.title).toLowerCase().includes(search.toLowerCase())
     );
   }, [search, databases]);
 
@@ -30,7 +44,7 @@ export function DatabaseSearchableList({ databases, setSelectedDatabase }: Datab
       {filteredDatabases.length > 0 ? (
         filteredDatabases.map((db) => (
           <SelectItem key={db.id} value={db.id} onClick={() => setSelectedDatabase(db.id)}>
-            {db.title}
+            {getPlainText(db.title)}
           </SelectItem>
         ))
       ) : (

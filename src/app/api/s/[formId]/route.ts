@@ -7,6 +7,7 @@ import { extractUtmParams } from "@/lib/utm";
 import { processFileUploads } from "@/lib/processFileUpload";
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
+import { headers } from "next/headers";
 
 export async function POST(
   request: NextRequest,
@@ -15,9 +16,9 @@ export async function POST(
   try {
     const { formId } = await params;
     const supabase = await createClient();
-    const headers = request.headers;
-    const userAgent = headers.get("user-agent") || "";
-    const referrer = headers.get("referrer") || "";
+    const allHeaders = await headers();
+    const userAgent = allHeaders.get("user-agent") || "";
+    const referrer = allHeaders.get("referrer") || "";
     const formData = await request.formData();
     const entries = Array.from(formData.entries());
     console.log("entries", entries);
@@ -38,6 +39,7 @@ export async function POST(
     notion_database_id, 
     notion_enabled, 
     notion_account_id,
+    domains,
     notion_accounts (
       access_token
     )
@@ -51,6 +53,77 @@ export async function POST(
         { success: false, message: "Form not found" },
         { status: 404 },
       );
+    }
+
+    // Domain validation
+    if (form.domains && form.domains.length > 0) {
+      const originHeader = allHeaders.get("origin");
+      const refererHeader = allHeaders.get("referer");
+
+      console.log("Received headers:", {
+        origin: originHeader,
+        referer: refererHeader,
+      });
+
+      let origin: string | null | undefined = originHeader;
+      if (!origin && refererHeader?.startsWith("http")) {
+        origin = refererHeader;
+      }
+      let allowedDomain = false;
+
+      if (origin && origin !== "null") {
+        console.log("Validating origin:", origin);
+        try {
+          const originUrl = new URL(origin);
+          const hostname = originUrl.hostname;
+
+          // Check if the hostname matches any of the allowed domains
+          allowedDomain = form.domains.some((domain: string) => {
+            // Handle localhost and IP addresses
+            if (domain === "localhost" || domain.startsWith("localhost:")) {
+              return (
+                hostname === "localhost" ||
+                hostname.startsWith("localhost:") ||
+                hostname === "127.0.0.1" ||
+                hostname.startsWith("127.0.0.1:")
+              );
+            }
+
+            // Handle IP addresses with optional ports
+            const ipRegex =
+              /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(?::[0-9]+)?$/;
+            if (ipRegex.test(domain)) {
+              const domainBase = domain.split(":")[0];
+              const hostnameBase = hostname.split(":")[0];
+              return domainBase === hostnameBase;
+            }
+
+            // Remove www. prefix for comparison if present
+            const normalizedHostname = hostname.replace(/^www\./, "");
+            const normalizedDomain = domain.replace(/^www\./, "");
+
+            // Exact match or subdomain match
+            return (
+              normalizedHostname === normalizedDomain ||
+              normalizedHostname.endsWith("." + normalizedDomain)
+            );
+          });
+        } catch (error) {
+          console.error("Invalid origin URL:", error);
+        }
+      } else {
+        allowedDomain = true;
+      }
+
+      if (!allowedDomain) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Form submissions are not allowed from this domain",
+          },
+          { status: 403 },
+        );
+      }
     }
 
     const [subscriptionRes, userFormsRes] = await Promise.all([
@@ -108,14 +181,14 @@ export async function POST(
     });
     console.log("Processed form data:", formDataObj);
 
-    const ip = headers.get("x-forwarded-for") || "";
-    const language = headers.get("accept-language") || "";
+    const ip = allHeaders.get("x-forwarded-for") || "";
+    const language = allHeaders.get("accept-language") || "";
     const location = await getUserLocationInfo().catch(() => ({}));
 
     const analytics = collectAnalytics({
       ip_address: ip,
       user_agent: userAgent,
-      mobile: headers.get("sec-ch-ua-mobile") === "?1",
+      mobile: allHeaders.get("sec-ch-ua-mobile") === "?1",
       referrer,
       language,
       location,
