@@ -302,7 +302,7 @@ const CreateFormModal = () => {
             </div>
             <Label>Where do you want to store submissions?</Label>
             <Tabs value={tab} onValueChange={setTab} className="my-4">
-              <TabsList className="flex items-center gap-4 justify-between w-full mb-4">
+              <TabsList className="flex items-center gap-2 justify-between w-full mb-4">
                 <TabsTrigger value="notion" asChild>
                   <Button
                     leftIcon={

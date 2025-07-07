@@ -21,6 +21,7 @@ import { NotionDatabaseDialog } from "@/components/integrations/NotionDatabaseDi
 import { NotionPageDialog } from "@/components/integrations/NotionPageDialog";
 import { NotionDatabaseSelector } from "@/components/integrations/NotionDatabaseSelector";
 import { NOTION_DATABASE_TEMPLATES } from "@/lib/notion-database-templates";
+import { Loader2 } from "lucide-react";
 
 export function ConnectToNotionButton({ form }: { form: any }) {
   const { user } = useUser();
@@ -37,6 +38,7 @@ export function ConnectToNotionButton({ form }: { form: any }) {
   const [openCreatePageDialog, setOpenCreatePageDialog] = useState(false);
   const [newPageName, setNewPageName] = useState("");
   const [newDbTemplate, setNewDbTemplate] = useState("none");
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const { data: notionAccounts, isLoading: isLoadingNotionAccounts } = useQuery(
     {
@@ -131,14 +133,20 @@ export function ConnectToNotionButton({ form }: { form: any }) {
   const isNotionAccountConnected = !!notionAccount;
 
   const handleConnectToNotion = async () => {
+    setIsConnecting(true);
     try {
       const redirectUrl = window.location.href;
       const url = await getNotionAuthUrl(redirectUrl, user?.id as string);
       if (url) {
         window.location.href = url;
+      } else {
+        toast.error("Could not get Notion authorization URL.");
+        setIsConnecting(false);
       }
     } catch (error) {
+      toast.error("Failed to connect to Notion, please try again.");
       console.log(error);
+      setIsConnecting(false);
     }
   };
 
@@ -207,14 +215,18 @@ export function ConnectToNotionButton({ form }: { form: any }) {
             isEnabled={isEnabled}
           />
         ) : (
-          <Button onClick={handleConnectToNotion}>
-            <Image
-              src={"/notion.svg"}
-              alt="Notion"
-              width={20}
-              height={20}
-              className="mr-2"
-            />
+          <Button onClick={handleConnectToNotion} disabled={isConnecting}>
+            {isConnecting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Image
+                src={"/notion.svg"}
+                alt="Notion"
+                width={20}
+                height={20}
+                className="mr-2"
+              />
+            )}
             Connect to Notion
           </Button>
         )}

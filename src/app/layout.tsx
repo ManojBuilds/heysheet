@@ -10,7 +10,7 @@ import { dmSans } from "@/components/ui/fonts";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
-  title: "Heysheet – The Developer's Form Backend for Google Sheets & Notion",
+  title: "Heysheet – Form Backend for Google Sheets & Notion",
   description:
     "Post your HTML forms to a simple endpoint and get submissions in Google Sheets or Notion – with file uploads, analytics, email & Slack notifications, and a visual builder.",
   icons: {
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(config.appUrl),
 
   openGraph: {
-    title: "Heysheet – The Developer's Form Backend for Google Sheets & Notion",
+    title: "Heysheet – Form Backend for Google Sheets & Notion",
     description:
       "Plug in an API endpoint to your form and get submissions in Google Sheets or Notion. Built-in support for analytics, file uploads, and alerts.",
     url: config.appUrl,

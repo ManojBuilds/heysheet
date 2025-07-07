@@ -1,6 +1,7 @@
 "use client";
 import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
 import { Button } from "./ui/button";
+import { Label } from "./ui/label";
 import useDrivePicker from "react-google-drive-picker";
 import {
   CallbackDoc,
@@ -23,7 +24,7 @@ const SpreadsheetsPicker = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleOpenPicker = async () => {
+  const handleOpenPicker = () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -50,10 +51,9 @@ const SpreadsheetsPicker = ({
       setIsLoading(false);
     }
   };
-  console.log(authResponse)
 
   return (
-    <div>
+    <div className="space-y-1">
       <Button
         type="button"
         onClick={handleOpenPicker}
@@ -66,9 +66,10 @@ const SpreadsheetsPicker = ({
       >
         {selectedSheet ? selectedSheet.name : "Pick an existing spreadsheet"}
       </Button>
-      {error && (
-        <div className="text-red-500 text-sm mt-2">{error}</div>
-      )}
+      <Label className="text-danger-500">
+        * Please select connected account.
+      </Label>
+      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
     </div>
   );
 };

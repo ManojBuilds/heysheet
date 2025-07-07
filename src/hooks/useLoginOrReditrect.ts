@@ -1,25 +1,25 @@
-'use client'
+"use client";
 
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { useRouter } from "nextjs-toploader/app";
 import { useCallback } from "react";
 
 const useLoginOrRedirect = () => {
-    const { isSignedIn } = useAuth()
-    const { redirectToSignIn } = useClerk()
-    const router = useRouter()
+  const { isSignedIn } = useAuth();
+  const { openSignUp } = useClerk();
+  const router = useRouter();
 
-    const loginOrRedirect = useCallback(() => {
-        if (!isSignedIn) {
-            redirectToSignIn({
-                redirectUrl: '/dashboard'
-            })
-        } else {
-            router.push('/dashboard')
-        }
-    }, [isSignedIn, redirectToSignIn, router]);
+  const loginOrRedirect = useCallback(() => {
+    if (!isSignedIn) {
+      openSignUp({
+        redirectUrl: "/dashboard",
+      });
+    } else {
+      router.push("/dashboard");
+    }
+  }, [isSignedIn, openSignUp, router]);
 
-    return loginOrRedirect;
+  return loginOrRedirect;
 };
 
 export default useLoginOrRedirect;
