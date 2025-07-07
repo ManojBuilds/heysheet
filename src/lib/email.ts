@@ -14,7 +14,7 @@ export async function sendEmail({
   try {
     const emailTemplate = HeySheetSubmissionEmail({ data: dataToSend });
     const { data, error } = await resend.emails.send({
-      from: "Heysheet <onboarding@resend.dev>",
+      from: "Heysheet <onboarding.heysheet.in>",
       to: [toEmail],
       subject: `New Submission on ${dataToSend.form.name}`,
       react: emailTemplate,

@@ -10,8 +10,6 @@ export async function POST(req: NextRequest) {
   try {
     const evt = await verifyWebhook(req);
 
-    // Do something with payload
-    // For this guide, log payload to console
     const { id } = evt.data;
     const eventType = evt.type;
     console.log(
@@ -20,7 +18,6 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     switch (eventType) {
       case "user.created":
-        // create a new user
         const data = evt.data;
         const { data: createdUser, error } = await supabase
           .from("users")
@@ -33,15 +30,15 @@ export async function POST(req: NextRequest) {
           console.log("Error creating user:", error);
           return new Response("Error creating user", { status: 400 });
         }
-        console.log("User created:", createdUser);
+
         const email = data.email_addresses?.[0].email_address;
-        // const email = "ms8460149@gmail.com";
+
         const emailTemplate = HeySheetWelcomeEmail({
           userName: data.first_name!,
         });
         const { data: emailData, error: emailError } = await resend.emails.send(
           {
-            from: "Heysheet <onboarding@resend.dev>",
+            from: "Heysheet <onboarding@heysheet.in>",
             to: [email],
             subject: `Welcome to HeySheet, ${data.first_name}!`,
             react: emailTemplate,
