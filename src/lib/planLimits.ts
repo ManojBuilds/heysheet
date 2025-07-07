@@ -59,11 +59,11 @@ export const PLANS = [
     name: "Starter",
     price: {
       monthly: {
-        price: 9,
+        price: 10,
         priceId: process.env.NEXT_PUBLIC_STARTER_MONTHLY_ID!,
       },
       annually: {
-        price: 7,
+        price: 8,
         priceId: process.env.NEXT_PUBLIC_STARTER_ANNUAL_ID!,
       },
     },
@@ -86,11 +86,11 @@ export const PLANS = [
     name: "Pro",
     price: {
       monthly: {
-        price: 24,
+        price: 20,
         priceId: process.env.NEXT_PUBLIC_PRO_MONTHLY_ID!,
       },
       annually: {
-        price: 19,
+        price: 18,
         priceId: process.env.NEXT_PUBLIC_PRO_ANNUAL_ID!,
       },
     },
