@@ -141,8 +141,11 @@ loading="lazy"
                   Select an existing spreadsheet:
                 </p>
                 <SpreadsheetsPicker
-                  onPicked={(pickedData) => {
-                    const spreadsheet = pickedData.docs?.[0];
+                  onPick={(spreadsheet: {
+                    id: string;
+                    name: string;
+                    url: string;
+                  }) => {
                     if (spreadsheet) {
                       handleConnectSpreadsheet(
                         spreadsheet.id,
@@ -150,7 +153,6 @@ loading="lazy"
                       );
                     }
                   }}
-                  selectedSheet={null}
                   disabled={isPending}
                 />
               </div>

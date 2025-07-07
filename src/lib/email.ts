@@ -1,4 +1,7 @@
-import { HeySheetSubmissionEmail, FormSubmissionData } from "@/components/email-template";
+import {
+  HeySheetSubmissionEmail,
+  FormSubmissionData,
+} from "@/components/email-template";
 
 import { Resend } from "resend";
 
@@ -14,7 +17,7 @@ export async function sendEmail({
   try {
     const emailTemplate = HeySheetSubmissionEmail({ data: dataToSend });
     const { data, error } = await resend.emails.send({
-      from: "Heysheet <onboarding.heysheet.in>",
+      from: "Heysheet <notify@mail.heysheet.in>",
       to: [toEmail],
       subject: `New Submission on ${dataToSend.form.name}`,
       react: emailTemplate,

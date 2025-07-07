@@ -39,18 +39,35 @@ export const POST = async (req: Request) => {
         const billing_interval =
           payment_frequency_interval === "Month" ? "monthly" : "annually";
 
-        const { data: user } = await supabase
+        let userRes = await supabase
           .from("users")
-          .select("clerk_user_id")
-          .eq("email", email)
+          .select("clerk_user_id, customer_id")
+          .eq("customer_id", customer_id)
           .single();
 
+        if (!userRes.data) {
+          userRes = await supabase
+            .from("users")
+            .select("clerk_user_id, customer_id")
+            .eq("email", email)
+            .single();
+        }
+
+        const user = userRes.data;
+
         if (!user) {
-          console.error("User not found");
+          console.error(
+            `User not found for customer_id: ${customer_id} or email: ${email}`,
+          );
           break;
         }
 
-        await supabase.from("users").update({ customer_id }).eq("email", email);
+        if (!user.customer_id) {
+          await supabase
+            .from("users")
+            .update({ customer_id })
+            .eq("clerk_user_id", user.clerk_user_id);
+        }
 
         await supabase.from("subscriptions").upsert(
           {
@@ -68,8 +85,7 @@ export const POST = async (req: Request) => {
         break;
       }
 
-      case "subscription.renewed":
-      case "payment.succeeded": {
+      case "subscription.renewed": {
         const { subscription_id, next_billing_date } = data;
 
         await supabase
@@ -80,6 +96,18 @@ export const POST = async (req: Request) => {
           })
           .eq("subscription_id", subscription_id);
 
+        break;
+      }
+      case "payment.succeeded": {
+        const { subscription_id } = data;
+        if (subscription_id) {
+          await supabase
+            .from("subscriptions")
+            .update({
+              status: "active",
+            })
+            .eq("subscription_id", subscription_id);
+        }
         break;
       }
 

@@ -22,7 +22,6 @@ import { createForm } from "@/actions";
 import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
 import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
-import { CallbackDoc } from "react-google-drive-picker/dist/typeDefs";
 import useSubscription from "@/hooks/useSubscription";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { NotionDatabaseDialog } from "./integrations/NotionDatabaseDialog";
@@ -62,7 +61,11 @@ const CreateFormModal = () => {
   const { selectedAccount } = useGoogleAccounts();
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [sheet, setSheet] = useState<CallbackDoc | null>(null);
+  const [sheet, setSheet] = useState<{
+    id: string;
+    name: string;
+    url: string;
+  } | null>(null);
   const [tab, setTab] = useState("google");
   // Notion state
   const [notionAccount, setNotionAccount] = useState<any>(null);
@@ -74,7 +77,7 @@ const CreateFormModal = () => {
   const [newPageName, setNewPageName] = useState("");
   const [newDbTemplate, setNewDbTemplate] = useState("none");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [openCreateSheetDialog, setOpenCreateSheetDialog] = useState(false);
+
   const queryClient = useQueryClient();
 
   const { data: formCount } = useQuery({
@@ -462,16 +465,19 @@ const CreateFormModal = () => {
                       <Label className="text-sm font-medium">
                         Or select an existing spreadsheet
                       </Label>
+
                       <SpreadsheetsPicker
-                        onPicked={(data) => {
-                          setSheet(data.docs?.[0] || null);
-                          setTitle(data.docs?.[0]?.name || title);
-                          // Clear template selection when existing sheet is selected
-                          if (data.docs?.[0]) {
+                        onPick={(spreadsheet: {
+                          id: string;
+                          name: string;
+                          url: string;
+                        }) => {
+                          setSheet(spreadsheet);
+                          setTitle(spreadsheet.name || title);
+                          if (spreadsheet) {
                             setSelectedTemplate("");
                           }
                         }}
-                        selectedSheet={sheet}
                         disabled={!!selectedTemplate}
                       />
                     </div>
@@ -562,15 +568,17 @@ const CreateFormModal = () => {
                           Or select an existing spreadsheet
                         </Label>
                         <SpreadsheetsPicker
-                          onPicked={(data) => {
-                            setSheet(data.docs?.[0] || null);
-                            setTitle(data.docs?.[0]?.name || title);
-                            // Clear template selection when existing sheet is selected
-                            if (data.docs?.[0]) {
+                          onPick={(spreadsheet: {
+                            id: string;
+                            name: string;
+                            url: string;
+                          }) => {
+                            setSheet(spreadsheet);
+                            setTitle(spreadsheet.name || title);
+                            if (spreadsheet) {
                               setSelectedTemplate("");
                             }
                           }}
-                          selectedSheet={sheet}
                           disabled={!!selectedTemplate}
                         />
                       </div>

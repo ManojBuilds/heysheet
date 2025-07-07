@@ -1,77 +1,99 @@
 "use client";
-import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
-import { Button } from "./ui/button";
-import { Label } from "./ui/label";
-import useDrivePicker from "react-google-drive-picker";
+
+import { useEffect, useState } from "react";
 import {
-  CallbackDoc,
-  PickerCallback,
-} from "react-google-drive-picker/dist/typeDefs";
-import { FileSpreadsheet, Loader2 } from "lucide-react";
-import { useState } from "react";
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
+import { toast } from "sonner";
 
-const SpreadsheetsPicker = ({
-  onPicked,
-  selectedSheet,
-  disabled,
-}: {
-  onPicked: (data: PickerCallback) => void;
-  selectedSheet: CallbackDoc | null;
-  disabled?: boolean;
-}) => {
-  const { selectedAccount } = useGoogleAccountsStore();
-  const [openPicker, authResponse] = useDrivePicker();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleOpenPicker = () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      openPicker({
-        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-        developerKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
-        viewId: "SPREADSHEETS",
-        // token: selectedAccount?.access_token,
-        showUploadView: true,
-        showUploadFolders: false,
-        supportDrives: true,
-        multiselect: false,
-        callbackFunction: (data) => {
-          if (data.action === "cancel") {
-            setIsLoading(false);
-            return;
-          }
-          onPicked(data);
-          setIsLoading(false);
-        },
-      });
-    } catch (err) {
-      setError("Failed to open Google Drive Picker.");
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-1">
-      <Button
-        type="button"
-        onClick={handleOpenPicker}
-        className="w-full"
-        leftIcon={
-          isLoading ? <Loader2 className="animate-spin" /> : <FileSpreadsheet />
-        }
-        variant={"secondary"}
-        disabled={isLoading || disabled}
-      >
-        {selectedSheet ? selectedSheet.name : "Pick an existing spreadsheet"}
-      </Button>
-      <Label className="text-danger-500">
-        * Please select connected account.
-      </Label>
-      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-    </div>
-  );
+type Spreadsheet = {
+  id: string;
+  name: string;
+  url: string;
 };
 
-export default SpreadsheetsPicker;
+export default function SpreadsheetSelect({
+  onPick,
+  disabled,
+}: {
+  onPick: (sheet: Spreadsheet) => void;
+  disabled?: boolean;
+}) {
+  const { selectedAccount } = useGoogleAccountsStore();
+  const [spreadsheets, setSpreadsheets] = useState<Spreadsheet[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    if (!selectedAccount?.access_token) return;
+
+    setLoading(true);
+
+    fetch(
+      `https://www.googleapis.com/drive/v3/files?q=mimeType='application/vnd.google-apps.spreadsheet'+and+trashed=false&fields=files(id,name)&pageSize=100`,
+      {
+        headers: {
+          Authorization: `Bearer ${selectedAccount.access_token}`,
+        },
+      },
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const files: Spreadsheet[] = (data.files || []).map((file: any) => ({
+          id: file.id,
+          name: file.name,
+          url: `https://docs.google.com/spreadsheets/d/${file.id}/edit`,
+        }));
+        setSpreadsheets(files);
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to load spreadsheets.");
+      })
+      .finally(() => setLoading(false));
+  }, [selectedAccount?.access_token]);
+
+  const filteredSpreadsheets = spreadsheets.filter((sheet) =>
+    sheet.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  return (
+    <div className="space-y-2">
+      <Select
+        disabled={disabled || loading}
+        onValueChange={(val) => {
+          const picked = spreadsheets.find((s) => s.id === val);
+          if (picked) onPick(picked);
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue
+            placeholder={loading ? "Loading..." : "Pick a spreadsheet"}
+          />
+        </SelectTrigger>
+        <SelectContent>
+          <div className="p-2" onMouseDown={(e) => e.stopPropagation()}>
+            <Input
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.stopPropagation()}
+              className="w-full"
+            />
+          </div>
+          {filteredSpreadsheets.map((sheet) => (
+            <SelectItem key={sheet.id} value={sheet.id}>
+              {sheet.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
