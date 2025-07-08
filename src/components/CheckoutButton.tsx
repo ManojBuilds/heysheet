@@ -25,7 +25,7 @@ export function CheckoutButton({
   autoOpen,
 }: CheckoutButtonProps) {
   const { openSignIn } = useClerk();
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     status: "idle",
@@ -79,10 +79,7 @@ export function CheckoutButton({
   const handleCheckout = useCallback(() => {
     try {
       if (!isLoaded) return;
-      if (!isSignedIn) {
-        openSignIn();
-        return;
-      }
+
       setCheckoutState({ status: "loading" });
       DodoPayments.Checkout.open({
         redirectUrl: `${window.location.origin}/dashboard`,
@@ -92,6 +89,10 @@ export function CheckoutButton({
             quantity: 1,
           },
         ],
+        queryParams: {
+          fullName: user?.fullName || user?.firstName || "",
+          email: user?.emailAddresses[0]?.emailAddress || "",
+        }
       });
     } catch (error) {
       setCheckoutState({
@@ -100,7 +101,7 @@ export function CheckoutButton({
           error instanceof Error ? error.message : "Failed to open checkout",
       });
     }
-  }, [isSignedIn, openSignIn, productId, isLoaded]);
+  }, [isSignedIn, openSignIn, productId, isLoaded, user]);
 
   useEffect(() => {
     if (autoOpen && isLoaded) {
