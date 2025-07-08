@@ -25,7 +25,7 @@ export function CheckoutButton({
   autoOpen,
 }: CheckoutButtonProps) {
   const { openSignIn } = useClerk();
-  const { isSignedIn, isLoaded } = useUser(); 
+  const { isSignedIn, isLoaded } = useUser();
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     status: "idle",
@@ -68,7 +68,7 @@ export function CheckoutButton({
     DodoPayments.Initialize({
       displayType: "overlay",
       linkType: "static",
-      mode: "test",
+      mode: process.env.NODE_ENV === "production" ? "live" : "test",
       theme: "dark",
       onEvent: (event: CheckoutEvent) => {
         ListinEvents(event);
@@ -78,7 +78,7 @@ export function CheckoutButton({
 
   const handleCheckout = useCallback(() => {
     try {
-      if (!isLoaded) return; 
+      if (!isLoaded) return;
       if (!isSignedIn) {
         openSignIn();
         return;
