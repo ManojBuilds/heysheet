@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { Client } from "@notionhq/client";
 
 const NOTION_CLIENT_ID = process.env.NOTION_CLIENT_ID;
 const NOTION_CLIENT_SECRET = process.env.NOTION_CLIENT_SECRET;
@@ -60,7 +59,8 @@ export const handleNotionCallback = async (userId: string, code: string) => {
   console.log("Saving Notion account to Supabase...");
   const { data: existingAccount } = await supabase
     .from("notion_accounts")
-    .select("access_token").maybeSingle();
+    .select("access_token")
+    .maybeSingle();
   if (existingAccount?.access_token) {
     return { success: true };
   }
