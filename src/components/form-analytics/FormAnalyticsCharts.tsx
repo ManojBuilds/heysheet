@@ -46,7 +46,7 @@ export default async function FormAnalyticsCharts({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <ReusableChart title="Browser Usage" data={chartData.browsers} />
       <ReusableChart title="Device Usage" data={chartData.devices} />
       <ReusableChart title="Operating Systems" data={chartData.os} />

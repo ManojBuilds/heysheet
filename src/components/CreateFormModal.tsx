@@ -283,7 +283,9 @@ const CreateFormModal = () => {
       <DialogTrigger onClick={handleDialogOpen} asChild>
         <Button>
           <Plus />
+          <span className="hidden sm:inline-flex">
           Create Form
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent>

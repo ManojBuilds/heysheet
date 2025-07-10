@@ -14,7 +14,7 @@ export default async function DashboardStats({ fromDate, toDate }: { fromDate: s
   })
 
   return (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <StatisticCard
         icon={FilesIcon}
         title="Total forms"

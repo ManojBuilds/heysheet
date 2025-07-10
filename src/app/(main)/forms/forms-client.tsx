@@ -41,7 +41,7 @@ export default function FormsPageClient({
 }: FormsPageClientProps) {
   const { accounts } = useGoogleAccounts();
   const { user } = useUser();
-  const userName = user?.fullName || "User";
+  const userName = user?.firstName || "User";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("created_at");
@@ -92,9 +92,9 @@ export default function FormsPageClient({
     return (
       <div className="flex flex-col items-center justify-center text-center py-16 max-w-6xl mx-auto px-4 h-[calc(100vh-200px)]">
         <GoogleSheetLogo className="w-24 h-24 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Create your first form</h2>
-        <p className="text-muted-foreground mb-6">
-          You haven&apos;t created any forms yet. Get started by creating your
+        <h2 className="text-xl font-bold mb-2 sm:text-2xl">Create your first form</h2>
+        <p className="text-muted-foreground mb-6 text-sm sm:text-base">
+          You haven't created any forms yet. Get started by creating your
           first one.
         </p>
         <CreateFormModal />
@@ -104,22 +104,22 @@ export default function FormsPageClient({
 
   return (
     <div className="space-y-4 flex flex-col items-center max-w-6xl mx-auto px-4">
-      <div className="flex items-center justify-between w-full gap-4">
-        <h1 className="text-3xl font-bold">Holla, {userName}</h1>
+      <div className="flex justify-between w-full gap-4 items-center">
+        <h1 className="text-2xl font-bold sm:text-3xl">Holla, {userName}</h1>
         <CreateFormModal />
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+      <div className="flex w-full flex-col items-center justify-between gap-4 md:flex-row">
         <Input
           type="text"
           placeholder="Search forms..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-1/3"
+          className="w-full"
         />
-        <div className="flex gap-4">
+        <div className="flex gap-4 w-full">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-full sm:w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -130,7 +130,7 @@ export default function FormsPageClient({
           </Select>
 
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="flex-1 sm:flex-auto w-full sm:w-[180px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -144,7 +144,7 @@ export default function FormsPageClient({
 
       {/* Form Cards */}
       {filteredForms.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 w-full mt-4">
+        <div className="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2 xl:grid-cols-3 w-full">
           {filteredForms.map((form) => (
             <FormCard key={form.id} form={form} />
           ))}
@@ -160,7 +160,7 @@ export default function FormsPageClient({
 
       {/* Pagination Controls */}
       {filteredForms.length > 0 && totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-8">
+        <div className="mt-8 flex items-center justify-center gap-4">
           <Button
             onClick={() => goToPage(page - 1)}
             disabled={page <= 1}

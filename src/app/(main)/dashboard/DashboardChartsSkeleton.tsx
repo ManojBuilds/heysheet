@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardChartsSkeleton() {
     return (
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
                 <Card key={i} className="bg-transparent min-h-full w-full">
                     <CardHeader className="border-b">

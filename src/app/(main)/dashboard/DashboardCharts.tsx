@@ -18,7 +18,7 @@ export default async function DashboardCharts({
   });
   
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <ReusableChart title="Browser Usage" data={browser} />
       <ReusableChart title="Device Usage" data={device_type} />
       <ReusableChart title="Operating Systems" data={os} />

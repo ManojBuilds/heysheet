@@ -1,13 +1,11 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
-import { Home, Table, Settings, Plus, FileText, Plug } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Home, Table, ExternalLink, Plug, Settings } from "lucide-react";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import UsageButton from "./UsageButton";
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(true);
   const pathname = usePathname();
 
   const menuItems = [
@@ -19,39 +17,30 @@ export default function Sidebar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <div
-      className={cn(
-        "fixed left-0 top-16 bottom-0 h-[calc(100svh-4rem)] bg-background border-r",
-        "transition-all duration-200 ease-in-out p-4 w-[280px]",
-      )}
-    >
-      <nav className="flex flex-col gap-2 p-2 h-full">
-        <div className="flex-1 space-y-2">
-          {menuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center rounded-md text-sm gap-2 px-2.5 py-1.5",
-                "transition-all duration-300 ease-in-out",
-                "hover:bg-secondary text-muted-foreground",
-                isActive(item.href) && "bg-muted text-primary ",
-              )}
-            >
-              <span className={cn("flex items-center justify-center")}>
+    <SidebarMenu className="flex flex-col h-full p-4 border-t md:border-0">
+      <div className="flex-1">
+        {menuItems.map((item) => (
+          <SidebarMenuItem key={item.href}>
+            <SidebarMenuButton asChild isActive={isActive(item.href)}>
+              <Link href={item.href}>
                 {item.icon}
-              </span>
-              <span
-                className={cn("transition-all duration-300 whitespace-nowrap")}
-              >
                 {item.label}
-              </span>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        ))}
+        <SidebarMenuItem className="md:hidden">
+          <SidebarMenuButton asChild>
+            <a href="https://heysheet.mintlify.app/" target="_blank" rel="noopener noreferrer">
+              <ExternalLink size={18} />
+              Documentation
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </div>
 
-        <UsageButton />
-      </nav>
-    </div>
+
+      <UsageButton />
+    </SidebarMenu>
   );
 }

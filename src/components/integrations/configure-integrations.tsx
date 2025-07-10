@@ -6,10 +6,9 @@ import { ConnectToNotionButton } from "../ConnectToNotionButton";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useUser } from "@clerk/nextjs";
 import { Input } from "../ui/input";
 import {
   Card,
@@ -113,7 +112,7 @@ const ConfigureIntegration = ({ data }: { data: any }) => {
           />
         </div>
 
-        <form className="my-4 flex items-center gap-2">
+        <form className="my-4 flex flex-col md:flex-row md:items-center gap-2">
           <Input
             value={email}
             onChange={(e) => setEmail(e.target.value)}

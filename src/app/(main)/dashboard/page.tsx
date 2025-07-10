@@ -48,7 +48,7 @@ export default async function DashboardPage({
       <Suspense fallback={<DashboardStatsSkeleton />}>
         <DashboardStats fromDate={fromDateIso} toDate={toDateIso} />
       </Suspense>
-      <div className="inline-flex gap-4">
+      <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
           <Suspense fallback={<ChartAreaSkeleton />}>
             <ChartAreaInteractive fromDate={fromDateIso} toDate={toDateIso} />

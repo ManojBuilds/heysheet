@@ -5,6 +5,9 @@ import Link from "next/link";
 import { buttonVariants } from "./ui/button";
 import { Logo } from "./Logo";
 import { ExternalLink } from "lucide-react";
+import { SidebarTrigger } from "./ui/sidebar";
+import { cn } from "@/lib/utils";
+import { config } from "@/config";
 // import { ModeToggle } from "./toggle-mode";
 // import posthog from "posthog-js";
 // import { Button } from "@/components/ui/button";
@@ -12,14 +15,15 @@ import { ExternalLink } from "lucide-react";
 export default function Topbar() {
   return (
     <div className="border-b h-16 flex items-center justify-between px-4 bg-background/80 backdrop-blur sticky top-0 z-20">
-      <div className="flex flex-1 gap-6 items-center">
+      <div className="flex flex-1 items-center">
+        <SidebarTrigger className="md:hidden" />
         <Logo />
         {/* <GoogleAccountSwitcher /> */}
       </div>
       <div className="flex items-center gap-2">
         <a
-          href="https://heysheet.mintlify.app/"
-          className={buttonVariants({ variant: "link" })}
+          href={config.documentationUrl}
+          className={cn(buttonVariants({ variant: "link" }), "hidden md:flex")}
           target="_blank"
         >
           <ExternalLink />
@@ -28,7 +32,7 @@ export default function Topbar() {
 
         <Link
           href={"/manage-plan"}
-          className={buttonVariants({ variant: "link" })}
+          className={cn(buttonVariants({ variant: "link" }), "hidden md:flex")}
         >
           Manage plan
         </Link>

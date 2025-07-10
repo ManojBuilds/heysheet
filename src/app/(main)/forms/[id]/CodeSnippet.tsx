@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import CodeBlock from "@/components/code-block";
 import { Terminal } from "lucide-react";
-import { React, Python, SvelteJS, HTML5, JavaScript, } from "developer-icons";
+import { React, Python, SvelteJS, HTML5, JavaScript } from "developer-icons";
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -28,7 +28,6 @@ export default function CodeSnippet({ endpointUrl }: Props) {
   <textarea name="message" placeholder="Your message" required></textarea>
   <button type="submit">Send</button>
 </form>`;
-
 
   const fetchCode = `// JavaScript (Fetch API)
 const formData = new FormData();
@@ -131,12 +130,36 @@ print(r.json())`;
   };
 
   const tabList = [
-    { value: "html", label: "Basic HTML", icon: <HTML5 className="w-4 h-4 mr-2" /> },
-    { value: "fetch", label: "JavaScript (Fetch)", icon: <JavaScript className="w-4 h-4 mr-2" /> },
-    { value: "react", label: "React", icon: <React className="w-4 h-4 mr-2" /> },
-    { value: "python", label: "Python", icon: <Python className="w-4 h-4 mr-2" /> },
-    { value: "svelte", label: "Svelte", icon: <SvelteJS className="w-4 h-4 mr-2" /> },
-    { value: "curl", label: "cURL", icon: <Terminal className="w-4 h-4 mr-2" /> },
+    {
+      value: "html",
+      label: "Basic HTML",
+      icon: <HTML5 className="w-4 h-4 mr-2" />,
+    },
+    {
+      value: "fetch",
+      label: "JavaScript (Fetch)",
+      icon: <JavaScript className="w-4 h-4 mr-2" />,
+    },
+    {
+      value: "react",
+      label: "React",
+      icon: <React className="w-4 h-4 mr-2" />,
+    },
+    {
+      value: "python",
+      label: "Python",
+      icon: <Python className="w-4 h-4 mr-2" />,
+    },
+    {
+      value: "svelte",
+      label: "Svelte",
+      icon: <SvelteJS className="w-4 h-4 mr-2" />,
+    },
+    {
+      value: "curl",
+      label: "cURL",
+      icon: <Terminal className="w-4 h-4 mr-2" />,
+    },
   ];
 
   // Function to open HTML code in CodePen
@@ -166,7 +189,7 @@ print(r.json())`;
   return (
     <Card className="">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row gap-2 items-center justify-between">
           <div>
             <CardTitle>Embed Code</CardTitle>
             <CardDescription>
@@ -177,9 +200,9 @@ print(r.json())`;
             type="button"
             onClick={openInCodePen}
             title="Try in CodePen"
-            size={'sm'}
-            variant={'ghost'}
+            variant={"outline"}
             leftIcon={<Codepen />}
+            className="w-full md:w-auto"
           >
             Try it in CodePen
           </Button>
@@ -188,10 +211,13 @@ print(r.json())`;
 
       <CardContent className="relative border-t">
         <Tabs defaultValue="html" className="mt-4" onValueChange={setActiveTab}>
-          <TabsList>
-            {tabList.map(tab => (
+          <TabsList className="flex-wrap">
+            {tabList.map((tab) => (
               <TabsTrigger key={tab.value} value={tab.value}>
-                <span className="flex items-center">{tab.icon}{tab.label}</span>
+                <span className="flex items-center">
+                  {tab.icon}
+                  {tab.label}
+                </span>
               </TabsTrigger>
             ))}
           </TabsList>

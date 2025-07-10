@@ -61,19 +61,22 @@ export const FormSettings = ({
           <p className="text-muted-foreground text-sm">
             Use this in your form’s action attribute to submit responses.
           </p>
-          <div className="flex items-stretch gap-2">
+          <div className="inline-flex items-stretch gap-2 w-full">
             <Button
               variant={"outline"}
               onClick={() => copyToClipboard(endpointUrl)}
-              className="font-mono"
+              className="font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap"
             >
               {endpointUrl}
             </Button>
-            <CopyToClipboard text={endpointUrl}/>
+            <CopyToClipboard text={endpointUrl} />
           </div>
         </div>
         <div className="space-y-2">
-          <Label><Globe className="w-4 h-4"/>Public Form URL</Label>
+          <Label>
+            <Globe className="w-4 h-4" />
+            Public Form URL
+          </Label>
           <p className="text-muted-foreground text-sm">
             Share this link to let users fill out your form.
           </p>
@@ -82,19 +85,23 @@ export const FormSettings = ({
               href={sharablePublicUrl}
               className={buttonVariants({
                 variant: "outline",
-                className: "font-mono",
+                className:
+                  "font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap",
               })}
               target="_blank"
             >
               {sharablePublicUrl}
             </a>
 
-            <CopyToClipboard text={sharablePublicUrl}/>
+            <CopyToClipboard text={sharablePublicUrl} />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label><Wrench className="w-4 h-4"/>Form Builder Editor</Label>
+          <Label>
+            <Wrench className="w-4 h-4" />
+            Form Builder Editor
+          </Label>
           <p className="text-muted-foreground text-sm">
             Edit this form visually using the drag-and-drop builder.
           </p>
@@ -103,14 +110,15 @@ export const FormSettings = ({
               href={formBuilderUrl}
               className={buttonVariants({
                 variant: "outline",
-                className: "font-mono",
+                className:
+                  "font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap",
               })}
               target="_blank"
             >
               {formBuilderUrl}
             </Link>
-            
-            <CopyToClipboard text={formBuilderUrl}/>
+
+            <CopyToClipboard text={formBuilderUrl} />
           </div>
         </div>
 
@@ -119,7 +127,7 @@ export const FormSettings = ({
           <p className="text-muted-foreground text-sm">
             Users will be redirected here after submitting the form.
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
             <Input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
