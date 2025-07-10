@@ -8,6 +8,7 @@ import UpgradeModal from "@/components/UpgradeModal";
 import { config } from "@/config";
 import { dmSans } from "@/components/ui/fonts";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Heysheet – Form Backend for Google Sheets & Notion",
@@ -65,6 +66,7 @@ export default function RootLayout({
               position="top-center"
             />
             <Analytics />
+            <SpeedInsights />
             <NextTopLoader
               color="#00c950"
               initialPosition={0.08}
