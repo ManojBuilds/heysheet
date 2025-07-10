@@ -2,8 +2,9 @@ import { Metadata } from 'next';
 import { heysheetSchema } from '@/lib/schema';
 
 export const metadata: Metadata = {
-  title: 'Heysheet: The Ultimate Form Backend for Google Sheets & Notion',
-  description: 'Streamline your data collection with Heysheet, the leading form backend for developers. Instantly send form submissions to Google Sheets and Notion. Features real-time sync, a visual form builder, and robust analytics. Perfect for HTML forms and serverless applications.',
+  title: 'Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.',
+  description: 'Submits any Google Forms to Google Sheets and Notion. Instantly. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.',
+  keywords: 'heysheet, google forms, google sheets, notion, form backend, form builder, real-time sync, sheetmonkey alternative, notionmonkey alternative, serverless forms, data collection, form submissions',
 };
 
 export default function Home() {

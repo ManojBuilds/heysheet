@@ -6,22 +6,23 @@ import { PLANS } from "@/lib/planLimits";
 import { CheckoutButton } from "@/components/CheckoutButton";
 
 export const metadata: Metadata = {
-  title: "Checkout - Choose Your Plan | HeySheet",
+  title: "Checkout - Choose Your Plan | Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
   description:
-    "Select the best HeySheet plan for your needs. Compare features and pricing. Upgrade anytime.",
+    "Select the best Heysheet plan for your needs. Compare features and pricing. Upgrade anytime. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
+  keywords: 'heysheet, google forms, google sheets, notion, form backend, form builder, real-time sync, sheetmonkey alternative, notionmonkey alternative, serverless forms, data collection, form submissions, pricing, plans, checkout',
   openGraph: {
-    title: "Checkout - Choose Your Plan | HeySheet",
+    title: "Checkout - Choose Your Plan | Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
     description:
-      "Select the best HeySheet plan for your needs. Compare features and pricing. Upgrade anytime.",
+      "Select the best Heysheet plan for your needs. Compare features and pricing. Upgrade anytime. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
     url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout`,
-    siteName: "HeySheet",
+    siteName: "Heysheet",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Checkout - Choose Your Plan | HeySheet",
+    title: "Checkout - Choose Your Plan | Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
     description:
-      "Select the best HeySheet plan for your needs. Compare features and pricing. Upgrade anytime.",
+      "Select the best Heysheet plan for your needs. Compare features and pricing. Upgrade anytime. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
   },
 };
 
