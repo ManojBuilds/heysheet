@@ -30,8 +30,7 @@ export const getZodSchemaForComponent = (
         .refine(
           (val) =>
             !required ||
-            val.length === 0 ||
-            z.string().email().safeParse(val).success,
+            (val.length > 0 && z.string().email().safeParse(val).success),
           "Invalid email",
         );
       break;

@@ -14,9 +14,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
-
-import * as React from "react";
+} from "@react-email/components";
 
 export interface FormSubmissionData {
   form: {
@@ -41,108 +39,117 @@ export interface FormSubmissionData {
   };
 }
 
-const baseUrl = "https://heysheet.vercel.app";
+const baseUrl = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "";
 
-export const HeySheetSubmissionEmail = ({ data }: { data: FormSubmissionData }) => {
+export const HeySheetSubmissionEmail = ({
+  data,
+}: {
+  data: FormSubmissionData;
+}) => {
   const { form, submission, analytics } = data;
-  const previewText = `New submission received on ${form.name}`;
+  const previewText = `New submission for ${form.name}`;
 
   return (
     <Html>
       <Head />
+      <Preview>{previewText}</Preview>
       <Tailwind>
-        <Body className="mx-auto my-auto bg-[#f8fafc] px-2 font-sans">
-          <Preview>{previewText}</Preview>
-          <Container className="mx-auto my-[40px] max-w-[540px] rounded border border-[#eaeaea] border-solid p-[24px] bg-white">
-            <Section className="mt-[12px] mb-[24px] text-center">
+        <Body className="mx-auto my-auto bg-white px-2 font-sans">
+          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
+            <Section className="mt-[22px] text-center">
               <Img
-                src={`${baseUrl}/logo.png`}
-                width="48"
-                height="48"
+                src={`${baseUrl}/static/logo.png`}
+                width="40"
+                height="37"
                 alt="HeySheet Logo"
-                className="mx-auto my-0 rounded"
+                className="mx-auto my-0"
               />
             </Section>
-            <Heading className="mx-0 my-[18px] p-0 text-center font-semibold text-[22px] text-black">
+
+            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
               New Form Submission
             </Heading>
-            <Text className="text-[15px] text-black leading-[24px] text-center">
-              You’ve received a new submission on <strong>{form.name}</strong>.
+
+            <Text className="text-center text-[14px] leading-[24px] text-black">
+              You received a new submission for <strong>{form.name}</strong>.
             </Text>
+
             <Section className="mt-[28px]">
-              <Heading className="text-[17px] font-semibold text-left text-black mb-2">Submission Details</Heading>
-              <Container className="bg-[#f9fafb] rounded p-4 border border-[#e5e7eb]">
+              <Heading className="mb-2 text-left text-[17px] font-semibold text-black">
+                Submission Details
+              </Heading>
+              <div className="rounded border border-solid border-[#eaeaea] bg-[#f9fafb] p-4">
                 {Object.entries(submission.data).map(([key, value]) => (
-                  <Row key={key} className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                    <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">{key}</Column>
-                    <Column className="text-[#111827] text-right">{String(value) || "—"}</Column>
+                  <Row
+                    key={key}
+                    className="border-b border-[#e5e7eb] py-1 text-[15px] last:border-0"
+                  >
+                    <Column className="min-w-[120px] pr-2 font-medium text-[#6b7280]">
+                      {key}
+                    </Column>
+                    <Column className="text-right text-[#111827]">
+                      {String(value) || "—"}
+                    </Column>
                   </Row>
                 ))}
-              </Container>
+              </div>
             </Section>
+
+            {analytics && (
+              <Section className="mt-[28px]">
+                <Heading className="mb-2 text-left text-[17px] font-semibold text-black">
+                  Analytics
+                </Heading>
+                <div className="rounded border border-solid border-[#eaeaea] bg-[#f3f4f6] p-4">
+                  {Object.entries(analytics).map(([key, value]) => (
+                    <Row
+                      key={key}
+                      className="border-b border-[#e5e7eb] py-1 text-[15px] last:border-0"
+                    >
+                      <Column className="min-w-[120px] pr-2 font-medium text-[#6b7280]">
+                        {key}
+                      </Column>
+                      <Column className="text-right text-[#111827]">
+                        {String(value) || "—"}
+                      </Column>
+                    </Row>
+                  ))}
+                </div>
+              </Section>
+            )}
+
             <Section className="mt-[28px]">
-              <Heading className="text-[17px] font-semibold text-left text-black mb-2">Analytics</Heading>
-              <Container className="bg-[#f3f4f6] rounded p-4 border border-[#e5e7eb]">
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Source</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.referrer || "Direct"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Country</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.country || "—"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">City</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.city || "—"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Timezone</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.timezone || "—"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Device Type</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.deviceType || "—"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Browser</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.browser || "—"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Language</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.language || "—"}</Column>
-                </Row>
-                <Row className="py-1 text-[15px] border-b border-[#e5e7eb] last:border-0">
-                  <Column className="text-[#6b7280] min-w-[120px] pr-2 font-medium">Processed At</Column>
-                  <Column className="text-[#111827] text-right">{analytics?.processed_at || analytics?.created_at || "—"}</Column>
-                </Row>
-              </Container>
-            </Section>
-            <Section className="mt-[28px]">
-              <Text className="text-[14px] text-black leading-[24px]">
-                <strong>Submission ID:</strong> {submission.id}
-              </Text>
-              <Text className="text-[14px] text-black leading-[24px]">
-                <Link
-                  href={`https://docs.google.com/spreadsheets/d/${form.spreadsheet_id}`}
-                  className="text-blue-600 no-underline"
-                >
-                  View in Google Sheets
-                </Link>
-              </Text>
-              <Text className="text-[14px] text-black leading-[24px]">
-                <strong>Submitted At:</strong> {new Date(submission.created_at).toLocaleString()}
-              </Text>
-            </Section>
-            <Hr className="mx-0 my-[26px] w-full border border-[#eaeaea] border-solid" />
-            <Text className="text-[#888] text-[12px] leading-[24px] text-center">
-              Powered by
-              <Link
-                href={baseUrl}
-                className="text-blue-600 no-underline font-semibold ml-1"
+              <Button
+                href={`https://docs.google.com/spreadsheets/d/${form.spreadsheet_id}`}
+                className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
               >
-                HeySheet
+                View in Google Sheets
+              </Button>
+            </Section>
+
+            <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
+
+            <Section className="text-center text-[12px] leading-[24px] text-[#666666]">
+              <Link href="https://app.heysheet.in" className="text-blue-600">
+                Dashboard
               </Link>
-              — Turn forms into powerful spreadsheets.
+              <span className="text-[#666666]"> | </span>
+              <Link href="https://docs.heysheet.in" className="text-blue-600">
+                Docs
+              </Link>
+              <span className="text-[#666666]"> | </span>
+              <Link
+                href="https://twitter.com/ManojBuilds"
+                className="text-blue-600"
+              >
+                @ManojBuilds
+              </Link>
+            </Section>
+
+            <Text className="text-center text-[12px] leading-[24px] text-[#666666]">
+              Powered by Heysheet
             </Text>
           </Container>
         </Body>

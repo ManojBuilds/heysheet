@@ -187,7 +187,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && event.ctrlKey) {
         if (showIntro) {
           setShowIntro(false);
           return;
@@ -253,31 +253,38 @@ const FormPreview: React.FC<FormPreviewProps> = ({
           <div
             className="h-full transition-all duration-300"
             style={{
-              width: `${((currentComponentIndex + 1) / allComponents.length) * 100
-                }%`,
+              width: `${
+                ((currentComponentIndex + 1) / allComponents.length) * 100
+              }%`,
               backgroundColor: theme.primary,
             }}
           />
         </div>
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30">
-          <div className="relative w-16 h-16 rounded-xl overflow-hidden backdrop-blur-xl bg-white/30 flex items-center justify-center">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              quality={100}
-              className="object-contain scale-200 w-full h-full"
-              fill
-            />
-          </div>
-        </div>
+        {/* <div className="absolute top-8 left-1/2 -translate-x-1/2 z-30"> */}
+        {/*   <div className="relative w-16 h-16 rounded-xl overflow-hidden backdrop-blur-xl bg-white/30 flex items-center justify-center"> */}
+        {/*     <Image */}
+        {/*       src="/logo.png" */}
+        {/*       alt="Logo" */}
+        {/*       quality={100} */}
+        {/*       className="object-contain scale-200 w-full h-full" */}
+        {/*       fill */}
+        {/*     /> */}
+        {/*   </div> */}
+        {/* </div> */}
 
         <main className="flex-grow flex flex-col items-center justify-center p-4">
           {showIntro ? (
             <div className="flex flex-col items-center justify-center text-center">
-              <h1 className="text-4xl font-bold mb-4" style={{ color: theme.text }}>
+              <h1
+                className="text-4xl font-bold mb-4"
+                style={{ color: theme.text }}
+              >
                 {formData.title || "Form Preview"}
               </h1>
-              <p className="text-lg mb-8 flex items-center" style={{ color: theme.textSecondary }}>
+              <p
+                className="text-lg mb-8 flex items-center"
+                style={{ color: theme.textSecondary }}
+              >
                 <Clock className="w-4 h-4 inline-block mr-1" />
                 Takes {Math.ceil(allComponents.length * 0.5)} minutes
               </p>
@@ -289,20 +296,10 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                   color: theme.primaryForeground,
                   border: "none",
                 }}
+                rightIcon={<ArrowRight size={18} strokeWidth={1.5} />}
               >
-                Start
-                <ArrowRight className="w-4 h-4" />
+                Get Started
               </Button>
-              <p
-                className={cn(
-                  "text-sm mt-2 flex items-end justify-end gap-2",
-                  geistMono.className,
-                )}
-                style={{ color: theme.textSecondary }}
-              >
-                press <strong>Enter</strong>
-                <CornerDownLeft size={14} strokeWidth={1.5} />
-              </p>
             </div>
           ) : hasSubmitted || showSuccessPreview ? (
             <SuccessPreview formData={formData} redirectUrl={redirectUrl} />
@@ -348,7 +345,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                         )}
                         style={{ color: theme.textSecondary }}
                       >
-                        press <strong>Enter</strong>
+                        press <strong>Ctrl + Enter</strong>
                         <CornerDownLeft size={14} strokeWidth={1.5} />
                       </p>
                     )}
@@ -359,7 +356,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
           )}
         </main>
 
-        {!showSuccessPreview && (
+        {!showSuccessPreview && !showIntro && !hasSubmitted && (
           <footer className="flex-shrink-0 p-4">
             <div className="flex justify-end items-center gap-2">
               <Button
@@ -402,11 +399,11 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                 </Button>
               </div>
             </div>
-            <div className="mt-4">
-              <Branding formData={formData} />
-            </div>
           </footer>
         )}
+        <div className="mt-4">
+          <Branding formData={formData} />
+        </div>
       </div>
     </div>
   );

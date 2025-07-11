@@ -1,4 +1,4 @@
-import { DM_Sans, Geist_Mono } from "next/font/google";
+import { DM_Sans, Geist_Mono, Open_Sans } from "next/font/google";
 
 export const dmSans = DM_Sans({
   subsets: ["latin"],

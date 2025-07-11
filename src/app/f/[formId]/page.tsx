@@ -1,6 +1,5 @@
 import FormPreview from "@/components/form-builder/FormPreview";
 import { getForm } from "@/lib/form";
-import { generateTheme } from "@/lib/theme";
 import { FileWarning } from "lucide-react";
 import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
@@ -50,12 +49,6 @@ export default async function FormPage({ params }: FormPageProps) {
     );
 
   const theme = data.builder_config.theme;
-  const generatedTheme = generateTheme(
-    theme.color,
-    theme.font,
-    theme.radius,
-    theme.mode,
-  );
 
   return (
     <FormPreview
@@ -64,7 +57,7 @@ export default async function FormPage({ params }: FormPageProps) {
       formData={{
         id: data.builder_config.id,
         components: data.builder_config.components,
-        theme: generatedTheme,
+        theme: theme,
         pages: data.builder_config.pages,
         title: data.title,
         activePage: data.builder_config.active_page,

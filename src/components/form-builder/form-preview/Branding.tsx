@@ -34,8 +34,10 @@ const Branding = ({
           className="text-sm font-medium"
           style={{ color: theme.textSecondary }}
         >
-          Want a form like this?{" "}
-          <span style={{ color: theme.primary }}>Build with HeySheet</span> 🚀
+          Powered by{" "}
+          <span style={{ color: theme.primary }} className="font-bold">
+            Heysheet
+          </span>
         </p>
       </Link>
     </div>
