@@ -11,10 +11,12 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  title: "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
+  title:
+    "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
   description:
     "Submits any Google Forms to Google Sheets and Notion. Instantly. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
-  keywords: 'heysheet, google forms, google sheets, notion, form backend, form builder, real-time sync, sheetmonkey alternative, notionmonkey alternative, serverless forms, data collection, form submissions',
+  keywords:
+    "heysheet, google forms, google sheets, notion, form backend, form builder, real-time sync, sheetmonkey alternative, notionmonkey alternative, serverless forms, data collection, form submissions",
   icons: {
     shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
@@ -23,14 +25,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(config.appUrl),
 
   openGraph: {
-    title: "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
+    title:
+      "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
     description:
       "Submits any Google Forms to Google Sheets and Notion. Instantly. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
     url: config.appUrl,
     siteName: "Heysheet",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://app.heysheet.in/og-image.png",
         width: 1200,
         height: 630,
         alt: "Heysheet – Form backend that syncs with Google Sheets & Notion",
@@ -41,10 +44,11 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
+    title:
+      "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
     description:
       "Submits any Google Forms to Google Sheets and Notion. Instantly. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
-    images: ["/og-image.png"],
+    images: ["https://app.heysheet.in/og-image.png"],
   },
 };
 
