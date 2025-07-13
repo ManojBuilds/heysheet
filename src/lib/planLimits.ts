@@ -1,7 +1,7 @@
 export const planLimits = {
   free: {
-    maxForms: 2,
-    maxSubmissions: 100,
+    maxForms: 1,
+    maxSubmissions: 1,
     maxFileSizeMB: 0,
     features: {
       slackIntegration: false,
@@ -13,7 +13,7 @@ export const planLimits = {
   },
   starter: {
     maxForms: Infinity,
-    maxSubmissions: 5000,
+    maxSubmissions: 25000,
     maxFileSizeMB: 50,
     features: {
       slackIntegration: true,
@@ -25,14 +25,14 @@ export const planLimits = {
   },
   pro: {
     maxForms: Infinity,
-    maxSubmissions: 10000,
-    maxFileSizeMB: 100,
+    maxSubmissions: 50000,
+    maxFileSizeMB: 10,
     features: {
       slackIntegration: true,
       emailAlerts: true,
       fileUploads: true,
       analytics: true,
-      notionIntegration: true,
+      notionIntegration: true
     },
   },
 } as const;
@@ -50,6 +50,7 @@ export const PLANS = [
       "50 Submissions/mo",
       "Drag & Drop Builder",
       "Google Sheets Sync",
+      "Notion Integration",
       "Basic Branding",
     ],
     cta: "Get Started Free",
@@ -59,25 +60,27 @@ export const PLANS = [
     name: "Starter",
     price: {
       monthly: {
-        price: 10,
+        price: 8,
         priceId: process.env.NEXT_PUBLIC_STARTER_MONTHLY_ID!,
       },
       annually: {
-        price: 8,
+        price: 6,
         priceId: process.env.NEXT_PUBLIC_STARTER_ANNUAL_ID!,
       },
     },
     description: "Most popular for growing businesses",
     features: [
       "Unlimited Forms",
-      "5,000 Submissions/mo",
+      "25,000 Submissions/mo",
       "Drag & Drop Builder",
       "Google Sheets Sync",
+      "Notion Integration",
       "Custom Branding",
-      "File Uploads up to (50MB) per file",
+      "File Uploads",
       "Slack & Email Alerts",
       "Basic Analytics",
-      "Priority Support",
+      "Automatic Redirect",
+      "Domain Whitelisting",
     ],
     cta: "Starter",
     popular: true,
@@ -97,18 +100,14 @@ export const PLANS = [
     description: "For power users and teams",
     features: [
       "Unlimited Forms",
-      "10,000 Submissions/mo",
+      "50,000 Submissions/mo",
       "Drag & Drop Builder",
       "Google Sheets Sync",
+      "Notion Integration",
       "Custom Branding",
-      "File Uploads up to (100MB) per file",
+      "File Uploads",
       "Slack & Email Alerts",
       "Advanced Analytics",
-      "Priority Support",
-      // "Advanced Logic & Workflows",
-      // "Team Collaboration",
-      // "Custom Domain",
-      // "API Access",
     ],
     cta: "Pro",
     popular: false,

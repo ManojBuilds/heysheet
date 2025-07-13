@@ -39,7 +39,7 @@ export const FormField = memo(
     return (
       <div className="space-y-3">
         <div>
-          <h3 className="font-medium mb-1" style={{ color: theme.text }}>
+          <h3 className="font-medium mb-1 text-base md:text-2xl" style={{ color: theme.text }}>
             {component.title}
             {component.required && (
               <span className="ml-1" style={{ color: theme.primary }}>
@@ -48,7 +48,7 @@ export const FormField = memo(
             )}
           </h3>
           {component.description && (
-            <p className="" style={{ color: theme.textSecondary }}>
+            <p className="text-sm md:text-base" style={{ color: theme.textSecondary }}>
               {component.description}
             </p>
           )}

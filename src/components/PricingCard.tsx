@@ -67,6 +67,8 @@ const PricingCard = () => {
           const isCurrent =
             subscription?.plan?.toLowerCase() === plan.name.toLowerCase();
 
+          if(plan.name==="Pro") return null;
+
           return (
             <div
               key={i}

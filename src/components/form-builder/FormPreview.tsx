@@ -337,10 +337,9 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                       theme={theme}
                       formId={formId}
                     />
-                    {!isLastComponent && (
                       <p
                         className={cn(
-                          "text-sm mt-2 flex items-end justify-end gap-2",
+                          "text-xs mt-2 flex items-end justify-end gap-2",
                           geistMono.className,
                         )}
                         style={{ color: theme.textSecondary }}
@@ -348,7 +347,6 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                         press <strong>Ctrl + Enter</strong>
                         <CornerDownLeft size={14} strokeWidth={1.5} />
                       </p>
-                    )}
                   </motion.div>
                 </AnimatePresence>
               </form>
@@ -356,7 +354,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
           )}
         </main>
 
-        {!showSuccessPreview && !showIntro && !hasSubmitted && (
+        {!showSuccessPreview && !showIntro && !hasSubmitted && !subscriptionError && (
           <footer className="flex-shrink-0 p-4">
             <div className="flex justify-end items-center gap-2">
               <Button
