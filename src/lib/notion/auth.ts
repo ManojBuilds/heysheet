@@ -64,15 +64,19 @@ export const handleNotionCallback = async (userId: string, code: string) => {
   if (existingAccount?.access_token) {
     return { success: true };
   }
-  const { error } = await supabase.from("notion_accounts").insert({
-    user_id: userId,
-    access_token: access_token,
-    workspace_id: workspace_id,
-    workspace_name: workspace_name,
-    workspace_icon: workspace_icon,
-    owner_id: owner.user?.id || owner.workspace?.id,
-    owner_type: owner.type,
-  });
+  const { error, data: newAcc } = await supabase
+    .from("notion_accounts")
+    .insert({
+      user_id: userId,
+      access_token: access_token,
+      workspace_id: workspace_id,
+      workspace_name: workspace_name,
+      workspace_icon: workspace_icon,
+      owner_id: owner.user?.id || owner.workspace?.id,
+      owner_type: owner.type,
+    })
+    .select();
+  console.log("newAcc", newAcc);
 
   if (error) {
     console.error("Error saving Notion account to Supabase:", error);

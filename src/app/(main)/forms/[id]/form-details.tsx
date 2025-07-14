@@ -40,6 +40,7 @@ export const FormDetails = ({
   const { selectedAccount } = useGoogleAccounts();
   const [isPending, startTransition] = useTransition();
   const [newSpreadsheetTitle, setNewSpreadsheetTitle] = useState("");
+  const [sheetName, setSheetName] = useState("");
   const router = useRouter();
 
   const formEmbeddingCode = `<iframe 
@@ -149,11 +150,14 @@ loading="lazy"
                     if (spreadsheet) {
                       handleConnectSpreadsheet(
                         spreadsheet.id,
-                        spreadsheet.name,
+                        sheetName || spreadsheet.name,
                       );
                     }
                   }}
                   disabled={isPending}
+                  onSheetNamePick={(val) => {
+                    setSheetName(val);
+                  }}
                 />
               </div>
               <div>

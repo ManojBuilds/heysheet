@@ -12,7 +12,7 @@ const SCOPES = [
 ];
 
 // Create OAuth2 client
-function getOAuth2Client(redirectUri?: string) {
+function getOAuth2Client(redirectUri = 'http://localhost:3000/api/auth/google/callback') {
   return new google.auth.OAuth2(
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
     process.env.GOOGLE_CLIENT_SECRET!,
@@ -101,8 +101,8 @@ export async function saveGoogleAccount(
         token_expires_at: tokenData.expiry_date
           ? new Date(tokenData.expiry_date).toISOString()
           : new Date(
-              Date.now() + (tokenData.expires_in || 3600) * 1000,
-            ).toISOString(),
+            Date.now() + (tokenData.expires_in || 3600) * 1000,
+          ).toISOString(),
       },
       {
         onConflict: "user_id,email",

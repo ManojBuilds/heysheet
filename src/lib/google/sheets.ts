@@ -360,28 +360,23 @@ export async function processSubmission(
 
 export async function getExistingSheets(googleAccountId: string) {
   // Use Google Drive API to list all spreadsheets accessible to the user
+  const client = await getAuthenticatedClient(googleAccountId)
+  console.log('googleAid', googleAccountId)
   const drive = google.drive({
-    version: "v3",
-    auth: await getAuthenticatedClient(googleAccountId),
+    version: "v2",
+    auth: client
   });
 
   try {
-    // Simpler query that should include all spreadsheets regardless of creation method
     const res = await drive.files.list({
-      q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=true",
-      fields:
-        "nextPageToken, files(id, name, createdTime, modifiedTime, owners, permissions, sharedWithMeTime)",
-      pageSize: 1000,
-      orderBy: "modifiedTime desc",
-      // Using 'allDrives' ensures we get files from all possible sources
-      spaces: "drive",
-      corpora: "allDrives",
-      includeItemsFromAllDrives: true,
-      supportsAllDrives: true,
-    });
+      q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
 
-    console.log(`Found ${res.data.files?.length || 0} spreadsheets`);
-    return res.data.files || [];
+    })
+    console.log('Found existing spreadsheets', res.data.items?.length)
+    return res.data.items?.map((item) => ({
+      id: item.id || "", name: item.title || "Untitled", url:
+        `https://docs.google.com/spreadsheets/d/${item.id}/edit`
+    }))
   } catch (error) {
     console.error("Error fetching spreadsheets:", error);
     throw error;
@@ -392,11 +387,18 @@ export async function getSheetTabs(
   googleAccountId: string,
   spreadsheetId: string,
 ) {
-  const sheets = await getSheetsClient(googleAccountId);
+  try {
+   const sheets = await getSheetsClient(googleAccountId);
   const response = await sheets.spreadsheets.get({
     spreadsheetId,
     fields: "sheets.properties",
   });
   // Returns an array of sheet/tab names
-  return response.data.sheets?.map((sheet) => sheet.properties?.title) || [];
+  console.log("@getSheetsTabs",response.data)
+  return response.data.sheets?.map((sheet) => sheet.properties?.title) || []; 
+  } catch (error) {
+   console.log('error', error)
+   return []
+  }
+  
 }

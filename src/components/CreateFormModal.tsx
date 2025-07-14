@@ -77,6 +77,7 @@ const CreateFormModal = () => {
   const [newPageName, setNewPageName] = useState("");
   const [newDbTemplate, setNewDbTemplate] = useState("none");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const [sheetName, setSheetName] = useState('')
 
   const queryClient = useQueryClient();
 
@@ -139,7 +140,7 @@ const CreateFormModal = () => {
           newDbTemplate &&
           newDbTemplate !== "none" &&
           NOTION_DATABASE_TEMPLATES[
-            newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES
+          newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES
           ]
         ) {
           templateConfig =
@@ -220,7 +221,6 @@ const CreateFormModal = () => {
     }
     startTransition(async () => {
       try {
-        const tplKey = selectedTemplate as keyof typeof SPREADSHEET_TEMPLATES;
         const result = await createForm({
           title: title.trim(),
           sheetId: tab !== "notion" ? sheet?.id : undefined,
@@ -231,6 +231,7 @@ const CreateFormModal = () => {
           email: tab !== "notion" ? selectedAccount?.email : undefined,
           notionDatabaseId: tab !== "google" ? selectedDatabase : undefined,
           notionAccountId: tab !== "google" ? notionAccount?.id : undefined,
+          sheetName
         });
         if (result?.error) {
           toast.error(`Error creating form: ${result.error}`);
@@ -268,7 +269,7 @@ const CreateFormModal = () => {
       const redirectUrl = window.location.href;
       const url = await getNotionAuthUrl(redirectUrl, user?.id as string);
       if (url) window.location.href = url;
-    } catch {}
+    } catch { }
   };
 
   // Google connect
@@ -284,7 +285,7 @@ const CreateFormModal = () => {
         <Button>
           <Plus />
           <span className="hidden sm:inline-flex">
-          Create Form
+            Create Form
           </span>
         </Button>
       </DialogTrigger>
@@ -389,7 +390,7 @@ const CreateFormModal = () => {
                       selectedDatabase={selectedDatabase}
                       setSelectedDatabase={setSelectedDatabase}
                       setOpenCreateDbDialog={setOpenCreateDbDialog}
-                      updateNotionIntegration={() => {}}
+                      updateNotionIntegration={() => { }}
                       isEnabled={true}
                     />
                   </div>
@@ -480,6 +481,9 @@ const CreateFormModal = () => {
                             setSelectedTemplate("");
                           }
                         }}
+                        onSheetNamePick={(sheet) => {
+                          setSheetName(sheet)
+                        }}
                         disabled={!!selectedTemplate}
                       />
                     </div>
@@ -514,7 +518,7 @@ const CreateFormModal = () => {
                         selectedDatabase={selectedDatabase}
                         setSelectedDatabase={setSelectedDatabase}
                         setOpenCreateDbDialog={setOpenCreateDbDialog}
-                        updateNotionIntegration={() => {}}
+                        updateNotionIntegration={() => { }}
                         isEnabled={true}
                       />
                     </div>
@@ -581,6 +585,7 @@ const CreateFormModal = () => {
                               setSelectedTemplate("");
                             }
                           }}
+                          onSheetNamePick={sheet => setSheetName(sheet)}
                           disabled={!!selectedTemplate}
                         />
                       </div>

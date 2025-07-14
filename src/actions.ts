@@ -83,6 +83,7 @@ export const createFormHelper = async ({
   email,
   notionDatabaseId,
   notionAccountId,
+  sheetName,
 }: {
   title: string;
   sheetId?: string;
@@ -92,6 +93,7 @@ export const createFormHelper = async ({
   email?: string;
   notionDatabaseId?: string;
   notionAccountId?: string;
+  sheetName?: string;
 }) => {
   const user = await currentUser();
   if (!user?.id) return { error: "User not authenticated" };
@@ -113,7 +115,7 @@ export const createFormHelper = async ({
       title,
       google_account_id: googleAccountId,
       spreadsheet_id: spreadsheetId || sheetId,
-      sheet_name: title,
+      sheet_name: sheetName || title,
       builder_config: templateConfig?.builderConfig || null,
       template_used: template || null,
       is_active: true,
@@ -145,6 +147,7 @@ export const createForm = async ({
   email,
   notionDatabaseId,
   notionAccountId,
+  sheetName
 }: {
   title: string;
   sheetId?: string;
@@ -153,6 +156,7 @@ export const createForm = async ({
   email?: string;
   notionDatabaseId?: string;
   notionAccountId?: string;
+  sheetName?: string;
 }) => {
   try {
     let spreadsheetId = sheetId;
@@ -180,6 +184,7 @@ export const createForm = async ({
       email,
       notionDatabaseId,
       notionAccountId,
+      sheetName,
     });
 
     if (result.error) {
