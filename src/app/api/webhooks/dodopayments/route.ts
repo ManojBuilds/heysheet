@@ -78,6 +78,7 @@ export const POST = async (req: Request) => {
             customer_id,
             billing_interval,
             next_billing: next_billing_date,
+            email,
           },
           { onConflict: "user_id" },
         );

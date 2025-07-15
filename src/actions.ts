@@ -4,12 +4,12 @@ import { getGoogleAuthUrl } from "./lib/google/auth";
 import { createClient } from "./lib/supabase/server";
 import { SPREADSHEET_TEMPLATES } from "./lib/spreadsheet-templates";
 import { createSheet } from "./lib/google/sheets";
-import { getNotionAccount, createNotionDatabase } from "./lib/notion/server";
-import { auth, currentUser, clerkClient } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { planLimits } from "./lib/planLimits";
 import dodo from "./lib/dodopayments";
 import { customAlphabet } from "nanoid";
+import { config } from "./config";
 
 const nanoid = customAlphabet(
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -147,7 +147,7 @@ export const createForm = async ({
   email,
   notionDatabaseId,
   notionAccountId,
-  sheetName
+  sheetName,
 }: {
   title: string;
   sheetId?: string;
@@ -261,4 +261,56 @@ export const createCustomerPortalSession = async () => {
   return await dodo.customers.customerPortal.create(subscription.customer_id);
 };
 
-
+export const createDodopaymentsCheckoutSession = async ({
+  email,
+  name,
+  productId,
+}: {
+  email: string;
+  name: string;
+  productId: string;
+}) => {
+  try {
+    let customerId;
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("subscription")
+      .select("customer_id")
+      .eq("email", email)
+      .maybeSingle();
+    if (data?.customer_id) {
+      customerId = data?.customer_id;
+    } else {
+      const newCustomer = await dodo.customers.create({
+        name,
+        email,
+      });
+      if (!newCustomer.customer_id) {
+        return { success: false, message: "Failed to create customer" };
+      }
+      customerId = newCustomer.customer_id;
+    }
+    const subscription = await dodo.subscriptions.create({
+      billing: {
+        city: "",
+        country: "IN",
+        state: "state",
+        street: "street",
+        zipcode: "89789",
+      },
+      customer: { customer_id: customerId },
+      product_id: productId,
+      payment_link: true,
+      return_url: `${config.appUrl}/dashboard`,
+      quantity: 1,
+    });
+    console.log(subscription);
+    if (!subscription.payment_link) {
+      throw new Error("Failed to create payment link");
+    }
+    return { success: true, link: subscription.payment_link };
+  } catch (error: any) {
+    console.log(error);
+    return { success: false, message: error.message };
+  }
+};

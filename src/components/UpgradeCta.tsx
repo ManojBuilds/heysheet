@@ -18,11 +18,9 @@ const UpgradeCta = ({ className }: { className?: string }) => {
       })}
     >
       <CrownIcon className="text-yellow-500" />
-      {subscription?.plan === "free" ? (
-        <>Upgrade plan</>
-      ) : (
-        `${subscription?.plan} plan`
-      )}
+      {subscription && subscription?.plan
+        ? `${subscription.plan} plan`
+        : "upgrad plan"}
     </Link>
   );
 };

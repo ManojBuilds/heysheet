@@ -79,7 +79,7 @@ export default function SpreadsheetSelect({
               placeholder={isLoading ? "Loading..." : "Pick a spreadsheet"}
             />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[480px] overflow-y-auto">
             <div className="p-2" onMouseDown={(e) => e.stopPropagation()}>
               <Input
                 placeholder="Search..."

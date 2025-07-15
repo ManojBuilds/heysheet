@@ -138,8 +138,8 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       dodopayments:
-        specifier: ^1.34.1
-        version: 1.34.1
+        specifier: ^1.38.1
+        version: 1.38.1
       dodopayments-checkout:
         specifier: ^1.0.1
         version: 1.0.1
@@ -170,9 +170,6 @@ importers:
       nextjs-toploader:
         specifier: ^3.8.16
         version: 3.8.16(next@15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      posthog-js:
-        specifier: ^1.255.1
-        version: 1.255.1
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
@@ -1670,8 +1667,8 @@ packages:
   '@types/node-fetch@2.6.12':
     resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
 
-  '@types/node@18.19.112':
-    resolution: {integrity: sha512-i+Vukt9POdS/MBI7YrrkkI5fMfwFtOjphSmt4WXYLfwqsfr6z/HdCx7LqT9M7JktGob8WNgj8nFB4TbGNE4Cog==}
+  '@types/node@18.19.119':
+    resolution: {integrity: sha512-d0F6m9itIPaKnrvEMlzE48UjwZaAnFW7Jwibacw9MNdqadjKNpUm9tfJYDwmShJmgqcoqYUX3EMKO1+RWiuuNg==}
 
   '@types/node@20.17.57':
     resolution: {integrity: sha512-f3T4y6VU4fVQDKVqJV4Uppy8c1p/sVvS3peyqxyWnzkqXFJLRU7Y1Bl7rMS1Qe9z0v4M6McY0Fp9yBsgHJUsWQ==}
@@ -2195,9 +2192,6 @@ packages:
     resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
     engines: {node: '>=18'}
 
-  core-js@3.43.0:
-    resolution: {integrity: sha512-N6wEbTTZSYOY2rYAn85CuvWWkCK6QweMn7/4Nr3w+gDBeBhk/x4EJeY6FPo4QzDoJZxVTv8U7CMvgWk6pOHHqA==}
-
   country-flag-icons@1.5.19:
     resolution: {integrity: sha512-D/ZkRyj+ywJC6b2IrAN3/tpbReMUqmuRLlcKFoY/o0+EPQN9Ev/e8tV+D3+9scvu/tarxwLErNwS73C3yzxs/g==}
 
@@ -2360,8 +2354,8 @@ packages:
     resolution: {integrity: sha512-4eisos7D8Fr7aUD4gQ1ZA7bfNB910IAPJty5nPsle9Hh+tqZAwCQLyYyM4lMvSDbxdRD314OPOMNbBLNBExEWw==}
     engines: {node: '>=18.0.0'}
 
-  dodopayments@1.34.1:
-    resolution: {integrity: sha512-uxalNapofbMAw2KVNEdk6KYkoJUy+Dvh46oPx4UsesYjFMsKWJFVPhmCMgFwH6o/qBr6PJx2H6AfvO/+usgwdg==}
+  dodopayments@1.38.1:
+    resolution: {integrity: sha512-TA55wgvUgImj49BQmwc9x/1ze/Qfbh2pIdK4iQyCqz3YFLL3rsxIeJE1AwglaarTvflyOyS5GYrsNPKQ9cE1Kw==}
 
   dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
@@ -2619,9 +2613,6 @@ packages:
       picomatch:
         optional: true
 
-  fflate@0.4.8:
-    resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
-
   file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
     engines: {node: '>=16.0.0'}
@@ -2652,8 +2643,8 @@ packages:
   form-data-encoder@1.7.2:
     resolution: {integrity: sha512-qfqtYan3rxrnCk1VYaA4H+Ms9xdpPqvLZa6xmMgFvhO32x7/3J/ExcTd6qpxM0vH2GdMI+poehyBZvqfMTto8A==}
 
-  form-data@4.0.2:
-    resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
+  form-data@4.0.3:
+    resolution: {integrity: sha512-qsITQPfmvMOSAdeyZ+12I1c+CKSstAFAwu+97zrnWAbIr5u8wfsExUzCesVLC8NgHuRUqNN4Zy6UPWUTRGslcA==}
     engines: {node: '>= 6'}
 
   format@0.2.2:
@@ -3647,17 +3638,6 @@ packages:
     engines: {node: '>10.17.0'}
     hasBin: true
 
-  posthog-js@1.255.1:
-    resolution: {integrity: sha512-KMh0o9MhORhEZVjXpktXB5rJ8PfDk+poqBoTSoLzWgNjhJf6D8jcyB9jUMA6vVPfn4YeepVX5NuclDRqOwr5Mw==}
-    peerDependencies:
-      '@rrweb/types': 2.0.0-alpha.17
-      rrweb-snapshot: 2.0.0-alpha.17
-    peerDependenciesMeta:
-      '@rrweb/types':
-        optional: true
-      rrweb-snapshot:
-        optional: true
-
   preact@10.26.8:
     resolution: {integrity: sha512-1nMfdFjucm5hKvq0IClqZwK4FJkGXhRrQstOQ3P4vp8HxKrJEMFcY6RdBRVTdfQS/UlnX6gfbPuTvaqx/bDoeQ==}
 
@@ -4336,9 +4316,6 @@ packages:
   web-streams-polyfill@4.0.0-beta.3:
     resolution: {integrity: sha512-QW95TCTaHmsYfHDybGMwO5IJIM93I/6vTRk+daHTWFPhwh+C8Cg7j7XyKrwrj8Ib6vYXe0ocYNrmzY4xAAN6ug==}
     engines: {node: '>= 14'}
-
-  web-vitals@4.2.4:
-    resolution: {integrity: sha512-r4DIlprAGwJ7YM11VZp4R884m0Vmgr6EAKe3P+kO0PPj3Unqyvv59rczf6UiGcb9Z8QxZVcqKNwv/g0WNdWwsw==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -5791,9 +5768,9 @@ snapshots:
   '@types/node-fetch@2.6.12':
     dependencies:
       '@types/node': 20.17.57
-      form-data: 4.0.2
+      form-data: 4.0.3
 
-  '@types/node@18.19.112':
+  '@types/node@18.19.119':
     dependencies:
       undici-types: 5.26.5
 
@@ -6323,8 +6300,6 @@ snapshots:
 
   cookie@1.0.2: {}
 
-  core-js@3.43.0: {}
-
   country-flag-icons@1.5.19: {}
 
   country-state-city@3.2.1: {}
@@ -6464,9 +6439,9 @@ snapshots:
 
   dodopayments-checkout@1.0.1: {}
 
-  dodopayments@1.34.1:
+  dodopayments@1.38.1:
     dependencies:
-      '@types/node': 18.19.112
+      '@types/node': 18.19.119
       '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -6879,8 +6854,6 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.2
 
-  fflate@0.4.8: {}
-
   file-entry-cache@8.0.0:
     dependencies:
       flat-cache: 4.0.1
@@ -6911,11 +6884,12 @@ snapshots:
 
   form-data-encoder@1.7.2: {}
 
-  form-data@4.0.2:
+  form-data@4.0.3:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
       mime-types: 2.1.35
 
   format@0.2.2: {}
@@ -8071,13 +8045,6 @@ snapshots:
     transitivePeerDependencies:
       - pg-native
 
-  posthog-js@1.255.1:
-    dependencies:
-      core-js: 3.43.0
-      fflate: 0.4.8
-      preact: 10.26.8
-      web-vitals: 4.2.4
-
   preact@10.26.8: {}
 
   prelude-ls@1.2.1: {}
@@ -8976,8 +8943,6 @@ snapshots:
   w3c-keyname@2.2.8: {}
 
   web-streams-polyfill@4.0.0-beta.3: {}
-
-  web-vitals@4.2.4: {}
 
   webidl-conversions@3.0.1: {}
 

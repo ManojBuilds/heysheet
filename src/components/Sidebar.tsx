@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Home, Table, ExternalLink, Plug, Settings } from "lucide-react";
+import { Home, Table, ExternalLink, Plug } from "lucide-react";
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -22,7 +22,7 @@ export default function Sidebar() {
 
   return (
     <SidebarMenu className="flex flex-col h-full p-4 border-t md:border-0">
-      <div className="flex-1 gap-4">
+      <div className="flex-1 space-y-2">
         {menuItems.map((item) => (
           <SidebarMenuItem key={item.href}>
             <SidebarMenuButton asChild isActive={isActive(item.href)}>
@@ -46,7 +46,6 @@ export default function Sidebar() {
           </SidebarMenuButton>
         </SidebarMenuItem>
       </div>
-
       <UsageButton />
     </SidebarMenu>
   );

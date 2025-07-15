@@ -77,7 +77,7 @@ const CreateFormModal = () => {
   const [newPageName, setNewPageName] = useState("");
   const [newDbTemplate, setNewDbTemplate] = useState("none");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [sheetName, setSheetName] = useState('')
+  const [sheetName, setSheetName] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -140,7 +140,7 @@ const CreateFormModal = () => {
           newDbTemplate &&
           newDbTemplate !== "none" &&
           NOTION_DATABASE_TEMPLATES[
-          newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES
+            newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES
           ]
         ) {
           templateConfig =
@@ -231,7 +231,7 @@ const CreateFormModal = () => {
           email: tab !== "notion" ? selectedAccount?.email : undefined,
           notionDatabaseId: tab !== "google" ? selectedDatabase : undefined,
           notionAccountId: tab !== "google" ? notionAccount?.id : undefined,
-          sheetName
+          sheetName,
         });
         if (result?.error) {
           toast.error(`Error creating form: ${result.error}`);
@@ -269,7 +269,7 @@ const CreateFormModal = () => {
       const redirectUrl = window.location.href;
       const url = await getNotionAuthUrl(redirectUrl, user?.id as string);
       if (url) window.location.href = url;
-    } catch { }
+    } catch {}
   };
 
   // Google connect
@@ -284,9 +284,7 @@ const CreateFormModal = () => {
       <DialogTrigger onClick={handleDialogOpen} asChild>
         <Button>
           <Plus />
-          <span className="hidden sm:inline-flex">
-            Create Form
-          </span>
+          <span className="hidden sm:inline-flex">Create Form</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -340,27 +338,23 @@ const CreateFormModal = () => {
                   </Button>
                 </TabsTrigger>
                 <TabsTrigger value="both" asChild>
-                  <Button
-                    variant={"ghost"}
-                    leftIcon={
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/notion.svg"
-                          alt="Notion"
-                          width={20}
-                          height={20}
-                        />
-                        <PlusIcon />
-                        <Image
-                          src="/google_sheet.svg"
-                          alt="Google Sheets"
-                          width={14}
-                          height={14}
-                        />
-                      </div>
-                    }
-                  >
-                    Both
+                  <Button variant={"ghost"}>
+                    <div className="flex items-center gap-2">
+                      <Image
+                        src="/notion.svg"
+                        alt="Notion"
+                        width={20}
+                        height={20}
+                      />
+                      <PlusIcon />
+                      <Image
+                        src="/google_sheet.svg"
+                        alt="Google Sheets"
+                        width={14}
+                        height={14}
+                      />
+                    </div>
+                    <span className="hidden lg:inline-flex">Both</span>
                   </Button>
                 </TabsTrigger>
               </TabsList>
@@ -390,7 +384,7 @@ const CreateFormModal = () => {
                       selectedDatabase={selectedDatabase}
                       setSelectedDatabase={setSelectedDatabase}
                       setOpenCreateDbDialog={setOpenCreateDbDialog}
-                      updateNotionIntegration={() => { }}
+                      updateNotionIntegration={() => {}}
                       isEnabled={true}
                     />
                   </div>
@@ -482,7 +476,7 @@ const CreateFormModal = () => {
                           }
                         }}
                         onSheetNamePick={(sheet) => {
-                          setSheetName(sheet)
+                          setSheetName(sheet);
                         }}
                         disabled={!!selectedTemplate}
                       />
@@ -518,7 +512,7 @@ const CreateFormModal = () => {
                         selectedDatabase={selectedDatabase}
                         setSelectedDatabase={setSelectedDatabase}
                         setOpenCreateDbDialog={setOpenCreateDbDialog}
-                        updateNotionIntegration={() => { }}
+                        updateNotionIntegration={() => {}}
                         isEnabled={true}
                       />
                     </div>
@@ -585,7 +579,7 @@ const CreateFormModal = () => {
                               setSelectedTemplate("");
                             }
                           }}
-                          onSheetNamePick={sheet => setSheetName(sheet)}
+                          onSheetNamePick={(sheet) => setSheetName(sheet)}
                           disabled={!!selectedTemplate}
                         />
                       </div>

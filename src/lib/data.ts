@@ -17,15 +17,23 @@ export const getDashboardStats = async ({
   }
   query = query.gte("created_at", fromDate).lte("created_at", toDate);
 
+  const { count: totalForms, error: countError } = await supabase
+    .from("forms")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", fromDate)
+    .lte("created_at", toDate);
+
+  if (countError) return { totalForms: 0, activeForms: 0, totalSubmissions: 0 };
+
   const { data: forms, error: formsError } = await query;
 
   if (formsError) return { totalForms: 0, activeForms: 0, totalSubmissions: 0 };
 
-  const totalForms = forms?.length || 0;
   const activeForms = forms?.filter(f => f.is_active).length || 0;
   const totalSubmissions = forms?.reduce((sum, f) => sum + (f.submission_count || 0), 0) || 0;
 
-  return { totalForms, activeForms, totalSubmissions };
+  return { totalForms: totalForms || 0, activeForms, totalSubmissions };
 };
 
 export const getTopForms = async ({
@@ -39,7 +47,9 @@ export const getTopForms = async ({
   let query = supabase
     .from("forms")
     .select("id, title, submission_count, created_at")
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .order("submission_count", { ascending: false })
+    .limit(7);
   if (formId) {
     query = query.eq("id", formId);
   }
@@ -50,8 +60,6 @@ export const getTopForms = async ({
   if (formsError) return [];
 
   const topForms = (forms || [])
-    .sort((a, b) => (b.submission_count || 0) - (a.submission_count || 0))
-    .slice(0, 7)
     .map(f => ({
       id: f.id,
       title: f.title,
@@ -64,25 +72,28 @@ export const getTopForms = async ({
 export const getSubmissionsOverTime = async ({ userId, fromDate, toDate, formId }: { userId: string; fromDate: string; toDate: string; formId?: string }) => {
   const supabase = await createClient();
 
-  let formIds: string[] = [];
+  let query = supabase
+    .from("submissions")
+    .select("created_at, form_id")
+    .gte("created_at", fromDate)
+    .lte("created_at", toDate);
+
   if (formId) {
-    formIds = [formId];
+    query = query.eq("form_id", formId);
   } else {
-    const { data: forms, error: formsError } = await supabase
+    // If no formId, filter by forms belonging to the user
+    const { data: userForms, error: userFormsError } = await supabase
       .from("forms")
       .select("id")
       .eq("user_id", userId);
-    if (formsError) return [];
-    formIds = forms?.map(f => f.id) || [];
-  }
-  if (formIds.length === 0) return [];
 
-  const { data, error } = await supabase
-    .from("submissions")
-    .select("created_at")
-    .in("form_id", formIds)
-    .gte("created_at", fromDate)
-    .lte("created_at", toDate);
+    if (userFormsError) return [];
+    const formIds = userForms?.map(f => f.id) || [];
+    if (formIds.length === 0) return [];
+    query = query.in("form_id", formIds);
+  }
+
+  const { data, error } = await query;
 
   if (error) return [];
 
@@ -110,38 +121,39 @@ export const getAllAnalyticsGroups = async ({
 }) => {
   const supabase = await createClient();
 
-  let formIds: string[] = [];
+  let query = supabase
+    .from("submissions")
+    .select("analytics")
+    .gte("created_at", fromDate)
+    .lte("created_at", toDate)
+    .not("analytics", "is", null);
+
   if (formId) {
-    formIds = [formId];
+    query = query.eq("form_id", formId);
   } else {
-    const { data: forms, error: formsError } = await supabase
+    const { data: userForms, error: userFormsError } = await supabase
       .from("forms")
       .select("id")
       .eq("user_id", userId);
-    if (formsError) return ({
+    if (userFormsError) return ({
       os: [],
       browser: [],
       device_type: [],
       country: [],
     })
-    formIds = forms?.map((f) => f.id) || [];
-  }
-  if (formIds.length === 0) {
-    return {
-      os: [],
-      browser: [],
-      device_type: [],
-      country: [],
-    };
+    const formIds = userForms?.map((f) => f.id) || [];
+    if (formIds.length === 0) {
+      return {
+        os: [],
+        browser: [],
+        device_type: [],
+        country: [],
+      };
+    }
+    query = query.in("form_id", formIds);
   }
 
-  const { data, error } = await supabase
-    .from("submissions")
-    .select("analytics")
-    .in("form_id", formIds)
-    .gte("created_at", fromDate)
-    .lte("created_at", toDate)
-    .not("analytics", "is", null);
+  const { data, error } = await query;
 
   if (error) return ({
     os: [],
