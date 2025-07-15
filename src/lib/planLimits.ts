@@ -13,7 +13,7 @@ export const planLimits = {
   },
   starter: {
     maxForms: Infinity,
-    maxSubmissions: 50000,
+    maxSubmissions: 25000,
     maxFileSizeMB: 50,
     features: {
       slackIntegration: true,
@@ -46,8 +46,8 @@ export const PLANS = [
     },
     description: "Perfect for getting started",
     features: [
-      "2 Forms",
-      "50 Submissions/mo",
+      "1 Forms",
+      "100 Submissions/mo",
       "Drag & Drop Builder",
       "Google Sheets Sync",
       "Notion Integration",
@@ -72,7 +72,7 @@ export const PLANS = [
     features: [
       "Unlimited Forms",
       "25,000 Submissions/mo",
-      "Drag & Drop Builder",
+      "Drag & Drop Builder (Comming soon)",
       "Google Sheets Sync",
       "Notion Integration",
       "Custom Branding",

@@ -72,55 +72,55 @@ export const FormSettings = ({
             <CopyToClipboard text={endpointUrl} />
           </div>
         </div>
-        <div className="space-y-2">
-          <Label>
-            <Globe className="w-4 h-4" />
-            Public Form URL
-          </Label>
-          <p className="text-muted-foreground text-sm">
-            Share this link to let users fill out your form.
-          </p>
-          <div className="flex items-stretch gap-2">
-            <a
-              href={sharablePublicUrl}
-              className={buttonVariants({
-                variant: "outline",
-                className:
-                  "font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap",
-              })}
-              target="_blank"
-            >
-              {sharablePublicUrl}
-            </a>
+        {/* <div className="space-y-2"> */}
+        {/*   <Label> */}
+        {/*     <Globe className="w-4 h-4" /> */}
+        {/*     Public Form URL */}
+        {/*   </Label> */}
+        {/*   <p className="text-muted-foreground text-sm"> */}
+        {/*     Share this link to let users fill out your form. */}
+        {/*   </p> */}
+        {/*   <div className="flex items-stretch gap-2"> */}
+        {/*     <a */}
+        {/*       href={sharablePublicUrl} */}
+        {/*       className={buttonVariants({ */}
+        {/*         variant: "outline", */}
+        {/*         className: */}
+        {/*           "font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap", */}
+        {/*       })} */}
+        {/*       target="_blank" */}
+        {/*     > */}
+        {/*       {sharablePublicUrl} */}
+        {/*     </a> */}
+        {/**/}
+        {/*     <CopyToClipboard text={sharablePublicUrl} /> */}
+        {/*   </div> */}
+        {/* </div> */}
 
-            <CopyToClipboard text={sharablePublicUrl} />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>
-            <Wrench className="w-4 h-4" />
-            Form Builder Editor
-          </Label>
-          <p className="text-muted-foreground text-sm">
-            Edit this form visually using the drag-and-drop builder.
-          </p>
-          <div className="flex items-stretch gap-2">
-            <Link
-              href={formBuilderUrl}
-              className={buttonVariants({
-                variant: "outline",
-                className:
-                  "font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap",
-              })}
-              target="_blank"
-            >
-              {formBuilderUrl}
-            </Link>
-
-            <CopyToClipboard text={formBuilderUrl} />
-          </div>
-        </div>
+        {/* <div className="space-y-2"> */}
+        {/*   <Label> */}
+        {/*     <Wrench className="w-4 h-4" /> */}
+        {/*     Form Builder Editor */}
+        {/*   </Label> */}
+        {/*   <p className="text-muted-foreground text-sm"> */}
+        {/*     Edit this form visually using the drag-and-drop builder. */}
+        {/*   </p> */}
+        {/*   <div className="flex items-stretch gap-2"> */}
+        {/*     <Link */}
+        {/*       href={formBuilderUrl} */}
+        {/*       className={buttonVariants({ */}
+        {/*         variant: "outline", */}
+        {/*         className: */}
+        {/*           "font-mono max-w-[calc(100%-40px)] sm:flex-none overflow-hidden text-ellipsis whitespace-nowrap", */}
+        {/*       })} */}
+        {/*       target="_blank" */}
+        {/*     > */}
+        {/*       {formBuilderUrl} */}
+        {/*     </Link> */}
+        {/**/}
+        {/*     <CopyToClipboard text={formBuilderUrl} /> */}
+        {/*   </div> */}
+        {/* </div> */}
 
         <div className="space-y-2">
           <Label>Redirect After Submit</Label>
