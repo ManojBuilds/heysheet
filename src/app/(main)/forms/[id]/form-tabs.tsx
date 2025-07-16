@@ -12,6 +12,9 @@ export function FormTabs({
   endpointUrl,
   id,
   formAnalytics,
+  initialWebhookEnabled,
+  initialWebhookUrl,
+  initialWebhookSecret,
 }: {
   defaultTab: string;
   data: IFormDetails;
@@ -19,6 +22,9 @@ export function FormTabs({
   endpointUrl: string;
   id: string;
   formAnalytics: ReactNode;
+  initialWebhookEnabled: boolean;
+  initialWebhookUrl: string;
+  initialWebhookSecret: string;
 }) {
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
@@ -32,6 +38,9 @@ export function FormTabs({
           appUrl={appUrl}
           endpointUrl={endpointUrl}
           id={id}
+          initialWebhookEnabled={initialWebhookEnabled}
+          initialWebhookUrl={initialWebhookUrl}
+          initialWebhookSecret={initialWebhookSecret}
         />
       </TabsContent>
       <TabsContent value="analytics">{formAnalytics}</TabsContent>

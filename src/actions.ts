@@ -200,14 +200,72 @@ export const createForm = async ({
 export const updateForm = async (dataToUpdate: any, formId: string) => {
   const supabase = await createClient();
   const user = await currentUser();
+
+  const { webhook_enabled, ...formDataToUpdate } = dataToUpdate;
+
+  // Update forms table
   const { data, error } = await supabase
     .from("forms")
-    .update(dataToUpdate)
+    .update({ ...formDataToUpdate, webhook_enabled })
     .eq("id", formId)
     .eq("user_id", user?.id)
     .select();
+
   if (error) throw error;
+
   return data;
+};
+
+export const updateWebhookSettings = async ({
+  formId,
+  enabled,
+  url,
+  secret,
+}: {
+  formId: string;
+  enabled: boolean;
+  url: string;
+  secret: string;
+}) => {
+  const supabase = await createClient();
+  const user = await currentUser();
+
+  if (!user?.id) {
+    throw new Error("User not authenticated");
+  }
+
+  if (enabled) {
+    // If webhook is enabled, upsert the webhook details
+    const { error: upsertError } = await supabase
+      .from("webhooks")
+      .upsert(
+        {
+          form_id: formId,
+          url: url,
+          secret: secret,
+        },
+        { onConflict: "form_id" }
+      );
+
+    if (upsertError) {
+      console.error("Error upserting webhook:", upsertError);
+      throw upsertError;
+    }
+  } else {
+    // If webhook is disabled, delete the webhook details
+    const { error: deleteError } = await supabase
+      .from("webhooks")
+      .delete()
+      .eq("form_id", formId);
+
+    if (deleteError) {
+      console.error("Error deleting webhook:", deleteError);
+      throw deleteError;
+    }
+  }
+
+  // Revalidate path to reflect changes in UI
+  revalidatePath(`/forms/${formId}`);
 };
 
 export async function getUserLocationInfo() {

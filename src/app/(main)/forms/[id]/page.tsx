@@ -51,10 +51,16 @@ export default async function EndpointDetailPage({
   const { data, error } = await supabase
     .from("forms")
     .select(
-      "*, slack_account:slack_account_id(*), notion_account:notion_account_id(*), file_upload",
+      "*, slack_account:slack_account_id(*), notion_account:notion_account_id(*), file_upload, webhook_enabled",
     )
     .eq("id", id)
     .eq("user_id", userId)
+    .single();
+
+  const { data: webhookData, error: webhookError } = await supabase
+    .from("webhooks")
+    .select("url, secret")
+    .eq("form_id", id)
     .single();
 
   if (error || !data) {
@@ -82,6 +88,9 @@ export default async function EndpointDetailPage({
         appUrl={appUrl}
         endpointUrl={endpointUrl}
         formAnalytics={<FormAnalytics id={id} searchParams={searchParams} />}
+        initialWebhookEnabled={data.webhook_enabled}
+        initialWebhookUrl={webhookData?.url ?? ""}
+        initialWebhookSecret={webhookData?.secret ?? ""}
       />
     </main>
   );

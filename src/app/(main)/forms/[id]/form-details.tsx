@@ -25,17 +25,24 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { createSheet } from "@/lib/google/sheets";
 import { useRouter } from "nextjs-toploader/app";
+import { WebhookSettings } from "@/components/integrations/WebhookSettings";
 
 export const FormDetails = ({
   data,
   endpointUrl,
   appUrl,
   id,
+  initialWebhookEnabled,
+  initialWebhookUrl,
+  initialWebhookSecret,
 }: {
   data: IFormDetails;
   endpointUrl: string;
   appUrl: string;
   id: string;
+  initialWebhookEnabled: boolean;
+  initialWebhookUrl: string;
+  initialWebhookSecret: string;
 }) => {
   const { selectedAccount } = useGoogleAccounts();
   const [isPending, startTransition] = useTransition();
@@ -191,6 +198,14 @@ loading="lazy"
         sharablePublicUrl={`${appUrl}/f/${id}`}
         formId={id}
         redirectUrl={data.redirect_url ?? ""}
+
+
+      />
+      <WebhookSettings
+        formId={id}
+        initialWebhookEnabled={initialWebhookEnabled}
+        initialWebhookUrl={initialWebhookUrl}
+        initialWebhookSecret={initialWebhookSecret}
       />
       <FileUploadSettings
         form={{

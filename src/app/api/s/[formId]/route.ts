@@ -41,6 +41,7 @@ export async function POST(
     notion_enabled, 
     notion_account_id,
     domains,
+    webhook_enabled,
     notion_accounts (
       access_token
     )
@@ -197,6 +198,33 @@ export async function POST(
             dataToSend: messageData,
             toEmail: form.notification_email,
           });
+        }
+
+        if (form.webhook_enabled) {
+          const { data: webhookData, error: webhookError } = await supabase
+            .from("webhooks")
+            .select("url, secret")
+            .eq("form_id", formId)
+            .single();
+
+          if (webhookError) {
+            console.error("Error fetching webhook:", webhookError);
+          } else if (webhookData) {
+            const payload = {
+              formId: form.id,
+              submissionId: submission.id,
+              data: formDataObj,
+              createdAt: submission.created_at,
+            };
+
+            void supabase.functions.invoke("send-webhook", {
+              body: {
+                webhookUrl: webhookData.url,
+                payload: payload,
+                secret: webhookData.secret,
+              },
+            }).then((d) => console.log('@send-webhook success', d)).catch((e) => console.log('@send-webhook failed', e));
+          }
         }
         // @ts-expect-error: notion_accounts might be null or undefined
         const notionAccessToken = form.notion_accounts?.access_token;
