@@ -69,7 +69,10 @@ export const WebhookSettings = ({
           <Switch
             id="webhook-toggle"
             checked={webhookEnabled}
-            onCheckedChange={setWebhookEnabled}
+            onCheckedChange={(val) => {
+              setWebhookEnabled(val);
+              updateForm({ webhook_enabled: val }, formId);
+            }}
           />
         </div>
 
