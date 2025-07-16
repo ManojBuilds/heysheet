@@ -40,8 +40,8 @@ export const WebhookSettings = ({
       secret: string;
       enabled: boolean;
     }) => {
-      updateWebhookSettings({ formId, url, secret, enabled });
-      updateForm({ webhook_enabled: enabled }, formId);
+      await updateWebhookSettings({ formId, url, secret, enabled });
+      await updateForm({ webhook_enabled: enabled }, formId);
     },
     onSuccess: () => {
       toast.success("Webhook settings updated successfully");
