@@ -1,4 +1,4 @@
-import { updateWebhookSettings } from "@/actions";
+import { updateWebhookSettings, updateForm } from "@/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -31,8 +31,18 @@ export const WebhookSettings = ({
   const [webhookSecret, setWebhookSecret] = useState(initialWebhookSecret);
 
   const updateWebhookMutation = useMutation({
-    mutationFn: async ({ url, secret, enabled }: { url: string; secret: string; enabled: boolean }) =>
-      updateWebhookSettings({ formId, url, secret, enabled }),
+    mutationFn: async ({
+      url,
+      secret,
+      enabled,
+    }: {
+      url: string;
+      secret: string;
+      enabled: boolean;
+    }) => {
+      updateWebhookSettings({ formId, url, secret, enabled });
+      updateForm({ webhook_enabled: enabled }, formId);
+    },
     onSuccess: () => {
       toast.success("Webhook settings updated successfully");
     },
@@ -85,7 +95,8 @@ export const WebhookSettings = ({
                 onChange={(e) => setWebhookSecret(e.target.value)}
               />
               <p className="text-muted-foreground text-sm">
-                A secret is used to sign the webhook payload, allowing you to verify its authenticity.
+                A secret is used to sign the webhook payload, allowing you to
+                verify its authenticity.
               </p>
             </div>
             <Button

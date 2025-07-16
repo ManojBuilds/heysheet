@@ -235,23 +235,23 @@ export const updateWebhookSettings = async ({
   }
 
   if (enabled) {
+    console.log("Creating webhook");
     // If webhook is enabled, upsert the webhook details
-    const { error: upsertError } = await supabase
-      .from("webhooks")
-      .upsert(
-        {
-          form_id: formId,
-          url: url,
-          secret: secret,
-        },
-        { onConflict: "form_id" }
-      );
+    const { error: upsertError } = await supabase.from("webhooks").upsert(
+      {
+        form_id: formId,
+        url: url,
+        secret: secret,
+      },
+      { onConflict: "form_id" },
+    );
 
     if (upsertError) {
       console.error("Error upserting webhook:", upsertError);
       throw upsertError;
     }
   } else {
+    console.log("Deleting webhook");
     // If webhook is disabled, delete the webhook details
     const { error: deleteError } = await supabase
       .from("webhooks")
