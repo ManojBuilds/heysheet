@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     siteName: "Heysheet",
     images: [
       {
-        url: "https://app.heysheet.in/og-image.png",
+        url: "https://app.heysheet.in/opengraph-image.png",
         width: 1200,
         height: 630,
         alt: "Heysheet – Form backend that syncs with Google Sheets & Notion",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
       "Heysheet: Submits any Google Forms to Google Sheets and Notion. Instantly.",
     description:
       "Submits any Google Forms to Google Sheets and Notion. Instantly. Heysheet is the ultimate form backend for Google Sheets & Notion. Streamline your data collection with real-time sync, a visual form builder, and robust analytics. A powerful alternative to SheetMonkey and NotionMonkey.",
-    images: ["https://app.heysheet.in/og-image.png"],
+    images: ["https://app.heysheet.in/opengraph-image.png"],
   },
 };
 
