@@ -86,6 +86,7 @@ export const WebhookSettings = ({
                 placeholder="https://your-webhook-endpoint.com/"
                 value={webhookUrl}
                 onChange={(e) => setWebhookUrl(e.target.value)}
+                required
               />
             </div>
             <div className="space-y-2">
