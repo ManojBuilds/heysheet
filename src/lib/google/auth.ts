@@ -1,18 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { google } from "googleapis";
+import { config } from "@/config";
 
 // Google OAuth scopes needed for Sheets API and Drive Picker
 const SCOPES = [
   "https://www.googleapis.com/auth/spreadsheets",
   "https://www.googleapis.com/auth/drive.file",
-  "https://www.googleapis.com/auth/drive.readonly",
   "email",
   "profile",
 ];
 
 // Create OAuth2 client
-function getOAuth2Client(redirectUri = 'http://localhost:3000/api/auth/google/callback') {
+function getOAuth2Client(redirectUri = `${config.appUrl}/api/auth/google/callback`) {
   return new google.auth.OAuth2(
     process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
     process.env.GOOGLE_CLIENT_SECRET!,

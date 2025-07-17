@@ -474,11 +474,15 @@ const CreateFormModal = () => {
                           if (spreadsheet) {
                             setSelectedTemplate("");
                           }
+                          setIsOpen(true); // Re-open the modal after picking a spreadsheet
                         }}
                         onSheetNamePick={(sheet) => {
                           setSheetName(sheet);
                         }}
                         disabled={!!selectedTemplate}
+                        onOpenPicker={() => setIsOpen(false)}
+                        selectedSheet={sheet}
+                        onClearSelection={() => setSheet(null)}
                       />
                     </div>
                   </div>
@@ -578,9 +582,13 @@ const CreateFormModal = () => {
                             if (spreadsheet) {
                               setSelectedTemplate("");
                             }
+                            setIsOpen(true);
                           }}
                           onSheetNamePick={(sheet) => setSheetName(sheet)}
                           disabled={!!selectedTemplate}
+                          onOpenPicker={() => setIsOpen(false)}
+                          selectedSheet={sheet}
+                          onClearSelection={() => setSheet(null)}
                         />
                       </div>
                     </div>

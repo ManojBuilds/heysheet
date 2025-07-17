@@ -358,31 +358,6 @@ export async function processSubmission(
   }
 }
 
-export async function getExistingSheets(googleAccountId: string) {
-  // Use Google Drive API to list all spreadsheets accessible to the user
-  const client = await getAuthenticatedClient(googleAccountId)
-  console.log('googleAid', googleAccountId)
-  const drive = google.drive({
-    version: "v2",
-    auth: client
-  });
-
-  try {
-    const res = await drive.files.list({
-      q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
-
-    })
-    console.log('Found existing spreadsheets', res.data.items?.length)
-    return res.data.items?.map((item) => ({
-      id: item.id || "", name: item.title || "Untitled", url:
-        `https://docs.google.com/spreadsheets/d/${item.id}/edit`
-    }))
-  } catch (error) {
-    console.error("Error fetching spreadsheets:", error);
-    throw error;
-  }
-}
-
 export async function getSheetTabs(
   googleAccountId: string,
   spreadsheetId: string,

@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -8,11 +7,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { getExistingSheets, getSheetTabs } from "@/lib/google/sheets";
+import { getSheetTabs } from "@/lib/google/sheets";
+import useDrivePicker from "react-google-drive-picker";
 
 type Spreadsheet = {
   id: string;
@@ -24,89 +24,113 @@ export default function SpreadsheetSelect({
   onPick,
   disabled,
   onSheetNamePick,
+  onOpenPicker,
+  selectedSheet,
+  onClearSelection,
 }: {
   onPick: (sheet: Spreadsheet) => void;
   disabled?: boolean;
   onSheetNamePick: (sheetName: string) => void;
+  onOpenPicker?: () => void;
+  selectedSheet: Spreadsheet | null;
+  onClearSelection: () => void;
 }) {
   const { selectedAccount } = useGoogleAccountsStore();
-  const [search, setSearch] = useState("");
-  const [selectedSheet, setSelectedSheet] = useState("");
+  const [currentGoogleAccountId, setCurrentGoogleAccountId] = useState("");
 
-  const {
-    isLoading,
-    data: spreadsheets = [],
-    error,
-  } = useQuery({
-    queryKey: ["existing-spreadsheets", selectedAccount?.id],
-    queryFn: () => {
-      if (!selectedAccount?.id) return [];
-      return getExistingSheets(selectedAccount.id);
-    },
-    enabled: !!selectedAccount?.id,
-  });
+  const [openPicker, authResponse] = useDrivePicker();
 
   const {
     data: sheetNames = [],
     isLoading: isLoadingSheetNames,
     error: errorSheetNames,
   } = useQuery({
-    queryKey: ["sheet-names", selectedSheet, selectedAccount],
+    queryKey: ["sheet-names", selectedSheet?.id, selectedAccount],
     queryFn: () => {
-      if (!selectedAccount?.id || !selectedSheet) return [];
-      return getSheetTabs(selectedAccount.id, selectedSheet);
+      if (!selectedAccount?.id || !selectedSheet?.id) return [];
+      return getSheetTabs(selectedAccount.id, selectedSheet.id);
     },
-    enabled: !!selectedSheet && !!selectedAccount?.id,
+    enabled: !!selectedSheet?.id && !!selectedAccount?.id,
   });
 
-  const filteredSpreadsheets = spreadsheets?.filter((sheet) =>
-    sheet.name?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const handleOpenPicker = () => {
+    if (onOpenPicker) {
+      onOpenPicker();
+    }
+    openPicker({
+      clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
+      developerKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "",
+      viewId: "SPREADSHEETS",
+      // token: selectedAccount?.accessToken || "",
+      showUploadView: false,
+      showUploadFolders: false,
+      supportDrives: true,
+      multiselect: false,
+      callbackFunction: (data) => {
+        if (data.action === "cancel") {
+          console.log("User cancelled the picker");
+          return;
+        }
+
+        if (data.action === "picked") {
+          const pickedFile = data.docs[0];
+          console.log(pickedFile);
+          const spreadsheet: Spreadsheet = {
+            id: pickedFile.id,
+            name: pickedFile.name,
+            url: pickedFile.url,
+          };
+
+          onPick(spreadsheet);
+          toast.success(`Selected spreadsheet: ${pickedFile.name}`);
+        }
+      },
+    });
+  };
+
+  // Reset sheet names when selected sheet changes
+  useEffect(() => {
+    if (selectedSheet && onSheetNamePick) {
+      // Reset the sheet name selection when a new spreadsheet is selected
+      onSheetNamePick("");
+    }
+  }, [selectedSheet, onSheetNamePick]);
+  console.log({ selectedSheet })
 
   return (
     <div className="flex gap-2">
       <div className="space-y-2 flex-1">
-        <Select
-          disabled={disabled || isLoading}
-          onValueChange={(val) => {
-            const picked = spreadsheets?.find((s) => s.id === val);
-            setSelectedSheet(picked?.id || "");
-            if (picked) onPick(picked);
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue
-              placeholder={isLoading ? "Loading..." : "Pick a spreadsheet"}
-            />
-          </SelectTrigger>
-          <SelectContent className="max-h-[480px] overflow-y-auto">
-            <div className="p-2" onMouseDown={(e) => e.stopPropagation()}>
-              <Input
-                placeholder="Search..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.stopPropagation()}
-                className="w-full"
-              />
-            </div>
-            {filteredSpreadsheets.map((sheet) => (
-              <SelectItem key={sheet.id} value={sheet.id}>
-                {sheet.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {error && (
-          <div className="text-sm text-red-500">
-            Error loading spreadsheets: {error.message}
-          </div>
-        )}
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleOpenPicker}
+            disabled={disabled}
+            className="flex-1"
+          >
+            {selectedSheet ? selectedSheet.name : "Pick a spreadsheet"}
+          </Button>
+          {selectedSheet && (
+            <Button
+              type="button"
+              variant="ghost"
+              size={'icon'}
+              onClick={() => {
+                onClearSelection();
+              }}
+              disabled={disabled}
+              className="px-3"
+              aria-label="Remove selected spreadsheet"
+            >
+              ✕
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
         <Select
-          disabled={disabled || isLoadingSheetNames}
+          disabled={disabled || isLoadingSheetNames || !selectedSheet}
           onValueChange={(val) => {
             if (onSheetNamePick) onSheetNamePick(val);
           }}
@@ -114,7 +138,11 @@ export default function SpreadsheetSelect({
           <SelectTrigger className="w-full">
             <SelectValue
               placeholder={
-                isLoadingSheetNames ? "Loading..." : "Select the sheet tab"
+                !selectedSheet
+                  ? "Select spreadsheet first"
+                  : isLoadingSheetNames
+                    ? "Loading..."
+                    : "Select the sheet tab"
               }
             />
           </SelectTrigger>
@@ -126,10 +154,9 @@ export default function SpreadsheetSelect({
             ))}
           </SelectContent>
         </Select>
-
         {errorSheetNames && (
           <div className="text-sm text-red-500">
-            Error loading spreadsheets: {errorSheetNames.message}
+            Error loading sheet tabs: {errorSheetNames.message}
           </div>
         )}
       </div>

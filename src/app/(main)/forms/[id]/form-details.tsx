@@ -27,6 +27,12 @@ import { createSheet } from "@/lib/google/sheets";
 import { useRouter } from "nextjs-toploader/app";
 import { WebhookSettings } from "@/components/integrations/WebhookSettings";
 
+type Spreadsheet = {
+  id: string;
+  name: string;
+  url: string;
+};
+
 export const FormDetails = ({
   data,
   endpointUrl,
@@ -50,6 +56,16 @@ export const FormDetails = ({
   const [sheetName, setSheetName] = useState("");
   const router = useRouter();
 
+  const [selectedSpreadsheet, setSelectedSpreadsheet] = useState<Spreadsheet | null>(
+    data.spreadsheet_id
+      ? {
+        id: data.spreadsheet_id,
+        name: data.sheet_name || "Unnamed Sheet",
+        url: `https://docs.google.com/spreadsheets/d/${data.spreadsheet_id}`,
+      }
+      : null,
+  );
+
   const formEmbeddingCode = `<iframe 
 src="${process.env.NEXT_PUBLIC_APP_URL}/f/${id}"
 width="100%"
@@ -62,6 +78,7 @@ loading="lazy"
   const handleConnectSpreadsheet = async (
     spreadsheetId: string,
     sheetName: string,
+    spreadsheetUrl: string,
   ) => {
     startTransition(async () => {
       try {
@@ -73,10 +90,35 @@ loading="lazy"
           },
           id,
         );
+        setSelectedSpreadsheet({
+          id: spreadsheetId,
+          name: sheetName,
+          url: spreadsheetUrl,
+        });
         toast.success("Spreadsheet connected successfully!");
         router.refresh();
       } catch (error) {
         toast.error("Failed to connect spreadsheet");
+      }
+    });
+  };
+
+  const handleClearSelection = async () => {
+    startTransition(async () => {
+      try {
+        await updateForm(
+          {
+            spreadsheet_id: null,
+            sheet_name: null,
+            google_account_id: null,
+          },
+          id,
+        );
+        setSelectedSpreadsheet(null);
+        toast.success("Spreadsheet connection cleared!");
+        router.refresh();
+      } catch (error) {
+        toast.error("Failed to clear spreadsheet connection");
       }
     });
   };
@@ -99,6 +141,11 @@ loading="lazy"
           },
           id,
         );
+        setSelectedSpreadsheet({
+          id: sheet.spreadsheetId as string,
+          name: title,
+          url: `https://docs.google.com/spreadsheets/d/${sheet.spreadsheetId}`,
+        });
         toast.success("New spreadsheet created and connected!");
         setNewSpreadsheetTitle("");
         router.refresh();
@@ -115,7 +162,7 @@ loading="lazy"
           <BellIcon className="w-4 h-4" />
           {data.submission_count === 0
             ? "No submissions yet"
-            : `${data.submission_count} Responses Collected`}{" "}
+            : `${data.submission_count} Responses Collected`}
         </p>
         <p className="text-sm text-muted-foreground">
           Manage your form settings, connected spreadsheet, and integration
@@ -132,14 +179,14 @@ loading="lazy"
         <CardContent>
           {!selectedAccount ? (
             <AllowGooglePermissions />
-          ) : data.spreadsheet_id ? (
+          ) : selectedSpreadsheet ? (
             <a
-              href={`https://docs.google.com/spreadsheets/d/${data.spreadsheet_id}`}
+              href={selectedSpreadsheet.url}
               target="_blank"
               rel="noopener noreferrer"
             >
               <Button leftIcon={<FileSpreadsheetIcon className="w-5 h-5" />}>
-                Open {data.sheet_name} Spreadsheet
+                Open {selectedSpreadsheet.name} Spreadsheet
               </Button>
             </a>
           ) : (
@@ -149,15 +196,12 @@ loading="lazy"
                   Select an existing spreadsheet:
                 </p>
                 <SpreadsheetsPicker
-                  onPick={(spreadsheet: {
-                    id: string;
-                    name: string;
-                    url: string;
-                  }) => {
+                  onPick={(spreadsheet) => {
                     if (spreadsheet) {
                       handleConnectSpreadsheet(
                         spreadsheet.id,
                         sheetName || spreadsheet.name,
+                        spreadsheet.url,
                       );
                     }
                   }}
@@ -165,6 +209,8 @@ loading="lazy"
                   onSheetNamePick={(val) => {
                     setSheetName(val);
                   }}
+                  selectedSheet={selectedSpreadsheet}
+                  onClearSelection={handleClearSelection}
                 />
               </div>
               <div>

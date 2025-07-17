@@ -98,7 +98,7 @@ export function CheckoutButton({
         ListinEvents(event);
       },
     });
-  }, []);
+  }, [isMobile]);
 
   const handleCheckout = useCallback(async () => {
     try {
@@ -142,7 +142,7 @@ export function CheckoutButton({
       });
       throw error;
     }
-  }, [isSignedIn, openSignIn, productId, isLoaded, user, isMobile]);
+  }, [isSignedIn, openSignIn, productId, isLoaded, user, isMobile, createCheckoutSession, router]);
 
   useEffect(() => {
     if (autoOpen && isLoaded) {

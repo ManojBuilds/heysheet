@@ -8,6 +8,7 @@ import Dropzone from "react-dropzone";
 import { toast } from "sonner";
 import { useUppyUploader } from "@/hooks/useUppyUploader";
 import { Progress } from "@/components/ui/progress";
+import Image from "next/image";
 
 interface FileUploadProps {
   theme: FormTheme;
@@ -108,12 +109,12 @@ const FileUpload = ({
       accept={
         allowedTypes.length
           ? allowedTypes.reduce(
-              (acc: any, type: any) => {
-                acc[type] = [];
-                return acc;
-              },
-              {} as Record<string, string[]>,
-            )
+            (acc: any, type: any) => {
+              acc[type] = [];
+              return acc;
+            },
+            {} as Record<string, string[]>,
+          )
           : undefined
       }
       maxSize={maxSize * 1024 * 1024}
@@ -195,7 +196,9 @@ const FileUpload = ({
                     >
                       <div className="flex items-center gap-2 truncate w-full">
                         {isImage(file) && (
-                          <img
+                          <Image
+                            width={40}
+                            height={40}
                             src={URL.createObjectURL(file)}
                             alt={file.name}
                             className="w-10 h-10 rounded object-cover"
