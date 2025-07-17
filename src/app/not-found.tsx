@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { config } from "@/config";
 import { ArrowLeft, Home, Search } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function NotFound() {
   return (
@@ -10,9 +11,7 @@ export default function NotFound() {
       <div className="max-w-md mx-auto text-center space-y-6 p-6">
         {/* 404 Icon */}
         <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-          <div className="text-6xl font-bold text-muted-foreground/30">
-            404
-          </div>
+          <Image src="/404-error.png" alt="404 Error" width={1024} height={1536} className="w-full h-auto" />
         </div>
 
         {/* Error Title */}

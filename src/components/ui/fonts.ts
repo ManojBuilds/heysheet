@@ -1,6 +1,6 @@
-import { DM_Sans, Geist_Mono, Open_Sans } from "next/font/google";
+import { Geist_Mono, Work_Sans } from "next/font/google";
 
-export const dmSans = DM_Sans({
+export const dmSans = Work_Sans({
   subsets: ["latin"],
   weight: ["400", "600"],
 });

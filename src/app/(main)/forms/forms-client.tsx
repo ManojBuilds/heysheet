@@ -18,6 +18,7 @@ import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 type FormsPageClientProps = {
   forms: {
@@ -88,10 +89,19 @@ export default function FormsPageClient({
     router.push(`?${params.toString()}`);
   };
 
-  if (forms.length === 0) {
+  if (forms.length !== 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16 max-w-6xl mx-auto px-4 h-[calc(100vh-200px)]">
-        <GoogleSheetLogo className="w-24 h-24 mb-4" />
+        {/* <GoogleSheetLogo className="w-24 h-24 mb-4" /> */}
+        <div className="h-52">
+        <Image
+          src={'/no-form.png'}
+          alt="No forms"
+          width={1024}
+          height={1536}
+          className="pointer-events-none w-full h-full"
+        />
+        </div>
         <h2 className="text-xl font-bold mb-2 sm:text-2xl">Create your first form</h2>
         <p className="text-muted-foreground mb-6 text-sm sm:text-base">
           You haven't created any forms yet. Get started by creating your

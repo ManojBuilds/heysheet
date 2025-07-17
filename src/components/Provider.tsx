@@ -3,7 +3,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { dark } from "@clerk/themes";
 import { config } from "@/config";
 
 const queryClient = new QueryClient();
@@ -11,7 +10,6 @@ export default function Provider({ children }: { children: ReactNode }) {
   return (
     <ClerkProvider
       appearance={{
-        baseTheme: dark,
         layout: {
           logoLinkUrl: "/",
           logoPlacement: "inside",

@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { CrownIcon } from "lucide-react";
+import Image from "next/image";
 import UpgradeCta from "./UpgradeCta";
 
 const UpgradeModal = () => {
@@ -28,6 +29,7 @@ const UpgradeModal = () => {
           </DialogTitle>
           <DialogDescription>{subHeading}</DialogDescription>
         </DialogHeader>
+        <Image src="/upgrade.png" alt="Upgrade" width={1024} height={1536} className="w-full h-auto" />
         <DialogFooter>
           <UpgradeCta />
         </DialogFooter>

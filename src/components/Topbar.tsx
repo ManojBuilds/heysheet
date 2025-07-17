@@ -8,17 +8,19 @@ import { ExternalLink } from "lucide-react";
 import { SidebarTrigger } from "./ui/sidebar";
 import { cn } from "@/lib/utils";
 import { config } from "@/config";
-// import { ModeToggle } from "./toggle-mode";
+import GoogleAccountSwitcher from "./GoogleAccountSwitcher";
+import { Suspense } from "react";
+import { ModeToggle } from "./toggle-mode";
 // import posthog from "posthog-js";
 // import { Button } from "@/components/ui/button";
 
 export default function Topbar() {
   return (
     <div className="border-b h-16 flex items-center justify-between px-4 bg-background/80 backdrop-blur sticky top-0 z-20">
-      <div className="flex flex-1 items-center">
-        <SidebarTrigger className="md:hidden" />
+      <div className="flex flex-1 items-center gap-2">
+        <SidebarTrigger className="sm:-mr-0 z-10" />
         <Logo />
-        {/* <GoogleAccountSwitcher /> */}
+        <GoogleAccountSwitcher  />
       </div>
       <div className="flex items-center gap-2">
         <a
@@ -36,8 +38,10 @@ export default function Topbar() {
         >
           Manage plan
         </Link>
+        <Suspense fallback={null}>
         <UserButton />
-        {/* <ModeToggle /> */}
+        </Suspense>
+        <ModeToggle/>
         {/* <Button */}
         {/*   onClick={() => { */}
         {/*     posthog.capture("my event", { property: "value" }); */}

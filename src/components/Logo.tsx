@@ -1,13 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
-export const Logo = () => {
+export const Logo = ({className}: {className?: string}) => {
   return (
-    <Link href={"/"} className="inline-flex items-center">
+    <Link href={"/"} className={cn("inline-flex items-center", className)}>
       {/* <ZapIcon className="text-primary"/> */}
       {/* 🦍 */}
       {/* <span className="font-semibold text-2xl font-logo">heysheet</span> */}
-      <div className="h-16 aspect-square grid place-items-center relative">
+      <div className="h-8 aspect-square grid place-items-center relative">
         <Image
           src={'/logo.png'}
           alt="Heysheet Logo"
@@ -16,7 +17,7 @@ export const Logo = () => {
         />
       </div>
 
-      <span className="font-bold text-2xl -ml-3">heysheet</span>
+      <span className="font-bold text-2xl">heysheet</span>
     </Link>
   );
 };

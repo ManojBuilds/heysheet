@@ -24,7 +24,9 @@ const PricingCard = () => {
         <span
           className={cn(
             "text-sm",
-            !isAnnual ? "text-zinc-100 font-semibold" : "text-zinc-500",
+            !isAnnual
+              ? "text-zinc-900 dark:text-zinc-100 font-semibold"
+              : "text-zinc-500 dark:text-zinc-400",
           )}
         >
           Monthly
@@ -35,7 +37,7 @@ const PricingCard = () => {
             "relative w-14 h-8 rounded-full transition-colors duration-300",
             isAnnual
               ? "bg-gradient-to-r from-green-500 to-emerald-500"
-              : "bg-zinc-700",
+              : "bg-zinc-300 dark:bg-zinc-700",
           )}
           aria-label="Toggle billing period"
         >
@@ -49,7 +51,9 @@ const PricingCard = () => {
         <span
           className={cn(
             "text-sm",
-            isAnnual ? "text-zinc-100 font-semibold" : "text-zinc-500",
+            isAnnual
+              ? "text-zinc-900 dark:text-zinc-100 font-semibold"
+              : "text-zinc-500 dark:text-zinc-400",
           )}
         >
           Annual{" "}
@@ -67,7 +71,7 @@ const PricingCard = () => {
           const isCurrent =
             subscription?.plan?.toLowerCase() === plan.name.toLowerCase();
 
-          if(plan.name==="Pro") return null;
+          if (plan.name === "Pro") return null;
 
           return (
             <div
@@ -75,8 +79,8 @@ const PricingCard = () => {
               className={cn(
                 "relative p-6 rounded-2xl border transition-all duration-300 flex flex-col justify-between",
                 plan.popular
-                  ? "border-green-500/50 bg-gradient-to-b from-green-900/20 to-emerald-900/20 shadow-xl shadow-green-500/20"
-                  : "hover:border-green-500/30 shadow-sm hover:shadow-lg",
+                  ? "border-green-500/50 bg-gradient-to-b from-green-50/50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/20 shadow-xl shadow-green-500/20"
+                  : "border-zinc-200 dark:border-zinc-800 hover:border-green-500/30 shadow-sm hover:shadow-lg",
               )}
             >
               {plan.popular && (
@@ -89,18 +93,22 @@ const PricingCard = () => {
               )}
 
               <div>
-                <h3 className="text-2xl font-bold text-zinc-100 mb-1">
+                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
                   {plan.name}
                 </h3>
-                <p className="text-zinc-400 mb-6">{plan.description}</p>
+                <p className="text-zinc-600 dark:text-zinc-400 mb-6">
+                  {plan.description}
+                </p>
 
                 <div className="mb-6">
-                  <span className="text-5xl font-bold text-zinc-100">
+                  <span className="text-5xl font-bold text-zinc-900 dark:text-zinc-100">
                     ${priceInfo.price}
                   </span>
-                  <span className="text-zinc-400 ml-1">/month</span>
+                  <span className="text-zinc-600 dark:text-zinc-400 ml-1">
+                    /month
+                  </span>
                   {isAnnual && priceInfo.price > 0 && (
-                    <div className="text-sm text-zinc-500 mt-1">
+                    <div className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
                       Billed annually (${priceInfo.price * 12}/year)
                     </div>
                   )}
@@ -110,7 +118,9 @@ const PricingCard = () => {
                   {plan.features.map((feature: string, idx: number) => (
                     <div key={idx} className="flex items-center gap-3">
                       <Check className="h-5 w-5 text-green-400 flex-shrink-0" />
-                      <span className="text-zinc-300">{feature}</span>
+                      <span className="text-zinc-700 dark:text-zinc-300">
+                        {feature}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -121,7 +131,7 @@ const PricingCard = () => {
                   <Button
                     onClick={loginOrRedirect}
                     variant="outline"
-                    className="w-full py-6"
+                    className="w-full py-6 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 dark:hover:text-zinc-50"
                   >
                     {isCurrent ? "Current Plan" : plan.cta}
                   </Button>
@@ -132,8 +142,9 @@ const PricingCard = () => {
                     disabled={!priceInfo.priceId || isCurrent}
                     className={cn(
                       "w-full py-6 font-semibold transition-all duration-300",
-                      plan.popular &&
-                        "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-xl shadow-green-500/25 hover:shadow-green-500/40 border-0",
+                      plan.popular
+                        ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-xl shadow-green-500/25 hover:shadow-green-500/40 border-0"
+                        : "dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700",
                     )}
                   >
                     {isCurrent ? (

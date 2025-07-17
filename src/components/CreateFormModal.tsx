@@ -140,7 +140,7 @@ const CreateFormModal = () => {
           newDbTemplate &&
           newDbTemplate !== "none" &&
           NOTION_DATABASE_TEMPLATES[
-            newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES
+          newDbTemplate as keyof typeof NOTION_DATABASE_TEMPLATES
           ]
         ) {
           templateConfig =
@@ -248,7 +248,7 @@ const CreateFormModal = () => {
     });
   };
 
-  const handleDialogOpen = () => {
+  const handleDialogOpen = (open: boolean) => {
     if (!formCount) return;
     const maxForms =
       planLimits[subscription?.plan as keyof typeof planLimits].maxForms ?? 1;
@@ -261,15 +261,15 @@ const CreateFormModal = () => {
       });
       return;
     }
+    setIsOpen(open)
   };
 
-  // Notion connect
   const handleConnectToNotion = async () => {
     try {
       const redirectUrl = window.location.href;
       const url = await getNotionAuthUrl(redirectUrl, user?.id as string);
       if (url) window.location.href = url;
-    } catch {}
+    } catch { }
   };
 
   // Google connect
@@ -280,8 +280,8 @@ const CreateFormModal = () => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger onClick={handleDialogOpen} asChild>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpen}>
+      <DialogTrigger asChild>
         <Button>
           <Plus />
           <span className="hidden sm:inline-flex">Create Form</span>
@@ -384,7 +384,7 @@ const CreateFormModal = () => {
                       selectedDatabase={selectedDatabase}
                       setSelectedDatabase={setSelectedDatabase}
                       setOpenCreateDbDialog={setOpenCreateDbDialog}
-                      updateNotionIntegration={() => {}}
+                      updateNotionIntegration={() => { }}
                       isEnabled={true}
                     />
                   </div>
@@ -516,7 +516,7 @@ const CreateFormModal = () => {
                         selectedDatabase={selectedDatabase}
                         setSelectedDatabase={setSelectedDatabase}
                         setOpenCreateDbDialog={setOpenCreateDbDialog}
-                        updateNotionIntegration={() => {}}
+                        updateNotionIntegration={() => { }}
                         isEnabled={true}
                       />
                     </div>

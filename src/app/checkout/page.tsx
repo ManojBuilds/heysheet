@@ -58,9 +58,9 @@ export default async function CheckoutPage({
   return (
     <>
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 py-10">
+      <main className="max-w-5xl mx-auto px-4 py-10 dark:bg-zinc-950">
         {productId && planDisplayName ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <div className="flex flex-col items-center justify-center min-h-[50vh] dark:text-zinc-100">
             <h2 className="text-2xl font-bold mb-4">Confirm Your Purchase</h2>
             <p className="mb-8">
               You are about to purchase the {planDisplayName} plan.
@@ -71,10 +71,10 @@ export default async function CheckoutPage({
           </div>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-zinc-100 mb-2">
+            <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
               Choose a Plan
             </h1>
-            <p className="text-zinc-400 mb-6">
+            <p className="text-zinc-600 dark:text-zinc-400 mb-6">
               Pick a plan that fits your form needs. Upgrade anytime.
             </p>
             <PricingCard />

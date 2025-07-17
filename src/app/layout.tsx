@@ -61,7 +61,7 @@ export default function RootLayout({
     <Provider>
       <html lang="en" suppressHydrationWarning>
         <body className={`${dmSans.className} antialiased`}>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <main>{children}</main>
             <UpgradeModal />
             <Toaster

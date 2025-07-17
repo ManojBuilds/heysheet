@@ -142,7 +142,7 @@ export function CheckoutButton({
       });
       throw error;
     }
-  }, [isSignedIn, openSignIn, productId, isLoaded, user, isMobile, createCheckoutSession, router]);
+  }, [productId, isLoaded, user, isMobile, createCheckoutSession, router]);
 
   useEffect(() => {
     if (autoOpen && isLoaded) {

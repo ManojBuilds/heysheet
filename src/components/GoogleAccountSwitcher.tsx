@@ -14,8 +14,6 @@ import { useAuth } from "@clerk/nextjs";
 import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
 
 const GoogleAccountSwitcher = () => {
-  const { userId } = useAuth();
-
   const {
     accounts,
     selectedAccount,
@@ -40,7 +38,7 @@ const GoogleAccountSwitcher = () => {
 
   return (
     <Select value={selectedAccount?.id || ""} onValueChange={handleValueChange}>
-      <SelectTrigger>
+      <SelectTrigger className="hidden sm:inline-flex">
         <Mail className="w-4 h-4" />
         <SelectValue />
       </SelectTrigger>
