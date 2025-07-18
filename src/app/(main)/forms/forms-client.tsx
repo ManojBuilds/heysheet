@@ -89,7 +89,7 @@ export default function FormsPageClient({
     router.push(`?${params.toString()}`);
   };
 
-  if (forms.length !== 0) {
+  if (forms.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16 max-w-6xl mx-auto px-4 h-[calc(100vh-200px)]">
         {/* <GoogleSheetLogo className="w-24 h-24 mb-4" /> */}
