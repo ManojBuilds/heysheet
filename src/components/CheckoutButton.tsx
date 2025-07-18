@@ -30,8 +30,7 @@ export function CheckoutButton({
   className,
   autoOpen,
 }: CheckoutButtonProps) {
-  const { openSignIn } = useClerk();
-  const { isSignedIn, isLoaded, user } = useUser();
+  const { isLoaded, user } = useUser();
   const isMobile = useIsMobile();
   const router = useRouter();
 
@@ -60,7 +59,6 @@ export function CheckoutButton({
 
     switch (event.event_type) {
       case "checkout.opened":
-        toast.error("checkout.opened");
         setCheckoutState({ status: "open" });
         setMessage("Checkout opened");
         break;
@@ -82,7 +80,6 @@ export function CheckoutButton({
           error: (event.data?.message as string) || "An error occurred",
         });
         setMessage("An error occurred");
-        throw new Error("Checkout.error");
         break;
     }
   };
@@ -102,8 +99,8 @@ export function CheckoutButton({
 
   const handleCheckout = useCallback(async () => {
     try {
-      toast.info("Clicked checkout");
       if (!isLoaded) return;
+      setIsLoading(false)
       if (isMobile) {
         const checkoutSession = await createCheckoutSession({
           name: user?.fullName || user?.firstName || "",
@@ -114,6 +111,7 @@ export function CheckoutButton({
           toast.error(checkoutSession.message || "Something went wrong!");
           return;
         }
+        setIsLoading(false)
         if (checkoutSession.link) {
           router.push(checkoutSession.link);
         }
@@ -133,7 +131,6 @@ export function CheckoutButton({
         },
       });
     } catch (error) {
-      toast.error("error");
       console.log("error", error);
       setCheckoutState({
         status: "error",
@@ -141,6 +138,8 @@ export function CheckoutButton({
           error instanceof Error ? error.message : "Failed to open checkout",
       });
       throw error;
+    }finally{
+      setIsLoading(false)
     }
   }, [productId, isLoaded, user, isMobile, createCheckoutSession, router]);
 
