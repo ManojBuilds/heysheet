@@ -1,7 +1,7 @@
 'use client'
 import { Button } from "@/components/ui/button";
 import { config } from "@/config";
-import { ArrowLeft, Home, Search } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -10,8 +10,8 @@ export default function NotFound() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md mx-auto text-center space-y-6 p-6">
         {/* 404 Icon */}
-        <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-          <Image src="/404-error.png" alt="404 Error" width={1024} height={1536} className="w-full h-auto" />
+        <div className="w-48 h-24 mx-auto mb-8 flex items-center justify-center">
+          <Image src="https://ik.imagekit.io/q3ksr5fk3/404-error.png?updatedAt=1752807464456" alt="404 Error" width={1024} height={1536} className="w-full h-auto" />
         </div>
 
         {/* Error Title */}
@@ -57,7 +57,7 @@ export default function NotFound() {
             <Link href={config.documentationUrl} target="_blank">
               Read documentation
             </Link>
-            
+
           </div>
         </div>
 

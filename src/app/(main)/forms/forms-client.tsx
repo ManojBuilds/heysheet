@@ -95,7 +95,7 @@ export default function FormsPageClient({
         {/* <GoogleSheetLogo className="w-24 h-24 mb-4" /> */}
         <div className="h-52">
         <Image
-          src={'/no-form.png'}
+          src={'https://ik.imagekit.io/q3ksr5fk3/no-form.png?updatedAt=1752807303055'}
           alt="No forms"
           width={1024}
           height={1536}

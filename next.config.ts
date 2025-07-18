@@ -22,6 +22,15 @@ const nextConfig: NextConfig = {
         source: "/f/(.*)"
       }
     ]
+  },
+  images: {
+    remotePatterns: [
+      {
+        hostname: "ik.imagekit.io",
+        pathname: '/q3ksr5fk3/**'
+      }
+    ]
+
   }
 };
 

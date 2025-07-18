@@ -60,7 +60,7 @@ export const HeySheetSubmissionEmail = ({
           <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Section className="mt-[22px] text-center">
               <Img
-                src={`${baseUrl}/static/logo.png`}
+                src={'https://ik.imagekit.io/q3ksr5fk3/logo.png?updatedAt=1752807239894'}
                 width="40"
                 height="37"
                 alt="HeySheet Logo"
