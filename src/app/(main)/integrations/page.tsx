@@ -8,7 +8,7 @@ export const metadata = {
     "Connect your Google Sheets and Slack to receive form submissions.",
 };
 
-export default async function IntegrationsPage() {
+export default function IntegrationsPage() {
   return (
     <div className="flex flex-col gap-4 max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold">Integrations</h1>

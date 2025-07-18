@@ -24,8 +24,6 @@ export const FormAnalytics = async ({
   const fromDateIso = fromDate.toISOString();
   const toDateIso = toDate.toISOString();
 
-  console.log("FormAnalytics props:", { id, fromDateIso, toDateIso });
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between gap-2 items-center">

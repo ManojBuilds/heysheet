@@ -1,10 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { config } from "@/config";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import GlobalError from "./global-error";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -23,9 +24,6 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     router.back();
   };
 
-  const handleGoHome = () => {
-    router.push("/dashboard");
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -81,20 +79,23 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
             Discord channel to talk to us. We're here to help!
           </p>
           <div className="flex gap-2 justify-center">
-            <Button
-              variant="link"
-              size="sm"
-              className="text-xs h-auto p-0"
-              onClick={() => window.open(config.documentationUrl, "_blank")}
+            <a
+              href={config.documentationUrl}
+              target="_blank"
+              className={buttonVariants({
+                variant: 'link',
+                className: "text-xs h-auto p-0"
+              })}
+
             >
               Read documentation
-            </Button>
+            </a>
           </div>
         </div>
 
         {/* Footer */}
         <div className="pt-8 text-xs text-muted-foreground">
-          HeySheet © 2025. All rights reserved
+          heysheet.in. All rights reserved
         </div>
       </div>
     </div>

@@ -30,7 +30,7 @@ const UpgradeModal = () => {
           <DialogDescription>{subHeading}</DialogDescription>
         </DialogHeader>
         <div className="h-44 w-32 mx-auto">
-          <Image src="https://ik.imagekit.io/q3ksr5fk3/upgrade.png?updatedAt=1752807456328" alt="Upgrade" width={1024} height={1536} className="w-full h-auto" />
+          <Image src="https://ik.imagekit.io/q3ksr5fk3/upgrade.png" alt="Upgrade Illustration" width={1024} height={1536} className="w-full h-auto" />
         </div>
         <DialogFooter>
           <UpgradeCta />

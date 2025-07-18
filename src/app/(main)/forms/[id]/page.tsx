@@ -5,9 +5,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { FormTabs } from "./form-tabs";
-import { FormDetails } from "@/types/form-details";
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { FormDetailsFetcher } from "./form-details-fetcher";
 import { FormAnalytics } from "./form-analytics";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export async function generateMetadata({
   params,
@@ -41,39 +43,6 @@ export default async function EndpointDetailPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { id } = await params;
-  const { userId } = await auth();
-
-  if (!userId) {
-    return redirect("/sign-in");
-  }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("forms")
-    .select(
-      "*, slack_account:slack_account_id(*), notion_account:notion_account_id(*), file_upload, webhook_enabled",
-    )
-    .eq("id", id)
-    .eq("user_id", userId)
-    .single();
-
-  const { data: webhookData, error: webhookError } = await supabase
-    .from("webhooks")
-    .select("url, secret")
-    .eq("form_id", id)
-    .single();
-
-  if (error || !data) {
-    return notFound();
-  }
-
-  if (data?.user_id !== userId) {
-    return redirect("/");
-  }
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
-  const endpointUrl = `${appUrl}/api/s/${id}`;
-
   return (
     <main className="max-w-3xl mx-auto space-y-6">
       <nav>
@@ -83,15 +52,13 @@ export default async function EndpointDetailPage({
       </nav>
       <FormTabs
         defaultTab="overview"
-        id={id}
-        data={data as FormDetails}
-        appUrl={appUrl}
-        endpointUrl={endpointUrl}
         formAnalytics={<FormAnalytics id={id} searchParams={searchParams} />}
-        initialWebhookEnabled={data.webhook_enabled}
-        initialWebhookUrl={webhookData?.url ?? ""}
-        initialWebhookSecret={webhookData?.secret ?? ""}
-      />
+      >
+        <Suspense fallback={<Skeleton className="w-full h-12 rounded" />}>
+          <FormDetailsFetcher id={id} />
+        </Suspense>
+      </FormTabs>
     </main>
   );
 }
+

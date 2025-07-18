@@ -1,49 +1,27 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FormDetails } from "./form-details";
-import { FormDetails as IFormDetails } from "@/types/form-details";
 import { ReactNode } from "react";
 
 export function FormTabs({
   defaultTab,
-  data,
-  appUrl,
-  endpointUrl,
-  id,
   formAnalytics,
-  initialWebhookEnabled,
-  initialWebhookUrl,
-  initialWebhookSecret,
+  children,
 }: {
   defaultTab: string;
-  data: IFormDetails;
-  appUrl: string;
-  endpointUrl: string;
-  id: string;
   formAnalytics: ReactNode;
-  initialWebhookEnabled: boolean;
-  initialWebhookUrl: string;
-  initialWebhookSecret: string;
+  children: ReactNode;
 }) {
   return (
-    <Tabs defaultValue={defaultTab} className="w-full">
-      <TabsList>
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="analytics">Analytics</TabsTrigger>
-      </TabsList>
-      <TabsContent value="overview">
-        <FormDetails
-          data={data}
-          appUrl={appUrl}
-          endpointUrl={endpointUrl}
-          id={id}
-          initialWebhookEnabled={initialWebhookEnabled}
-          initialWebhookUrl={initialWebhookUrl}
-          initialWebhookSecret={initialWebhookSecret}
-        />
-      </TabsContent>
-      <TabsContent value="analytics">{formAnalytics}</TabsContent>
-    </Tabs>
+    <div className="space-y-4">
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview">{children}</TabsContent>
+        <TabsContent value="analytics">{formAnalytics}</TabsContent>
+      </Tabs>
+    </div>
   );
 }

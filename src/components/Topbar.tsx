@@ -20,7 +20,7 @@ export default function Topbar() {
       <div className="flex flex-1 items-center gap-2">
         <SidebarTrigger className="sm:-mr-0 z-10" />
         <Logo />
-        <GoogleAccountSwitcher  />
+        <GoogleAccountSwitcher />
       </div>
       <div className="flex items-center gap-2">
         <a
@@ -39,9 +39,9 @@ export default function Topbar() {
           Manage plan
         </Link>
         <Suspense fallback={null}>
-        <UserButton />
+          <UserButton />
         </Suspense>
-        <ModeToggle/>
+        <ModeToggle />
         {/* <Button */}
         {/*   onClick={() => { */}
         {/*     posthog.capture("my event", { property: "value" }); */}
