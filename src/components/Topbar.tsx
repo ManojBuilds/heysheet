@@ -1,5 +1,5 @@
 "use client";
-import { UserButton } from "@clerk/nextjs";
+import { SignedIn, UserButton } from "@clerk/nextjs";
 // import GoogleAccountSwitcher from "./GoogleAccountSwitcher";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
@@ -20,7 +20,9 @@ export default function Topbar() {
       <div className="flex flex-1 items-center gap-2">
         <SidebarTrigger className="sm:-mr-0 z-10" />
         <Logo />
-        <GoogleAccountSwitcher />
+        <SignedIn>
+          <GoogleAccountSwitcher />
+        </SignedIn>
       </div>
       <div className="flex items-center gap-2">
         <a
@@ -32,16 +34,17 @@ export default function Topbar() {
           Documentation
         </a>
 
-        <Link
-          href={"/manage-plan"}
-          className={cn(buttonVariants({ variant: "link" }), "hidden md:flex")}
-        >
-          Manage plan
-        </Link>
-        <Suspense fallback={null}>
+        <SignedIn>
+          <Link
+            href={"/manage-plan"}
+            className={cn(buttonVariants({ variant: "link" }), "hidden md:flex")}
+          >
+            Manage plan
+          </Link>
           <UserButton />
-        </Suspense>
-        <ModeToggle />
+        </SignedIn>
+
+          <ModeToggle />
         {/* <Button */}
         {/*   onClick={() => { */}
         {/*     posthog.capture("my event", { property: "value" }); */}

@@ -16,8 +16,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const supabase = await createClient();
-  const { id } = await params;
+  const [supabase, { id }] = await Promise.all([createClient(), params]);
   const { data } = await supabase
     .from("forms")
     .select("title")

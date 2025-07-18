@@ -41,8 +41,7 @@ async function FormList({
 }: {
   searchParams: Promise<{ page?: string; pageSize?: string; search?: string; status?: string; sortBy?: string }>;
 }) {
-  const { userId } = await auth()
-  const searchQuery = await searchParams;
+  const [{ userId }, searchQuery] = await Promise.all([auth(), searchParams]);
 
   const page = Number(searchQuery?.page) || 1;
   const pageSize = Number(searchQuery?.pageSize) || 10;

@@ -281,18 +281,32 @@ export const getSubscription = async () => {
   const { data, error } = await supabase
     .from("subscriptions")
     .select(
-      "plan, status, customer_id, subscription_id, next_billing, billing_interval",
+      "plan, status, customer_id, next_billing, billing_interval, subscription_id",
     )
     .eq("user_id", userId)
-    .single();
-  if (error) throw error;
-  return data;
+    .maybeSingle();
+
+  if (error) {
+    console.error('@getSubscription', error)
+  }
+
+  if (data) {
+    return data;
+  }
+  return {
+    plan: "free",
+    status: "active",
+    next_billing: "",
+    customer_id: "",
+    billing_interval: "monthly",
+    subscription_id: "",
+  };
 };
 
 export const canCreateForm = async () => {
-  const { userId } = await auth();
-  const supabase = await createClient();
-  const { plan } = await getSubscription();
+  const [{ userId }, supabase, { plan }] = await Promise.all([
+    auth(), createClient(), getSubscription()
+  ])
   const { data } = await supabase
     .from("forms")
     .select("id")
