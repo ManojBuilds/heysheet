@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { FormComponent, FormData as IFormData } from "@/types/form-builder";
+import { FormData as IFormData } from "@/types/form-builder";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 import {
@@ -19,7 +19,6 @@ import { FormField } from "./form-preview/FormField";
 import { getZodSchemaForComponent } from "@/lib/form-preview";
 import { cn } from "@/lib/utils";
 import { AlertTriangle } from "lucide-react";
-import { geistMono } from "../ui/fonts";
 import { useRouter } from "nextjs-toploader/app";
 import Image from "next/image";
 
@@ -339,8 +338,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
                     />
                       <p
                         className={cn(
-                          "text-xs mt-2 flex items-end justify-end gap-2",
-                          geistMono.className,
+                          "text-xs mt-2 flex items-end justify-end gap-2 font-mono",
                         )}
                         style={{ color: theme.textSecondary }}
                       >

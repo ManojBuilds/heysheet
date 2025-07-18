@@ -6,7 +6,7 @@ import NextTopLoader from "nextjs-toploader";
 import { ThemeProvider } from "@/components/theme-provider";
 import UpgradeModal from "@/components/UpgradeModal";
 import { config } from "@/config";
-import { dmSans } from "@/components/ui/fonts";
+import { workSans } from "@/components/ui/fonts";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -60,12 +60,12 @@ export default function RootLayout({
   return (
     <Provider>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${dmSans.className} antialiased`}>
+        <body className={`${workSans.className} antialiased`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <main>{children}</main>
             <UpgradeModal />
             <Toaster
-              className={dmSans.className}
+              className={workSans.className}
               closeButton
               expand={false}
               position="top-center"

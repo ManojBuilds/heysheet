@@ -2,7 +2,6 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CopyToClipboard } from "./CopyToClipboard";
 import { cn } from "@/lib/utils";
-import { geistMono } from "./ui/fonts";
 
 const CodeBlock = ({ code, lang }: { code: string; lang: string }) => (
   <div className={cn("relative group")}>
@@ -18,7 +17,6 @@ const CodeBlock = ({ code, lang }: { code: string; lang: string }) => (
         background: "transparent",
         margin: 0,
         padding: "1.5em 1em 1em 1em",
-        ...geistMono.style,
       }}
       showLineNumbers
     >
