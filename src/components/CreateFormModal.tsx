@@ -249,10 +249,9 @@ const CreateFormModal = () => {
   };
 
   const handleDialogOpen = (open: boolean) => {
-    if (!formCount) return;
     const maxForms =
-      planLimits[subscription?.plan as keyof typeof planLimits].maxForms ?? 1;
-    const isMaxFormsReached = formCount >= maxForms;
+      planLimits[subscription?.plan as keyof typeof planLimits]?.maxForms ?? 1;
+    const isMaxFormsReached = formCount && (formCount >= maxForms);
     if (isMaxFormsReached) {
       openUpgradeModal({
         heading: "Upgrade to Add More Forms",
