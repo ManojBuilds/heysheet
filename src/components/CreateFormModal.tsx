@@ -19,7 +19,7 @@ import SpreadsheetsPicker from "./SpreadsheetsPicker";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
 import { SPREADSHEET_TEMPLATES } from "@/lib/spreadsheet-templates";
 import { createForm } from "@/actions";
-import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
+import { useGoogleAccounts } from "@/hooks/useGoogleAccount";
 import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
 import useSubscription from "@/hooks/useSubscription";

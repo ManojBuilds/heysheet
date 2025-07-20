@@ -1,15 +1,12 @@
-"use client";
-
-import useSubscription from "@/hooks/useSubscription";
-import { Skeleton } from "./ui/skeleton";
+'use client'
 import Link from "next/link";
 import { CrownIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./ui/button";
+import useSubscription from "@/hooks/useSubscription";
 
-const UpgradeCta = ({ className }: { className?: string }) => {
-  const { data: subscription, isLoading } = useSubscription();
-  if (isLoading) return <Skeleton className="w-full h-8" />;
+const UpgradeCta = ({ className }: { className?: string, }) => {
+  const { data: subscription } = useSubscription()
   return (
     <Link
       href={"/checkout"}

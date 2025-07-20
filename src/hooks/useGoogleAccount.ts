@@ -11,7 +11,8 @@ export const useGoogleAccounts = () => {
     error,
     fetchAccounts,
     setSelectedAccount,
-    clearError
+    clearError,
+    updateAccount
   } = useGoogleAccountsStore();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export const useGoogleAccounts = () => {
     error,
     setSelectedAccount,
     clearError,
-    refetch: () => user?.id && fetchAccounts(user.id)
+    refetch: () => user?.id && fetchAccounts(user.id),
+    updateAccount
   };
 };

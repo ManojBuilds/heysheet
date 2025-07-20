@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "nextjs-toploader/app";
 import { toast } from "sonner";
 import {
   Card,
@@ -19,8 +18,11 @@ import { cn, ALLOWED_FILE_TYPES } from "@/lib/utils";
 import useSubscription from "@/hooks/useSubscription";
 import { planLimits } from "@/lib/planLimits";
 import { BlurPaidFeatureCard } from "./BlurPaidFeatureCard";
+import { BlurPaidFeatureCardSkeleton } from "./BlurPaidFeatureCardSkeleton";
+import { SubscriptionData } from "@/types";
 
 interface FileUploadSettingsProps {
+  subscription?: SubscriptionData;
   form: {
     id: string;
     file_upload_enabled?: boolean;
@@ -35,9 +37,7 @@ interface FileUploadSettingsProps {
   }) => Promise<void> | void;
 }
 
-const FileUploadSettings = ({ form, onSave }: FileUploadSettingsProps) => {
-  const { data: subscription } = useSubscription();
-  const router = useRouter();
+const FileUploadSettings = ({ form, onSave, subscription }: FileUploadSettingsProps) => {
   const isFreePlan = subscription?.plan === "free";
 
   const planMaxFileSize =
@@ -84,7 +84,6 @@ const FileUploadSettings = ({ form, onSave }: FileUploadSettingsProps) => {
           plans.
         </CardDescription>
       </CardHeader>
-
       <BlurPaidFeatureCard
         title="Unlock File Upload"
         description="This feature is only available on Starter and Pro plans."
@@ -93,6 +92,7 @@ const FileUploadSettings = ({ form, onSave }: FileUploadSettingsProps) => {
           "Accept PDFs, Images, Docs",
           "Secure file handling",
         ]}
+        subscription={subscription}
       />
 
       <CardContent

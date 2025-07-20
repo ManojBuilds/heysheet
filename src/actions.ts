@@ -10,6 +10,7 @@ import { planLimits } from "./lib/planLimits";
 import dodo from "./lib/dodopayments";
 import { customAlphabet } from "nanoid";
 import { config } from "./config";
+import { cache } from "react";
 
 const nanoid = customAlphabet(
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -52,11 +53,23 @@ export const getGoogleAccounts = async (userId: string) => {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("google_accounts")
-    .select("id, email, access_token")
+    .select("id, email, access_token, refresh_token, token_expires_at")
     .eq("user_id", userId);
   if (error) throw error;
   return data || [];
 };
+
+export const updateGoogleAccountInDb = async (accountId: string, dataToUpdate: Record<string, any>) => {
+  if (!accountId || !dataToUpdate) return;
+  const [{ userId }, supabase] = await Promise.all([
+    auth(),
+    createClient()
+  ])
+  await supabase
+    .from("google_accounts")
+    .update("id, email, access_token, refresh_token, token_expires_at")
+    .eq("user_id", userId).eq('id', accountId)
+}
 
 export const getFormsByUserId = async (userId: string, from = 0, to = 9) => {
   if (!userId) return { forms: [], totalCount: 0 };
@@ -190,6 +203,7 @@ export const createForm = async ({
     if (result.error) {
       return { error: result.error };
     }
+    revalidatePath('/dashboard')
 
     return { data: result.data, error: null };
   } catch (error: any) {
@@ -275,7 +289,7 @@ export async function getUserLocationInfo() {
   return await res.json();
 }
 
-export const getSubscription = async () => {
+export const getSubscription = cache(async () => {
   const { userId } = await auth();
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -287,7 +301,7 @@ export const getSubscription = async () => {
     .maybeSingle();
 
   if (error) {
-    console.error('@getSubscription', error)
+    console.log('@getSubscription', error)
   }
 
   if (data) {
@@ -301,7 +315,7 @@ export const getSubscription = async () => {
     billing_interval: "monthly",
     subscription_id: "",
   };
-};
+});
 
 export const canCreateForm = async () => {
   const [{ userId }, supabase, { plan }] = await Promise.all([

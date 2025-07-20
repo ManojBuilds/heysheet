@@ -35,7 +35,6 @@ export async function getGoogleAuthUrl(redirectUri: string, state: string) {
 // awaitExchange code for tokens
 export async function getGoogleTokens(code: string, redirectUri: string) {
   const oauth2Client = getOAuth2Client(redirectUri);
-
   try {
     const { tokens } = await oauth2Client.getToken(code);
     return tokens;

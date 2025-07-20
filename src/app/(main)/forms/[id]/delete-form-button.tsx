@@ -100,12 +100,6 @@ const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
               Delete Form
             </Button>
           </AlertDialogTrigger>
-          {subscription?.plan === "free" && (
-            <p className="text-xs text-muted-foreground mt-2">
-              Deleting forms is only available on paid plans. Please upgrade to
-              delete forms.
-            </p>
-          )}
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Do you really want to delete?</AlertDialogTitle>

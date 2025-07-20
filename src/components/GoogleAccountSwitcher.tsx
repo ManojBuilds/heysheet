@@ -11,7 +11,7 @@ import {
 import { Mail, Plus } from "lucide-react";
 import { getGoogleConnectUrl } from "@/actions";
 import { useAuth } from "@clerk/nextjs";
-import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
+import { useGoogleAccounts } from "@/hooks/useGoogleAccount";
 
 const GoogleAccountSwitcher = () => {
   const {

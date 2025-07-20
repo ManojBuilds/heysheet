@@ -20,8 +20,21 @@ export async function POST(
     const allHeaders = await headers();
     const userAgent = allHeaders.get("user-agent") || "";
     const referrer = allHeaders.get("referrer") || "";
-    const formData = await request.formData();
-    const entries = Array.from(formData.entries());
+    const contentType = allHeaders.get("content-type") || "";
+    let entries: [string, any][] = [];
+
+    if (contentType.includes("application/json")) {
+      const json = await request.json();
+      entries = Object.entries(json);
+    } else if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      entries = Array.from(formData.entries());
+    } else {
+      return NextResponse.json(
+        { success: false, message: "Unsupported content type" },
+        { status: 415 },
+      );
+    }
     console.log("entries", entries);
 
     const { data: form, error: formError } = await supabase

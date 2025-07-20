@@ -8,11 +8,12 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { useGoogleAccountsStore } from "@/stores/google-accounts-store";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { getSheetTabs } from "@/lib/google/sheets";
 import useDrivePicker from "react-google-drive-picker";
+import { useGoogleAccounts } from "@/hooks/useGoogleAccount";
+import { updateGoogleAccountInDb } from "@/actions";
 
 type Spreadsheet = {
   id: string;
@@ -35,10 +36,43 @@ export default function SpreadsheetSelect({
   selectedSheet: Spreadsheet | null;
   onClearSelection: () => void;
 }) {
-  const { selectedAccount } = useGoogleAccountsStore();
+  const { selectedAccount, updateAccount } = useGoogleAccounts();
   const [currentGoogleAccountId, setCurrentGoogleAccountId] = useState("");
-
   const [openPicker, authResponse] = useDrivePicker();
+  const [token, setToken] = useState(selectedAccount?.access_token)
+
+  const { mutate: refreshToken } = useMutation({
+    mutationFn: async (googleAccountId: string) => {
+      const response = await fetch("/api/google/refresh", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ googleAccountId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to refresh token");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (selectedAccount) {
+        const updatedAccount = {
+          ...selectedAccount,
+          access_token: data.accessToken,
+          token_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+        };
+        updateAccount(selectedAccount.id, updatedAccount);
+        openPickerWithToken(data.accessToken);
+        updateGoogleAccountInDb(selectedAccount.id, updatedAccount);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
 
   const {
     data: sheetNames = [],
@@ -53,15 +87,12 @@ export default function SpreadsheetSelect({
     enabled: !!selectedSheet?.id && !!selectedAccount?.id,
   });
 
-  const handleOpenPicker = () => {
-    if (onOpenPicker) {
-      onOpenPicker();
-    }
+  const openPickerWithToken = (token: string) => {
     openPicker({
       clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
       developerKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "",
       viewId: "SPREADSHEETS",
-      // token: selectedAccount?.accessToken || "",
+      token: token,
       showUploadView: false,
       showUploadFolders: false,
       supportDrives: true,
@@ -88,6 +119,23 @@ export default function SpreadsheetSelect({
     });
   };
 
+  const handleOpenPicker = () => {
+    if (onOpenPicker) {
+      onOpenPicker();
+    }
+
+    if (selectedAccount) {
+      const expiresAt = new Date(
+        selectedAccount.token_expires_at || ""
+      ).getTime();
+      if (Date.now() > expiresAt) {
+        refreshToken(selectedAccount.id);
+      } else {
+        openPickerWithToken(selectedAccount.access_token);
+      }
+    }
+  };
+
   // Reset sheet names when selected sheet changes
   useEffect(() => {
     if (selectedSheet && onSheetNamePick) {
@@ -95,7 +143,7 @@ export default function SpreadsheetSelect({
       onSheetNamePick("");
     }
   }, [selectedSheet, onSheetNamePick]);
-  console.log({ selectedSheet })
+  console.log({ selectedSheet });
 
   return (
     <div className="flex gap-2">
@@ -114,7 +162,7 @@ export default function SpreadsheetSelect({
             <Button
               type="button"
               variant="ghost"
-              size={'icon'}
+              size={"icon"}
               onClick={() => {
                 onClearSelection();
               }}

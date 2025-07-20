@@ -46,6 +46,7 @@ export async function addAppToASlackChannel(channel: string, token: string) {
 }
 
 export async function listAllSlackChannel(token: string) {
+  if(!token) return []
   console.log("@listAllSlackChannel", token);
   const response = await fetch("https://slack.com/api/conversations.list", {
     method: "GET",

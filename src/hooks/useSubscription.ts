@@ -3,15 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { createClient } from "@/lib/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-
-type SubscriptionData = {
-  plan: string;
-  status: string;
-  next_billing: string;
-  customer_id: string;
-  billing_interval: "monthly" | "annually";
-  subscription_id: string;
-};
+import { SubscriptionData } from "@/types";
 
 const useSubscription = () => {
   const { userId } = useAuth();

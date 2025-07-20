@@ -18,7 +18,7 @@ import FileUploadSettings from "@/components/FileUploadSettings";
 import { updateForm } from "@/actions";
 import { FormDetails as IFormDetails } from "@/types/form-details";
 import CodeBlock from "@/components/code-block";
-import { useGoogleAccounts } from "@/hooks/use-google-accounts-store";
+import { useGoogleAccounts } from "@/hooks/useGoogleAccount";
 import AllowGooglePermissions from "@/components/AllowGooglePermissions";
 import SpreadsheetsPicker from "@/components/SpreadsheetsPicker";
 import { useState, useTransition } from "react";
@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { createSheet } from "@/lib/google/sheets";
 import { useRouter } from "nextjs-toploader/app";
 import { WebhookSettings } from "@/components/integrations/WebhookSettings";
+import { SubscriptionData } from "@/types";
 
 type Spreadsheet = {
   id: string;
@@ -41,6 +42,7 @@ export const FormDetails = ({
   initialWebhookEnabled,
   initialWebhookUrl,
   initialWebhookSecret,
+  subscription,
 }: {
   data: IFormDetails;
   endpointUrl: string;
@@ -49,6 +51,7 @@ export const FormDetails = ({
   initialWebhookEnabled: boolean;
   initialWebhookUrl: string;
   initialWebhookSecret: string;
+  subscription?: SubscriptionData
 }) => {
   const { selectedAccount } = useGoogleAccounts();
   const [isPending, startTransition] = useTransition();
@@ -244,8 +247,6 @@ loading="lazy"
         sharablePublicUrl={`${appUrl}/f/${id}`}
         formId={id}
         redirectUrl={data.redirect_url ?? ""}
-
-
       />
       <WebhookSettings
         formId={id}
@@ -272,11 +273,12 @@ loading="lazy"
             id,
           );
         }}
+        subscription={subscription}
       />
 
       <DomainManager domains={data.domains} formId={id} />
 
-      <ConfigureIntegration data={data} />
+      <ConfigureIntegration data={data} subscription={subscription} />
       <CodeSnippet endpointUrl={endpointUrl} />
       <Card>
         <CardHeader className="border-b">

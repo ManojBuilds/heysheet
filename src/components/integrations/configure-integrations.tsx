@@ -6,7 +6,7 @@ import { ConnectToNotionButton } from "../ConnectToNotionButton";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
-import { useState } from "react";
+import {  useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
@@ -19,12 +19,11 @@ import {
 } from "../ui/card";
 import Image from "next/image";
 import { updateForm } from "@/actions";
-import useSubscription from "@/hooks/useSubscription";
 import { useUpgradeModalStore } from "@/stores/upgradeModalStore";
 import { BlurPaidFeatureCard } from "../BlurPaidFeatureCard";
+import { SubscriptionData } from "@/types";
 
-const ConfigureIntegration = ({ data }: { data: any }) => {
-  const { data: subscription } = useSubscription();
+const ConfigureIntegration = ({ data, subscription }: { data: any, subscription?: SubscriptionData }) => {
   const queryClient = useQueryClient();
   const [isEmailAlertEnabled, setIsEmailAlertEnabled] = useState(
     data.email_enabled,
@@ -72,9 +71,8 @@ const ConfigureIntegration = ({ data }: { data: any }) => {
       </CardHeader>
 
       <CardContent
-        className={`transition-all space-y-6 ${
-          isFreePlan ? "opacity-50 pointer-events-none select-none" : ""
-        }`}
+        className={`transition-all space-y-6 ${isFreePlan ? "opacity-50 pointer-events-none select-none" : ""
+          }`}
       >
         <ConnectToSlackBtn form={data} />
         <ConnectToNotionButton form={data} />
@@ -138,15 +136,16 @@ const ConfigureIntegration = ({ data }: { data: any }) => {
           </Button>
         </form>
       </CardContent>
-      <BlurPaidFeatureCard
-        title="Unlock Alerts & Notifications"
-        description="Available only on Starter and Pro plans."
-        features={[
-          "Slack Alerts",
-          "Email Notifications",
-          "Real-time updates for form submissions",
-        ]}
-      />
+        <BlurPaidFeatureCard
+          title="Unlock Alerts & Notifications"
+          description="Available only on Starter and Pro plans."
+          features={[
+            "Slack Alerts",
+            "Email Notifications",
+            "Real-time updates for form submissions",
+          ]}
+          subscription={subscription}
+        />
     </Card>
   );
 };

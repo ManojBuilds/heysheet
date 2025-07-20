@@ -5,6 +5,8 @@ interface GoogleAccount {
   id: string;
   email: string;
   access_token: string;
+  refresh_token: string;
+  token_expires_at: string;
 }
 
 interface GoogleAccountsState {
@@ -19,6 +21,7 @@ interface GoogleAccountsState {
   fetchAccounts: (userId: string) => Promise<void>;
   addAccount: (account: GoogleAccount) => void;
   removeAccount: (accountId: string) => void;
+  updateAccount: (accountId: string, updatedAccount: Partial<GoogleAccount>) => void;
   clearError: () => void;
 }
 
@@ -29,18 +32,18 @@ export const useGoogleAccountsStore = create<GoogleAccountsState>((set, get) => 
   error: null,
 
   setAccounts: (accounts) => {
-    const firstAccountId = accounts.length > 0 ? accounts[0] : null;
+    const firstAccount = accounts.length > 0 ? accounts[0] : null;
     set({ 
       accounts,
-      selectedAccount: get().selectedAccount || firstAccountId
+      selectedAccount: get().selectedAccount || firstAccount
     });
   },
 
   setSelectedAccount: (accountId) => {
     const { accounts } = get();
-    const accountExists = accounts.some(account => account.id === accountId);
-    if (accountExists) {
-      set({ selectedAccount: accounts.find((acc)=>acc.id===accountId) });
+    const account = accounts.find(acc => acc.id === accountId);
+    if (account) {
+      set({ selectedAccount: account });
     }
   },
 
@@ -57,24 +60,40 @@ export const useGoogleAccountsStore = create<GoogleAccountsState>((set, get) => 
   },
 
   addAccount: (account) => {
-    const { accounts } = get();
-    const updatedAccounts = [...accounts, account];
-    set({ 
-      accounts: updatedAccounts,
-      selectedAccount: account
-    });
+    set((state) => ({
+      accounts: [...state.accounts, account],
+      selectedAccount: account,
+    }));
   },
 
   removeAccount: (accountId) => {
-    const { accounts, selectedAccount } = get();
-    const updatedAccounts = accounts.filter(account => account.id !== accountId);
-    const newSelectedAccount = selectedAccount?.id === accountId 
-      ? (updatedAccounts.length > 0 ? updatedAccounts[0] : null)
-      : selectedAccount;
-    
-    set({ 
-      accounts: updatedAccounts,
-      selectedAccount: newSelectedAccount
+    set((state) => {
+      const updatedAccounts = state.accounts.filter(account => account.id !== accountId);
+      const newSelectedAccount = state.selectedAccount?.id === accountId 
+        ? (updatedAccounts.length > 0 ? updatedAccounts[0] : null)
+        : state.selectedAccount;
+      
+      return { 
+        accounts: updatedAccounts,
+        selectedAccount: newSelectedAccount
+      };
+    });
+  },
+
+  updateAccount: (accountId, updatedAccount) => {
+    set((state) => {
+      const updatedAccounts = state.accounts.map(account =>
+        account.id === accountId ? { ...account, ...updatedAccount } : account
+      );
+
+      const newSelectedAccount = state.selectedAccount?.id === accountId
+        ? { ...state.selectedAccount, ...updatedAccount }
+        : state.selectedAccount;
+
+      return {
+        accounts: updatedAccounts,
+        selectedAccount: newSelectedAccount,
+      };
     });
   },
 

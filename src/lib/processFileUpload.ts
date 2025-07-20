@@ -18,7 +18,7 @@ export async function processFileUploads({
   formId,
   supabase,
 }: {
-  entries: [string, FormDataEntryValue][];
+  entries: [string, any][];
   uploadConfig: UploadConfig;
   planLimit: PlanLimit;
   formId: string;
