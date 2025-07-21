@@ -2,7 +2,7 @@ import { ChartAreaInteractive } from "@/components/dashboard/chart-area";
 import CreateFormModal from "@/components/CreateFormModal";
 import PageHeader from "@/components/pages/page-header";
 import Topforms from "@/components/dashboard/top-forms";
-import { parseISO, startOfWeek } from "date-fns";
+import { parseISO, startOfMonth } from "date-fns";
 import DateFilter from "@/components/dashboard/date-filter";
 import { Suspense } from "react";
 import DashboardStats from "./dashboard-stats";
@@ -18,9 +18,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { from, to } = await searchParams;
-  const fromDate = from
-    ? parseISO(from)
-    : startOfWeek(new Date(), { weekStartsOn: 1 });
+  const fromDate = from ? parseISO(from) : startOfMonth(new Date());
   const toDate = to ? parseISO(to) : new Date();
 
   const fromDateIso = fromDate.toISOString();
