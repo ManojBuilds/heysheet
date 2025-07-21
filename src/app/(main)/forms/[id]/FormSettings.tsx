@@ -97,7 +97,7 @@ export const FormSettings = ({
           </div>
         </div>
 
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label>
             <Wrench className="w-4 h-4" />
             Form Builder Editor
@@ -120,7 +120,7 @@ export const FormSettings = ({
 
             <CopyToClipboard text={formBuilderUrl} />
           </div>
-        </div>
+        </div> */}
 
         <div className="space-y-2">
           <Label>Redirect After Submit</Label>
