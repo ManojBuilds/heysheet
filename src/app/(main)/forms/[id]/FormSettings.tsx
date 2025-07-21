@@ -72,7 +72,7 @@ export const FormSettings = ({
             <CopyToClipboard text={endpointUrl} />
           </div>
         </div>
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <Label>
             <Globe className="w-4 h-4" />
             Public Form URL
@@ -95,7 +95,7 @@ export const FormSettings = ({
 
             <CopyToClipboard text={sharablePublicUrl} />
           </div>
-        </div>
+        </div> */}
 
         {/* <div className="space-y-2">
           <Label>

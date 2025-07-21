@@ -117,7 +117,6 @@ const CreateFormModal = () => {
   const { data: databases, isLoading: isLoadingDatabases } = useQuery({
     queryKey: ["notion-databases", notionAccount?.access_token],
     queryFn: () => {
-      console.log("fetching databases", notionAccount.access_token);
       return listNotionDatabases(notionAccount.access_token);
     },
     enabled: !!notionAccount?.access_token,
@@ -162,7 +161,6 @@ const CreateFormModal = () => {
         );
       },
       onSuccess: (newDb) => {
-        console.log("newDatabase", newDb);
         toast.success(`Database created successfully!`);
         queryClient.setQueryData(
           ["notion-databases", notionAccount?.access_token],
@@ -431,7 +429,7 @@ const CreateFormModal = () => {
                   </Button>
                 ) : (
                   <div className="space-y-4">
-                    <Label>Choose one option</Label>
+                    <Label className="font-semibold">Choose one option</Label>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">Template</Label>
                       <Select
@@ -539,7 +537,7 @@ const CreateFormModal = () => {
                     </Button>
                   ) : (
                     <div className="space-y-4">
-                      <Label>Choose one option for Google Sheets</Label>
+                      <Label className="font-semibold">Choose one option for Google Sheets</Label>
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Template</Label>
                         <Select

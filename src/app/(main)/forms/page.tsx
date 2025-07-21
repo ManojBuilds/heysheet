@@ -25,7 +25,9 @@ export default function FormsPage({
         <h1 className="text-2xl font-bold sm:text-3xl">Your Forms</h1>
         <CreateFormModal />
       </div>
-      <FormFilterAndSearch />
+      <Suspense fallback={null}>
+        <FormFilterAndSearch />
+      </Suspense>
       <Suspense fallback={<FormListSkeleton />}>
         <FormList
           searchParams={searchParams}

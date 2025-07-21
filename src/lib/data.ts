@@ -98,6 +98,14 @@ export const getSubmissionsOverTime = async ({ userId, fromDate, toDate, formId 
   if (error) return [];
 
   const counts: Record<string, number> = {};
+  const startDate = new Date(fromDate);
+  const endDate = new Date(toDate);
+
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const day = d.toISOString().slice(0, 10);
+    counts[day] = 0;
+  }
+
   (data || []).forEach((row: any) => {
     const day = row.created_at.slice(0, 10); // YYYY-MM-DD
     counts[day] = (counts[day] || 0) + 1;

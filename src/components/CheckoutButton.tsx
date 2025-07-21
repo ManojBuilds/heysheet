@@ -55,7 +55,6 @@ export function CheckoutButton({
   });
 
   const ListinEvents = (event: CheckoutEvent) => {
-    console.log("Checkout event:", event);
 
     switch (event.event_type) {
       case "checkout.opened":

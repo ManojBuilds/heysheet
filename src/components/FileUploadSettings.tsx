@@ -43,7 +43,6 @@ const FileUploadSettings = ({ form, onSave, subscription }: FileUploadSettingsPr
   const planMaxFileSize =
     planLimits[(subscription?.plan as keyof typeof planLimits) || "free"]
       .maxFileSizeMB;
-  console.log("planMaxFileSize", planMaxFileSize);
 
   const [enabled, setEnabled] = useState(form.file_upload_enabled ?? false);
   const [maxFiles, setMaxFiles] = useState(form.file_upload_max_files ?? 1);

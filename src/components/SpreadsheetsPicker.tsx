@@ -99,13 +99,11 @@ export default function SpreadsheetSelect({
       multiselect: false,
       callbackFunction: (data) => {
         if (data.action === "cancel") {
-          console.log("User cancelled the picker");
           return;
         }
 
         if (data.action === "picked") {
           const pickedFile = data.docs[0];
-          console.log(pickedFile);
           const spreadsheet: Spreadsheet = {
             id: pickedFile.id,
             name: pickedFile.name,
@@ -120,10 +118,6 @@ export default function SpreadsheetSelect({
   };
 
   const handleOpenPicker = () => {
-    if (onOpenPicker) {
-      onOpenPicker();
-    }
-
     if (selectedAccount) {
       const expiresAt = new Date(
         selectedAccount.token_expires_at || ""
@@ -134,6 +128,9 @@ export default function SpreadsheetSelect({
         openPickerWithToken(selectedAccount.access_token);
       }
     }
+    if (onOpenPicker) {
+      onOpenPicker();
+    }
   };
 
   // Reset sheet names when selected sheet changes
@@ -143,12 +140,11 @@ export default function SpreadsheetSelect({
       onSheetNamePick("");
     }
   }, [selectedSheet, onSheetNamePick]);
-  console.log({ selectedSheet });
 
   return (
     <div className="flex gap-2">
       <div className="space-y-2 flex-1">
-        <div className="flex gap-2">
+        <div className="flex items-stretch gap-2">
           <Button
             type="button"
             variant="outline"
@@ -156,7 +152,9 @@ export default function SpreadsheetSelect({
             disabled={disabled}
             className="flex-1"
           >
-            {selectedSheet ? selectedSheet.name : "Pick a spreadsheet"}
+            <span className="truncate">
+              {selectedSheet ? selectedSheet.name : "Pick a spreadsheet"}
+            </span>
           </Button>
           {selectedSheet && (
             <Button
@@ -183,7 +181,7 @@ export default function SpreadsheetSelect({
             if (onSheetNamePick) onSheetNamePick(val);
           }}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full max-w-52">
             <SelectValue
               placeholder={
                 !selectedSheet
@@ -192,19 +190,20 @@ export default function SpreadsheetSelect({
                     ? "Loading..."
                     : "Select the sheet tab"
               }
+              className="block truncate max-w-3/4"
             />
           </SelectTrigger>
           <SelectContent>
             {sheetNames?.map((sheet) => (
               <SelectItem key={sheet} value={sheet || "No tab"}>
-                {sheet}
+                <span className="block truncate">{sheet}</span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         {errorSheetNames && (
           <div className="text-sm text-red-500">
-            Error loading sheet tabs: {errorSheetNames.message}
+            {errorSheetNames?.message}
           </div>
         )}
       </div>
