@@ -18,12 +18,11 @@ import {
   endOfYear,
   format,
 } from "date-fns";
-import { useState, useTransition } from "react";
+import { useState} from "react";
 import { CalendarIcon, X } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "nextjs-toploader/app";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 const getDateRange = (filter: string): [Date, Date] => {
@@ -75,7 +74,6 @@ const options = [
 const DateFilter = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
 
   const [customRange, setCustomRange] = useState<{
     from: Date | undefined;
@@ -86,20 +84,14 @@ const DateFilter = () => {
   const [open, setOpen] = useState(false);
 
   const handleSetRange = (from: Date, to: Date) => {
-    if (from.toISOString().split("T")[0] === to.toISOString().split("T")[0])
-      return;
-
     const params = new URLSearchParams(searchParams.toString());
     params.set("from", from.toISOString());
     params.set("to", to.toISOString());
 
-    startTransition(() => {
-      router.push(`?${params.toString()}`);
-    });
 
     setCustomRange({ from, to });
     setSelectedOption("Custom Range");
-    setOpen(false);
+    router.push(`?${params.toString()}`);
   };
 
   const handleSelectChange = (value: string) => {
@@ -115,11 +107,9 @@ const DateFilter = () => {
     params.set("from", from.toISOString());
     params.set("to", to.toISOString());
 
-    startTransition(() => {
-      router.push(`?${params.toString()}`);
-    });
 
     setCustomRange({ from: undefined, to: undefined });
+      router.push(`?${params.toString()}`);
   };
 
   return (
@@ -147,7 +137,10 @@ const DateFilter = () => {
         customRange?.from &&
         customRange?.to && (
           <div className="text-sm text-muted-foreground">
-            {`${format(customRange.from, "MMM d")} – ${format(customRange.to, "MMM d")}`}
+            {`${format(customRange.from, "MMM d")} – ${format(
+              customRange.to,
+              "MMM d"
+            )}`}
           </div>
         )}
 
@@ -172,6 +165,7 @@ const DateFilter = () => {
 
       {/* Calendar Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTitle className="sr-only">Select date range to filter</DialogTitle>
         <DialogContent className="w-auto p-4">
           <Calendar
             mode="range"
@@ -184,7 +178,6 @@ const DateFilter = () => {
               } else {
                 setCustomRange({ from: range?.from, to: range?.to });
               }
-              setOpen(true); // Keep modal open until complete range is selected
             }}
           />
         </DialogContent>

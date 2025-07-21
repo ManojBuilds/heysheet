@@ -1,5 +1,5 @@
 "use client";
-import { SignedIn, UserButton } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
 // import GoogleAccountSwitcher from "./GoogleAccountSwitcher";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
@@ -9,10 +9,9 @@ import { SidebarTrigger } from "./ui/sidebar";
 import { cn } from "@/lib/utils";
 import { config } from "@/config";
 import GoogleAccountSwitcher from "./GoogleAccountSwitcher";
-import { Suspense } from "react";
 import { ModeToggle } from "./toggle-mode";
 import { useTheme } from "next-themes";
-import { dark, neobrutalism } from "@clerk/themes";
+import { MyUserButton } from "./MyUserButton";
 // import posthog from "posthog-js";
 // import { Button } from "@/components/ui/button";
 
@@ -45,20 +44,7 @@ export default function Topbar() {
           >
             Manage plan
           </Link>
-          <UserButton
-            appearance={{
-              baseTheme: resolvedTheme === "dark" ? dark : neobrutalism,
-              layout: {
-                logoLinkUrl: "/",
-                logoPlacement: "inside",
-                termsPageUrl: config.landingPageUrl + "/terms",
-                privacyPageUrl: config.landingPageUrl + "/privacy-policy",
-                shimmer: true,
-                socialButtonsVariant: "blockButton",
-                socialButtonsPlacement: "top",
-              },
-            }}
-          />
+          <MyUserButton/>
         </SignedIn>
 
         <ModeToggle />

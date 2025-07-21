@@ -51,7 +51,7 @@ export default async function EndpointDetailPage({
       </nav>
       <FormTabs
         defaultTab="overview"
-        formAnalytics={<FormAnalytics id={id} searchParams={searchParams} />}
+        formAnalytics={<FormAnalytics id={id} searchParams={searchParams}  />}
       >
         <Suspense fallback={<Skeleton className="w-full h-12 rounded" />}>
           <FormDetailsFetcher id={id} />

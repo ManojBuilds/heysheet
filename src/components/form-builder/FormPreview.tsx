@@ -155,7 +155,7 @@ const FormPreview: React.FC<FormPreviewProps> = ({
         setIsSubmitting(false);
       }
     },
-    [fullFormData, isLastComponent, formId, methods],
+    [fullFormData, isLastComponent, formId, currentComponent.id, methods],
   );
 
   const handleNext = useCallback(async () => {

@@ -2,7 +2,6 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { config as myConfig } from "./config";
 
-// These routes are publicly accessible and do not require authentication.
 const isPublicRoute = createRouteMatcher([
   "/",
   "/f/(.*)",
@@ -14,8 +13,19 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+  const { userId } = await auth();
+
+  if (isPublicRoute(req)) {
+    if (req.nextUrl.pathname === "/" && userId) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next(); 
+  }
+
+  if (!userId) {
+    const url = new URL(myConfig.afterSignOutUrl);
+    url.searchParams.append('requiredLogin', 'true');
+    return NextResponse.redirect(url);
   }
 
   if (req.nextUrl.pathname.startsWith("/f/")) {
@@ -24,14 +34,7 @@ export default clerkMiddleware(async (auth, req) => {
     return response;
   }
 
-  if (req.nextUrl.pathname === "/") {
-    const { userId } = await auth();
-    if (userId) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    } else {
-      return NextResponse.redirect(new URL(myConfig.afterSignOutUrl, req.url));
-    }
-  }
+  return NextResponse.next();
 });
 
 export const config = {

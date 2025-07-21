@@ -10,7 +10,7 @@ import { FormTheme, FormData } from "@/types/form-builder";
 import Link from "next/link";
 import TooltipWrapper from "../TooltipWrapper";
 import { Logo } from "../Logo";
-import { UserButton } from "@clerk/nextjs";
+import { MyUserButton } from "../MyUserButton";
 
 interface FormBuilderHeaderProps {
   formData: FormData;
@@ -90,7 +90,7 @@ const FormBuilderHeader = ({
           >
             Save
           </Button>
-          <UserButton />
+          <MyUserButton />
         </div>
       </div>
     </header>

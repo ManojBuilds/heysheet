@@ -4,5 +4,5 @@ export const config = {
     process.env.NEXT_PUBLIC_LANDING_PAGE_URL || "https://heysheet.in",
   documentationUrl:
     process.env.NEXT_PUBLIC_DOCUMENTATION_URL || "https://docs.heysheet.in",
-  afterSignOutUrl: process.env.NEXT_PUBLIC_AFTER_SIGN_OUT_URL || "/",
+  afterSignOutUrl: process.env.NEXT_PUBLIC_AFTER_SIGN_OUT_URL || "https://heysheet.in",
 };

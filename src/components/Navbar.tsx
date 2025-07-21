@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { Logo } from "./Logo";
@@ -9,6 +9,7 @@ import { config } from "@/config";
 // import NewEndpointForm from "./NewEndpointFormModal";
 // import { ConnectToSlackBtn } from "./connect-to-slack-button";
 import { ModeToggle } from "./toggle-mode";
+import { MyUserButton } from "./MyUserButton";
 
 export default function Navbar() {
 
@@ -60,7 +61,7 @@ export default function Navbar() {
             </SignedOut>
           </nav>
           <SignedIn>
-            <UserButton />
+            <MyUserButton/>
           </SignedIn>
           <ModeToggle />
         </div>
