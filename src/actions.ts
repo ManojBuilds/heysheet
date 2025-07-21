@@ -289,7 +289,7 @@ export async function getUserLocationInfo() {
   return await res.json();
 }
 
-export const getSubscription = cache(async () => {
+export const getSubscription = async () => {
   const { userId } = await auth();
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -315,7 +315,7 @@ export const getSubscription = cache(async () => {
     billing_interval: "monthly",
     subscription_id: "",
   };
-});
+};
 
 export const canCreateForm = async () => {
   const [{ userId }, supabase, { plan }] = await Promise.all([
