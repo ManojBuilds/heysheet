@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Select,
   SelectTrigger,
@@ -37,11 +37,9 @@ export default function SpreadsheetSelect({
   onClearSelection: () => void;
 }) {
   const { selectedAccount, updateAccount } = useGoogleAccounts();
-  const [currentGoogleAccountId, setCurrentGoogleAccountId] = useState("");
-  const [openPicker, authResponse] = useDrivePicker();
-  const [token, setToken] = useState(selectedAccount?.access_token)
+  const [openPicker ] = useDrivePicker();
 
-  const { mutate: refreshToken } = useMutation({
+  const { mutateAsync: refreshToken } = useMutation({
     mutationFn: async (googleAccountId: string) => {
       const response = await fetch("/api/google/refresh", {
         method: "POST",
@@ -117,13 +115,13 @@ export default function SpreadsheetSelect({
     });
   };
 
-  const handleOpenPicker = () => {
+  const handleOpenPicker = async() => {
     if (selectedAccount) {
       const expiresAt = new Date(
         selectedAccount.token_expires_at || ""
       ).getTime();
       if (Date.now() > expiresAt) {
-        refreshToken(selectedAccount.id);
+        await refreshToken(selectedAccount.id);
       } else {
         openPickerWithToken(selectedAccount.access_token);
       }
@@ -133,10 +131,8 @@ export default function SpreadsheetSelect({
     }
   };
 
-  // Reset sheet names when selected sheet changes
   useEffect(() => {
     if (selectedSheet && onSheetNamePick) {
-      // Reset the sheet name selection when a new spreadsheet is selected
       onSheetNamePick("");
     }
   }, [selectedSheet, onSheetNamePick]);
