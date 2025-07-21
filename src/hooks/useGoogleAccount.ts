@@ -19,7 +19,7 @@ export const useGoogleAccounts = () => {
     if (user?.id && accounts.length === 0 && !isLoading) {
       fetchAccounts(user.id);
     }
-  }, [user?.id, fetchAccounts, accounts.length, isLoading]);
+  }, [user?.id, fetchAccounts]);
   
 
   return {

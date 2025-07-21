@@ -10,7 +10,6 @@ import { planLimits } from "./lib/planLimits";
 import dodo from "./lib/dodopayments";
 import { customAlphabet } from "nanoid";
 import { config } from "./config";
-import { cache } from "react";
 
 const nanoid = customAlphabet(
   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
@@ -48,7 +47,6 @@ export const handleRemoveNotionAccount = async (accountId: string) => {
 };
 
 export const getGoogleAccounts = async (userId: string) => {
-  console.log("@getGoogleAccounts", userId);
   if (!userId) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -289,8 +287,8 @@ export async function getUserLocationInfo() {
   return await res.json();
 }
 
-export const getSubscription = async () => {
-  const { userId } = await auth();
+export const getSubscription = async (userId: string) => {
+  console.log('@getSubscription', userId)
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("subscriptions")
@@ -301,10 +299,11 @@ export const getSubscription = async () => {
     .maybeSingle();
 
   if (error) {
-    console.log('@getSubscription', error)
+    console.log('@getSubscriptionError', error)
   }
 
   if (data) {
+    console.log('@getSubscriptionData', data)
     return data;
   }
   return {
@@ -318,8 +317,9 @@ export const getSubscription = async () => {
 };
 
 export const canCreateForm = async () => {
-  const [{ userId }, supabase, { plan }] = await Promise.all([
-    auth(), createClient(), getSubscription()
+  const {userId} = await auth()
+  const [supabase, { plan }] = await Promise.all([
+     createClient(), getSubscription(userId!)
   ])
   const { data } = await supabase
     .from("forms")

@@ -8,11 +8,11 @@ import { getSubscription } from "@/actions";
 export async function FormDetailsFetcher({
   id,
 }: {id:string}) {
+  const {userId} = await auth()
 
-  const [{ userId }, supabase, subscription] = await Promise.all([
-    auth(),
+  const [supabase, subscription] = await Promise.all([
     createClient(),
-    getSubscription()
+    getSubscription(userId!)
   ])
 
   const [{ data, error }, { data: webhookData }] = await Promise.all([

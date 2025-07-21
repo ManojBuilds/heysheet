@@ -21,10 +21,9 @@ const UsageButton = () => {
 export default UsageButton;
 
 const UsageData = async () => {
-  const [{ userId }, subscription] = await Promise.all([
-    auth(),
-    getSubscription()
-  ])
+  const { userId } = await auth()
+  const subscription = await getSubscription(userId!)
+
 
   const plan = subscription?.plan || "free";
   const limits = planLimits[plan as keyof typeof planLimits];

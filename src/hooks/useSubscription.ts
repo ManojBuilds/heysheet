@@ -22,6 +22,7 @@ const useSubscription = () => {
         .maybeSingle();
       if (error) throw error;
       if (data) {
+        console.log('useSubscription', data)
         return data;
       }
       return {

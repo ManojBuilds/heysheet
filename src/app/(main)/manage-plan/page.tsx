@@ -15,6 +15,7 @@ import { CrownIcon } from "lucide-react";
 import { ManageBillingButton } from "@/components/ManageBillingButton";
 import { Suspense } from "react";
 import { getSubscription } from "@/actions";
+import { auth } from "@clerk/nextjs/server";
 
 export default function ManagePlanPage() {
 
@@ -29,7 +30,8 @@ export default function ManagePlanPage() {
 }
 
 async function ManagePlan() {
-  const subscription = await getSubscription()
+  const {userId} = await auth()
+  const subscription = await getSubscription(userId!)
   const plan = subscription?.plan || "free";
   const isFree = plan === "free";
   const renewalDate = subscription?.next_billing;
