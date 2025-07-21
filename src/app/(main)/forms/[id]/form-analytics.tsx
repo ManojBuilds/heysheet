@@ -1,5 +1,3 @@
-import { getFormDetails } from "@/lib/form";
-import { notFound } from "next/navigation";
 import { parseISO, startOfMonth } from "date-fns";
 import DateFilter from "@/components/dashboard/date-filter";
 import FormAnalyticsStats from "@/components/form-analytics/FormAnalyticsStats";
@@ -7,22 +5,17 @@ import FormAnalyticsCharts from "@/components/form-analytics/FormAnalyticsCharts
 import { Suspense } from "react";
 import FormAnalyticsStatsSkeleton from "@/components/form-analytics/FormAnalyticsStatsSkeleton";
 import FormAnalyticsChartsSkeleton from "@/components/form-analytics/FormAnalyticsChartsSkeleton";
+import FormAnalyticsSubmissionsOverTime from "@/components/form-analytics/FormAnalyticsSubmissionsOverTime";
+import FormAnalyticsSubmissionsOverTimeSkeleton from "@/components/form-analytics/FormAnalyticsSubmissionsOverTimeSkeleton";
 
-export default async function FormAnalyticsPage({
-  params,
+export const FormAnalytics = async({
+  id,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { from?: string; to?: string };
-}) {
-  const formId = params.id;
-  const form = await getFormDetails(formId);
-
-  if (!form) {
-    return notFound();
-  }
-
-  const { from, to } = searchParams;
+  id: string
+  searchParams: Promise<{ from?: string; to?: string }>;
+}) => {
+  const { from, to } = await searchParams;
   const fromDate = from ? parseISO(from) : startOfMonth(new Date());
   const toDate = to ? parseISO(to) : new Date();
 

@@ -27,6 +27,7 @@ import { createSheet } from "@/lib/google/sheets";
 import { useRouter } from "nextjs-toploader/app";
 import { WebhookSettings } from "@/components/integrations/WebhookSettings";
 import { SubscriptionData } from "@/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Spreadsheet = {
   id: string;
@@ -192,6 +193,8 @@ loading="lazy"
                 Open {selectedSpreadsheet.name} Spreadsheet
               </Button>
             </a>
+          ) : isPending ? (
+            <Skeleton className="w-full h-10" />
           ) : (
             <div className="space-y-4">
               <div>
