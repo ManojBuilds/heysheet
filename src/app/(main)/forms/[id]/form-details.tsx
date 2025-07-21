@@ -181,9 +181,7 @@ loading="lazy"
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!selectedAccount ? (
-            <AllowGooglePermissions />
-          ) : selectedSpreadsheet ? (
+          {selectedSpreadsheet?.id ? (
             <a
               href={selectedSpreadsheet.url}
               target="_blank"
@@ -193,9 +191,7 @@ loading="lazy"
                 Open {selectedSpreadsheet.name} Spreadsheet
               </Button>
             </a>
-          ) : isPending ? (
-            <Skeleton className="w-full h-10" />
-          ) : (
+          ) : selectedAccount?.id ? (
             <div className="space-y-4">
               <div>
                 <p className="text-sm font-medium mb-2">
@@ -241,7 +237,9 @@ loading="lazy"
                 </div>
               </div>
             </div>
-          )}
+          )
+            : <AllowGooglePermissions />
+          }
         </CardContent>
       </Card>
       <FormSettings

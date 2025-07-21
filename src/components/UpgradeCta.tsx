@@ -9,7 +9,7 @@ const UpgradeCta = ({ className }: { className?: string, }) => {
   const { data: subscription } = useSubscription()
   return (
     <Link
-      href={"/checkout"}
+      href={subscription?.plan === "free" ? "/checkout" : '/manage-plan'}
       className={buttonVariants({
         className: cn("inline-flex items-center gap-2 capitalize", className),
       })}
@@ -17,7 +17,7 @@ const UpgradeCta = ({ className }: { className?: string, }) => {
       <CrownIcon className="text-yellow-500" />
       {subscription && subscription?.plan !== "free"
         ? `${subscription.plan} plan`
-        : "upgrad plan"}
+        : "upgrade plan"}
     </Link>
   );
 };

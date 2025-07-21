@@ -296,7 +296,8 @@ export const getSubscription = async (userId: string) => {
       "plan, status, customer_id, next_billing, billing_interval, subscription_id",
     )
     .eq("user_id", userId)
-    .maybeSingle();
+    .single();
+    console.log({data, error})
 
   if (error) {
     console.log('@getSubscriptionError', error)
