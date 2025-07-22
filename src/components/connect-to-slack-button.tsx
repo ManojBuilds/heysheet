@@ -41,7 +41,7 @@ export function ConnectToSlackBtn({ form }: { form: any }) {
 
   const { data: channels } = useQuery({
     queryKey: ["slack-channels"],
-    queryFn: () => listAllSlackChannel(slackAccount?.slack_token),
+    queryFn: listAllSlackChannel,
     enabled: !!user?.id || !!slackAccount?.slack_token,
   });
   const isSlackAccountConnected =
