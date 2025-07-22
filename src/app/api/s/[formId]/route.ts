@@ -184,6 +184,7 @@ export async function POST(
           form: {
             name: form.title,
             spreadsheet_id: form.spreadsheet_id,
+            id: formId,
           },
           submission: {
             created_at: submission.created_at,

@@ -11,6 +11,7 @@ import DashboardStatsSkeleton from "./dashboard-stats-skeleton";
 import ChartAreaSkeleton from "@/components/dashboard/chart-area-skeleton";
 import TopFormsSkeleton from "@/components/dashboard/top-forms-skeleton";
 import DashboardChartsSkeleton from "./DashboardChartsSkeleton";
+import { notFound } from "next/navigation";
 
 export default async function DashboardPage({
   searchParams,
@@ -23,6 +24,7 @@ export default async function DashboardPage({
 
   const fromDateIso = fromDate.toISOString();
   const toDateIso = toDate.toISOString();
+  return notFound()
 
   return (
     <div className="flex flex-col gap-4">

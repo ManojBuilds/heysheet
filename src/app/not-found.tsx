@@ -9,15 +9,17 @@ export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md mx-auto text-center space-y-6 p-6">
-        {/* 404 Icon */}
-        <div className="w-48 h-24 mx-auto mb-8 flex items-center justify-center">
-          <Image src="https://ik.imagekit.io/q3ksr5fk3/404-error.png?updatedAt=1752807464456" alt="404 Error" width={1024} height={1536} className="w-full h-auto" />
+
+        <div className="w-52 mx-auto">
+          <Image
+            src={'https://ik.imagekit.io/q3ksr5fk3/404-error.png?updatedAt=1752807464456'}
+            alt="Delete form illustration"
+            width={1024}
+            height={1536}
+            className="h-full object-contain"
+          />
         </div>
 
-        {/* Error Title */}
-        <h1 className="text-2xl font-semibold text-foreground">
-          Page not found
-        </h1>
 
         {/* Error Description */}
         <p className="text-muted-foreground text-sm leading-relaxed">

@@ -78,89 +78,130 @@ export async function getSlackAccountToken() {
 }
 
 export async function createFormSubmissionMessage(data: FormSubmissionData) {
-  const formattedData = Object.entries(data.submission.data)
-    .map(([key, value]) => `• *${key}:* ${value}`)
-    .join("\n");
+  const submissionFields = Object.entries(data.submission.data).map(
+    ([key, value]) => {
+      const stringValue = String(value);
+      const truncatedValue =
+        stringValue.length > 100
+          ? stringValue.substring(0, 97) + "..."
+          : stringValue;
+      return {
+        type: "mrkdwn",
+        text: `*${key}:*\n${truncatedValue}`,
+      };
+    }
+  );
 
-  return {
-    blocks: [
-      {
-        type: "header",
-        text: {
-          type: "plain_text",
-          text: "📥 New Form Submission Received",
-          emoji: true,
+  const analyticsFields = [
+    { label: "Source", value: data.analytics?.referrer, icon: "🌐" },
+    { label: "Country", value: data.analytics?.country, icon: "🏳️" },
+    { label: "City", value: data.analytics?.city, icon: "🏙️" },
+    { label: "Timezone", value: data.analytics?.timezone, icon: "🕰️" },
+    { label: "Device", value: data.analytics?.deviceType, icon: "📱" },
+    { label: "Browser", value: data.analytics?.browser, icon: "🌍" },
+    { label: "Language", value: data.analytics?.language, icon: "🗣️" },
+  ]
+    .filter(
+      (item) => item.value && item.value !== "Unknown" && item.value !== "Direct"
+    )
+    .map((item) => ({
+      type: "mrkdwn",
+      text: `${item.icon} *${item.label}:*\n${item.value}`,
+    }));
+
+  const blocks: any[] = [
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: `📥 New Submission for ${data.form.name}`,
+        emoji: true,
+      },
+    },
+    {
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `Received on <!date^${Math.floor(
+            new Date(data.submission.created_at).getTime() / 1000
+          )}^{date_long_pretty} at {time}|${data.submission.created_at}>`,
         },
+      ],
+    },
+    {
+      type: "divider",
+    },
+  ];
+
+  if (submissionFields.length > 0) {
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: "*📝 Submission Details*",
       },
-      {
+    });
+    if (submissionFields.length <= 10) {
+      blocks.push({
         type: "section",
-        fields: [
-          {
-            type: "mrkdwn",
-            text: `🗂️ *Form:*\n${data.form.name}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `⏰ *Submitted At:*\n<!date^${Math.floor(new Date(data.submission.created_at).getTime() / 1000)}^{date_short} at {time}|${data.submission.created_at}>`,
-          },
-        ],
-      },
-      {
+        fields: submissionFields,
+      });
+    } else {
+      const text = Object.entries(data.submission.data)
+        .map(([key, value]) => `• *${key}:* ${value}`)
+        .join("\n");
+      blocks.push({
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "📝 *Submission Details:*\n" + formattedData,
+          text: text,
         },
+      });
+    }
+  }
+
+  if (analyticsFields.length > 0) {
+    blocks.push({ type: "divider" });
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: "*📊 Analytics*",
       },
-      {
-        type: "section",
-        fields: [
-          {
-            type: "mrkdwn",
-            text: `🌐 *Source:*\n${data.analytics?.referrer || "Direct"}`,
+      fields: analyticsFields,
+    });
+  }
+
+  blocks.push({ type: "divider" });
+
+  blocks.push(
+    {
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "View in Google Sheets",
+            emoji: true,
           },
-          {
-            type: "mrkdwn",
-            text: `🏳️ *Country:*\n${data.analytics?.country || "Unknown"}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `🏙️ *City:*\n${data.analytics?.city || "Unknown"}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `🕰️ *Timezone:*\n${data.analytics?.timezone || "Unknown"}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `📱 *Device Type:*\n${data.analytics?.deviceType || "Unknown"}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `🌍 *Browser:*\n${data.analytics?.browser || "Unknown"}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `🗣️ *Language:*\n${data.analytics?.language || "Unknown"}`,
-          },
-          {
-            type: "mrkdwn",
-            text: `✅ *Processed At:*\n${data.analytics?.processed_at || data.analytics?.created_at || "Unknown"}`,
-          },
-        ],
-      },
-      {
-        type: "context",
-        elements: [
-          {
-            type: "mrkdwn",
-            text: `🔗 <https://docs.google.com/spreadsheets/d/${data.form.spreadsheet_id}|View in Google Sheets> &nbsp;•&nbsp; 🆔 Submission ID: \`${data.submission.id}\``,
-          },
-        ],
-      },
-      {
-        type: "divider",
-      },
-    ],
-  };
+          style: "primary",
+          url: `https://docs.google.com/spreadsheets/d/${data.form.spreadsheet_id}`,
+          action_id: `view_in_sheets_${data.submission.id}`,
+        },
+      ],
+    },
+    {
+      type: "context",
+      elements: [
+        {
+          type: "mrkdwn",
+          text: `Submission ID: \`${data.submission.id}\``,
+        },
+      ],
+    }
+  );
+
+  return { blocks };
 }

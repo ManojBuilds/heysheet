@@ -10,7 +10,7 @@ export const Logo = ({className}: {className?: string}) => {
       {/* <span className="font-semibold text-2xl font-logo">heysheet</span> */}
       <div className="h-8 aspect-square grid place-items-center relative">
         <Image
-          src={'https://ik.imagekit.io/q3ksr5fk3/logo.png?updatedAt=1752807239894'}
+          src={'https://ik.imagekit.io/q3ksr5fk3/ChatGPT%20Image%20Jul%2022,%202025,%2008_07_21%20AM_11zon.png?updatedAt=1753151943258'}
           alt="Heysheet Logo"
           fill
           className="w-full h-full scale-110"

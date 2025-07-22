@@ -6,6 +6,7 @@ import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import GlobalError from "./global-error";
+import Image from "next/image";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };
@@ -29,12 +30,15 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md mx-auto text-center space-y-6 p-6">
         {/* Error Icon/Illustration */}
-        <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
-              <div className="w-4 h-4 rounded-full bg-destructive" />
-            </div>
-          </div>
+
+        <div className="h-52 mx-auto mb-2">
+          <Image
+            src={'https://ik.imagekit.io/q3ksr5fk3/ChatGPT%20Image%20Jul%2022,%202025,%2008_09_47%20AM_11zon.png?updatedAt=1753152260325'}
+            alt="Delete form illustration"
+            width={1024}
+            height={1536}
+            className="w-full h-full object-contain"
+          />
         </div>
 
         {/* Error Title */}

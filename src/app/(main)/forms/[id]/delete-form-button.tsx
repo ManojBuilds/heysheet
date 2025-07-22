@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import Image from "next/image";
 
 interface DeleteFormButtonProps {
   id: string;
@@ -108,6 +109,15 @@ const DeleteFormButton = ({ id, isActive }: DeleteFormButtonProps) => {
                 form and any request will result in 404.
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="h-52 mx-auto">
+              <Image
+                src={'https://ik.imagekit.io/q3ksr5fk3/ChatGPT%20Image%20Jul%2022,%202025,%2008_11_29%20AM_7_11zon.png'}
+                alt="Delete form illustration"
+                width={1024}
+                height={1536}
+                className="w-full h-full"
+              />
+            </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction asChild>

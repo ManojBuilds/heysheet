@@ -90,7 +90,7 @@ async function FormList({
       <div className="flex flex-col items-center justify-center text-center py-16 max-w-6xl mx-auto px-4 ">
         <div className="h-52">
           <Image
-            src={'https://ik.imagekit.io/q3ksr5fk3/no-form.png?updatedAt=1752807303055'}
+            src={'https://ik.imagekit.io/q3ksr5fk3/ChatGPT%20Image%20Jul%2022,%202025,%2008_11_51%20AM_4_11zon.png?updatedAt=1753152271844'}
             alt="No forms"
             width={1024}
             height={1536}

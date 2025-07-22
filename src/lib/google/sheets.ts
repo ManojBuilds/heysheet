@@ -241,6 +241,7 @@ export async function processSubmission(
       form: {
         name: form.title,
         spreadsheet_id: form.spreadsheet_id,
+        id: form.id,
       },
       submission: {
         created_at: submission.created_at,

@@ -35,7 +35,7 @@ export const HeySheetWelcomeEmail = ({
           <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Section className="mt-[22px] text-center">
               <Img
-                src={'https://ik.imagekit.io/q3ksr5fk3/logo.png?updatedAt=1752807239894'}
+                src={'https://ik.imagekit.io/q3ksr5fk3/ChatGPT%20Image%20Jul%2022,%202025,%2008_07_21%20AM_11zon.png?updatedAt=1753151943258'}
                 width="40"
                 height="37"
                 alt="Heysheet Logo"
@@ -69,7 +69,7 @@ export const HeySheetWelcomeEmail = ({
                 Your browser does not support the video tag. You can watch it{" "}
                 <Link
                   href={'https://ik.imagekit.io/q3ksr5fk3/demo.mp4?updatedAt=1752807187723'}
-                  className="text-blue-600"
+                  className="text-yellow-600"
                 >
                   here
                 </Link>

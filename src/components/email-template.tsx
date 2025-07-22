@@ -1,3 +1,4 @@
+import { config } from "@/config";
 import {
   Body,
   Button,
@@ -20,6 +21,7 @@ export interface FormSubmissionData {
   form: {
     name: string;
     spreadsheet_id: string;
+    id: string;
   };
   submission: {
     data: Record<string, any>;
@@ -60,7 +62,7 @@ export const HeySheetSubmissionEmail = ({
           <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Section className="mt-[22px] text-center">
               <Img
-                src={'https://ik.imagekit.io/q3ksr5fk3/logo.png?updatedAt=1752807239894'}
+                src={'https://ik.imagekit.io/q3ksr5fk3/ChatGPT%20Image%20Jul%2022,%202025,%2008_07_21%20AM_11zon.png?updatedAt=1753151943258'}
                 width="40"
                 height="37"
                 alt="HeySheet Logo"
@@ -73,7 +75,7 @@ export const HeySheetSubmissionEmail = ({
             </Heading>
 
             <Text className="text-center text-[14px] leading-[24px] text-black">
-              You received a new submission for <strong>{form.name}</strong>.
+              You received a new submission for <strong><Link href={`${config.appUrl}/forms/${form.id}`}></Link>{form.name}</strong>.
             </Text>
 
             <Section className="mt-[28px]">
