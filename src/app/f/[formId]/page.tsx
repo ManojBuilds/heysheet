@@ -14,7 +14,7 @@ export default async function FormPage({ params }: FormPageProps) {
   const data = await getForm((await params).formId);
 
   if (!data?.id) {
-    return notFound();
+    notFound();
   }
 
   if (data.builder_config === null) {

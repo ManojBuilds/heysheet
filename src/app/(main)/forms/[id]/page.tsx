@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { auth } from "@clerk/nextjs/server";
-import { notFound, redirect } from "next/navigation";
+import { notFound, } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
