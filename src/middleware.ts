@@ -20,7 +20,7 @@ export default clerkMiddleware(async (auth, req) => {
     if (req.nextUrl.pathname === "/" && userId) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
-    if (req.nextUrl.password === "/" && !userId) {
+    if (req.nextUrl.pathname === "/" && !userId) {
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
