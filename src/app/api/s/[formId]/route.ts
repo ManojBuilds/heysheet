@@ -26,7 +26,10 @@ export async function POST(
     if (contentType.includes("application/json")) {
       const json = await request.json();
       entries = Object.entries(json);
-    } else if (contentType.includes("multipart/form-data")) {
+    } else if (
+      contentType.includes("multipart/form-data") ||
+      contentType.includes("application/x-www-form-urlencoded")
+    ) {
       const formData = await request.formData();
       entries = Array.from(formData.entries());
     } else {
