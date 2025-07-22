@@ -24,7 +24,6 @@ export default async function DashboardPage({
 
   const fromDateIso = fromDate.toISOString();
   const toDateIso = toDate.toISOString();
-  return notFound()
 
   return (
     <div className="flex flex-col gap-4">
