@@ -211,6 +211,10 @@ export async function POST(
           form.email_enabled &&
           form.notification_email
         ) {
+          console.log('Sending email',{
+            dataToSend: messageData,
+            toEmail: form.notification_email,
+          })
           void sendEmail({
             dataToSend: messageData,
             toEmail: form.notification_email,
@@ -233,6 +237,7 @@ export async function POST(
               data: formDataObj,
               createdAt: submission.created_at,
             };
+            console.log('@sendingWebhook')
 
             void supabase.functions.invoke("send-webhook", {
               body: {
@@ -251,6 +256,7 @@ export async function POST(
           form.notion_database_id &&
           notionAccessToken
         ) {
+          console.log('Invoking append-to-notion-db')
           void supabase.functions.invoke(
             "append-to-notion-db",
             {
