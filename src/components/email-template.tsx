@@ -75,7 +75,8 @@ export const HeySheetSubmissionEmail = ({
             </Heading>
 
             <Text className="text-center text-[14px] leading-[24px] text-black">
-              You received a new submission for <strong><Link href={`${config.appUrl}/forms/${form.id}`}></Link>{form.name}</strong>.
+              You received a new submission for <strong><Link href={`${config.appUrl}/forms/${form.id}`}>{form.name}
+              </Link></strong>.
             </Text>
 
             <Section className="mt-[28px]">
