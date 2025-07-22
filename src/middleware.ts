@@ -14,17 +14,19 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
-
+  const url = new URL(myConfig.afterSignOutUrl);
+  url.searchParams.append("requiredLogin", "true");
   if (isPublicRoute(req)) {
     if (req.nextUrl.pathname === "/" && userId) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
-    return NextResponse.next(); 
+    if (req.nextUrl.password === "/" && !userId) {
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
   }
 
   if (!userId) {
-    const url = new URL(myConfig.afterSignOutUrl);
-    url.searchParams.append('requiredLogin', 'true');
     return NextResponse.redirect(url);
   }
 
