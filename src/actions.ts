@@ -281,10 +281,12 @@ export const updateWebhookSettings = async ({
 };
 
 export async function getUserLocationInfo() {
-  const ipInfoApiKey = process.env.IP_INFO_API_KEY;
-  const url = `https://ipinfo.io/json?token=${ipInfoApiKey}`;
-  const res = await fetch(url);
-  return await res.json();
+  const supabase = await createClient()
+  const { data, error } = await supabase.functions.invoke('getUserLocationInfo')
+  if (error) {
+    console.log(`@getUserLocationInfoError`, error)
+  }
+  return data
 }
 
 export const getSubscription = async (userId: string) => {
@@ -297,7 +299,7 @@ export const getSubscription = async (userId: string) => {
     )
     .eq("user_id", userId)
     .single();
-    console.log({data, error})
+  console.log({ data, error })
 
   if (error) {
     console.log('@getSubscriptionError', error)
@@ -318,9 +320,9 @@ export const getSubscription = async (userId: string) => {
 };
 
 export const canCreateForm = async () => {
-  const {userId} = await auth()
+  const { userId } = await auth()
   const [supabase, { plan }] = await Promise.all([
-     createClient(), getSubscription(userId!)
+    createClient(), getSubscription(userId!)
   ])
   const { data } = await supabase
     .from("forms")
