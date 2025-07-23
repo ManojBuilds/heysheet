@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { planLimits } from "@/lib/planLimits";
 import { collectAnalytics } from "@/lib/submission";
 import { extractUtmParams } from "@/lib/utm";
-import { processFileUploads } from "@/lib/processFileUpload";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { validateDomains } from "@/lib/domain-validation";
@@ -17,7 +16,8 @@ export async function POST(
   try {
     const [{ formId }, supabase, headersList] = await Promise.all([
       params, createClient(), headers()
-    ])
+    ]);
+
     const userAgent = headersList.get("user-agent") || "";
     const referrer = headersList.get("referrer") || "";
     const contentType = headersList.get("content-type") || "";
@@ -25,12 +25,14 @@ export async function POST(
 
     if (contentType.includes("application/json")) {
       const json = await request.json();
+      console.log("Json payload", json)
       entries = Object.entries(json);
     } else if (
       contentType.includes("multipart/form-data") ||
       contentType.includes("application/x-www-form-urlencoded")
     ) {
       const formData = await request.formData();
+      console.log('formData payload file', formData.get('pic'))
       entries = Array.from(formData.entries());
     } else {
       return NextResponse.json(
@@ -38,49 +40,27 @@ export async function POST(
         { status: 415 },
       );
     }
-    console.log("entries", entries);
 
     const { data: form, error: formError } = await supabase
       .from("forms")
-      .select(
-        `
-    id, 
-    user_id, 
-    file_upload, 
-    email_enabled, 
-    notification_email, 
-    title, 
-    spreadsheet_id, 
-    sheet_name, 
-    google_account_id, 
-    notion_database_id, 
-    notion_enabled, 
-    notion_account_id,
-    domains,
-    webhook_enabled,
-    notion_accounts (
-      access_token
-    )
-    `,
-      )
+      .select(`
+        id, user_id, file_upload, email_enabled, notification_email, 
+        title, spreadsheet_id, sheet_name, google_account_id, 
+        notion_database_id, notion_enabled, notion_account_id,
+        domains, webhook_enabled,
+        notion_accounts ( access_token )
+      `)
       .eq("id", formId)
       .single();
 
     if (!form || formError) {
-      return NextResponse.json(
-        { success: false, message: "Form not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, message: "Form not found" }, { status: 404 });
     }
 
-    validateDomains(form.domains, headersList)
+    validateDomains(form.domains, headersList);
 
     const [subscriptionRes, userFormsRes] = await Promise.all([
-      supabase
-        .from("subscriptions")
-        .select("plan, next_billing")
-        .eq("user_id", form.user_id)
-        .single(),
+      supabase.from("subscriptions").select("plan, next_billing").eq("user_id", form.user_id).single(),
       supabase.from("forms").select("id").eq("user_id", form.user_id),
     ]);
 
@@ -89,21 +69,13 @@ export async function POST(
       ? new Date(subscriptionRes.data.next_billing)
       : null;
     if (plan !== "free" && expiry && Date.now() > expiry.getTime()) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Your subscription has expired. Please renew.",
-        },
-        { status: 403 },
-      );
+      return NextResponse.json({ success: false, message: "Subscription expired" }, { status: 403 });
     }
 
     const planLimit = planLimits[plan as keyof typeof planLimits];
     const formIds = userFormsRes.data?.map((f) => f.id) || [];
 
-    const startOfMonth = new Date(
-      Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1),
-    ).toISOString();
+    const startOfMonth = new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)).toISOString();
     const { count: submissionCount } = await supabase
       .from("submissions")
       .select("*", { count: "exact", head: true })
@@ -111,24 +83,8 @@ export async function POST(
       .in("form_id", formIds);
 
     if ((submissionCount ?? 0) >= planLimit.maxSubmissions) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Submission limit reached. Please upgrade.",
-        },
-        { status: 403 },
-      );
+      return NextResponse.json({ success: false, message: "Submission limit reached" }, { status: 403 });
     }
-
-    const uploadConfig = form.file_upload || {};
-    const formDataObj = await processFileUploads({
-      entries,
-      uploadConfig,
-      planLimit,
-      formId,
-      supabase,
-    });
-    console.log("Processed form data:", formDataObj);
 
     const ip = headersList.get("x-forwarded-for") || "";
     const language = headersList.get("accept-language") || "";
@@ -160,29 +116,34 @@ export async function POST(
 
     if (insertError) {
       console.error("Insert failed", insertError);
-      return NextResponse.json(
-        { success: false, message: "Insert failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, message: "Insert failed" }, { status: 500 });
     }
 
     const response = NextResponse.json({ success: true, id: submission.id });
 
     Promise.resolve().then(async () => {
       try {
-        const formDataObj = await processFileUploads({
-          entries,
-          uploadConfig,
-          planLimit,
-          formId,
-          supabase,
-        });
-        void supabase.functions.invoke("process-submissions", {
-          body: {
-            submissionId: submission.id,
-            data: formDataObj,
-          },
-        }).then((d) => console.log('@processSubmission success', d)).catch((e) => console.log('@processSubmission failed', e));
+        const uploadConfig = form.file_upload || {};
+        const formDataToUploadFile = new FormData();
+
+        for (const [key, value] of entries) {
+          if (value instanceof File) {
+            formDataToUploadFile.append(key, value); // send as file
+          } else {
+            formDataToUploadFile.append(key, value); // send as string
+          }
+        }
+
+        formDataToUploadFile.append("uploadConfig", JSON.stringify(uploadConfig));
+        formDataToUploadFile.append("planLimit", JSON.stringify(planLimit));
+        formDataToUploadFile.append("formId", formId);
+
+        const { data } = await supabase.functions.invoke('upload-files', {
+          body: formDataToUploadFile
+        })
+
+        const formDataObj = data?.formDataObj || {};
+
         const messageData: FormSubmissionData = {
           form: {
             name: form.title,
@@ -212,52 +173,62 @@ export async function POST(
             }),
           },
         };
+
+
+        const tasks: Promise<any>[] = [];
+
+        tasks.push(
+          supabase.functions.invoke("process-submissions", {
+            body: {
+              submissionId: submission.id,
+              data: formDataObj,
+            },
+          })
+        );
+
         if (
           planLimit.features.emailAlerts &&
           form.email_enabled &&
           form.notification_email
         ) {
-          console.log('Sending email')
-          const emailTemplate = HeySheetSubmissionEmail({ data: messageData });
-          const html = await render(emailTemplate)
-          void supabase.functions.invoke('send-email', {
-            body: {
-              to: form.notification_email,
-              subject: `New Submission on ${messageData.form.name}`,
-              html
-            }
-          }).catch(e => console.error(e))
-
+          const html = await render(HeySheetSubmissionEmail({ data: messageData }));
+          tasks.push(
+            supabase.functions.invoke("send-email", {
+              body: {
+                to: form.notification_email,
+                subject: `New Submission on ${form.title}`,
+                html,
+              },
+            })
+          );
         }
 
         if (form.webhook_enabled) {
-          const { data: webhookData, error: webhookError } = await supabase
+          const { data: webhookData } = await supabase
             .from("webhooks")
             .select("url, secret")
             .eq("form_id", formId)
             .single();
 
-          if (webhookError) {
-            console.error("Error fetching webhook:", webhookError);
-          } else if (webhookData) {
-            const payload = {
-              formId: form.id,
-              submissionId: submission.id,
-              data: formDataObj,
-              createdAt: submission.created_at,
-            };
-            console.log('@sendingWebhook')
-
-            void supabase.functions.invoke("send-webhook", {
-              body: {
-                webhookUrl: webhookData.url,
-                payload: payload,
-                secret: webhookData.secret,
-              },
-            }).then((d) => console.log('@send-webhook success', d)).catch((e) => console.log('@send-webhook failed', e));
+          if (webhookData) {
+            tasks.push(
+              supabase.functions.invoke("send-webhook", {
+                body: {
+                  webhookUrl: webhookData.url,
+                  payload: {
+                    formId: form.id,
+                    submissionId: submission.id,
+                    data: formDataObj,
+                    createdAt: submission.created_at,
+                  },
+                  secret: webhookData.secret,
+                },
+              })
+            );
           }
         }
-        // @ts-expect-error: notion_accounts might be null or undefined
+
+        // @ts-expect-error 
         const notionAccessToken = form.notion_accounts?.access_token;
         if (
           planLimit.features.notionIntegration &&
@@ -265,21 +236,20 @@ export async function POST(
           form.notion_database_id &&
           notionAccessToken
         ) {
-          console.log('Invoking append-to-notion-db')
-          void supabase.functions.invoke(
-            "append-to-notion-db",
-            {
+          tasks.push(
+            supabase.functions.invoke("append-to-notion-db", {
               body: {
                 accessToken: notionAccessToken,
                 databaseId: form.notion_database_id,
                 data: formDataObj,
               },
-            },
-          ).then((d) => console.log('@appendToNotionDB', d)).catch((e) => console.log('@appendToNotionDB failed: ', e));
-
+            })
+          );
         }
+
+        await Promise.allSettled(tasks);
       } catch (err) {
-        console.error("Background task error:", err);
+        console.error("❌ Background task error:", err);
       }
     });
 
