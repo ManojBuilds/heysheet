@@ -22,17 +22,21 @@ export async function POST(
     const referrer = headersList.get("referrer") || "";
     const contentType = headersList.get("content-type") || "";
     let entries: [string, any][] = [];
+    let formDataObj: Record<string, any> = {}
 
     if (contentType.includes("application/json")) {
       const json = await request.json();
-      console.log("Json payload", json)
+      formDataObj = json
       entries = Object.entries(json);
     } else if (
       contentType.includes("multipart/form-data") ||
       contentType.includes("application/x-www-form-urlencoded")
     ) {
       const formData = await request.formData();
-      console.log('formData payload file', formData.get('pic'))
+      formData.entries().forEach(([key, value]) => {
+        console.log('looping through', { key, value })
+        formDataObj[key] = value;
+      })
       entries = Array.from(formData.entries());
     } else {
       return NextResponse.json(
@@ -40,7 +44,6 @@ export async function POST(
         { status: 415 },
       );
     }
-
     const { data: form, error: formError } = await supabase
       .from("forms")
       .select(`
@@ -54,6 +57,7 @@ export async function POST(
       .single();
 
     if (!form || formError) {
+      console.error(formError)
       return NextResponse.json({ success: false, message: "Form not found" }, { status: 404 });
     }
 
@@ -124,25 +128,31 @@ export async function POST(
     Promise.resolve().then(async () => {
       try {
         const uploadConfig = form.file_upload || {};
-        const formDataToUploadFile = new FormData();
+        const hasFile = entries.some(([key, value]) => value instanceof File)
 
-        for (const [key, value] of entries) {
-          if (value instanceof File) {
-            formDataToUploadFile.append(key, value); // send as file
-          } else {
-            formDataToUploadFile.append(key, value); // send as string
+        if (hasFile && uploadConfig.enabled) {
+          const formDataToUploadFile = new FormData();
+
+          for (const [key, value] of entries) {
+            if (value instanceof File) {
+              formDataToUploadFile.append(key, value); // send as file
+            } else {
+              formDataToUploadFile.append(key, value); // send as string
+            }
           }
+
+          formDataToUploadFile.append("uploadConfig", JSON.stringify(uploadConfig));
+          formDataToUploadFile.append("planLimit", JSON.stringify(planLimit));
+          formDataToUploadFile.append("formId", formId);
+
+          const { data } = await supabase.functions.invoke('upload-files', {
+            body: formDataToUploadFile
+          })
+
+          formDataObj = data?.formDataObj || {};
         }
 
-        formDataToUploadFile.append("uploadConfig", JSON.stringify(uploadConfig));
-        formDataToUploadFile.append("planLimit", JSON.stringify(planLimit));
-        formDataToUploadFile.append("formId", formId);
 
-        const { data } = await supabase.functions.invoke('upload-files', {
-          body: formDataToUploadFile
-        })
-
-        const formDataObj = data?.formDataObj || {};
 
         const messageData: FormSubmissionData = {
           form: {
@@ -176,6 +186,7 @@ export async function POST(
 
 
         const tasks: Promise<any>[] = [];
+        console.log('fromDataObj', formDataObj)
 
         tasks.push(
           supabase.functions.invoke("process-submissions", {
@@ -228,7 +239,7 @@ export async function POST(
           }
         }
 
-        // @ts-expect-error 
+        // @ts-expect-error You will get access token
         const notionAccessToken = form.notion_accounts?.access_token;
         if (
           planLimit.features.notionIntegration &&
