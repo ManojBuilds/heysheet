@@ -2,29 +2,31 @@ import {
   HeySheetSubmissionEmail,
   FormSubmissionData,
 } from "@/components/email-template";
-
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { render } from "@react-email/components"
+import { createClient } from "./supabase/server";
 
 export async function sendEmail({
   dataToSend,
   toEmail,
+  html
 }: {
   dataToSend: FormSubmissionData;
   toEmail: string;
+  html: string;
 }) {
   try {
-    const emailTemplate = HeySheetSubmissionEmail({ data: dataToSend });
-    const { data, error } = await resend.emails.send({
-      from: "Heysheet <notify@mail.heysheet.in>",
-      to: [toEmail],
-      subject: `New Submission on ${dataToSend.form.name}`,
-      react: emailTemplate,
-    });
 
+    const supabase = await createClient()
+    
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        to: toEmail,
+        subject: `New Submission on ${dataToSend.form.name}`,
+        html
+      }
+    })
     if (error) throw error;
-    console.log("Email send success:", data, dataToSend);
+    console.log("Email send success:", data);
 
     return { success: true, message: "Email has been sent successfully" };
   } catch (error: any) {

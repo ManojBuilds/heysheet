@@ -1,26 +1,26 @@
 import { getUserLocationInfo } from "@/actions";
-import { FormSubmissionData } from "@/components/email-template";
+import HeySheetSubmissionEmail, { FormSubmissionData } from "@/components/email-template";
 import { createClient } from "@/lib/supabase/server";
 import { planLimits } from "@/lib/planLimits";
 import { collectAnalytics } from "@/lib/submission";
 import { extractUtmParams } from "@/lib/utm";
 import { processFileUploads } from "@/lib/processFileUpload";
 import { NextRequest, NextResponse } from "next/server";
-import { sendEmail } from "@/lib/email";
 import { headers } from "next/headers";
 import { validateDomains } from "@/lib/domain-validation";
+import { render } from "@react-email/components";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ formId: string }> },
 ) {
   try {
-    const { formId } = await params;
-    const supabase = await createClient();
-    const allHeaders = await headers();
-    const userAgent = allHeaders.get("user-agent") || "";
-    const referrer = allHeaders.get("referrer") || "";
-    const contentType = allHeaders.get("content-type") || "";
+    const [{ formId }, supabase, headersList] = await Promise.all([
+      params, createClient(), headers()
+    ])
+    const userAgent = headersList.get("user-agent") || "";
+    const referrer = headersList.get("referrer") || "";
+    const contentType = headersList.get("content-type") || "";
     let entries: [string, any][] = [];
 
     if (contentType.includes("application/json")) {
@@ -73,7 +73,7 @@ export async function POST(
       );
     }
 
-    validateDomains(form.domains, allHeaders)
+    validateDomains(form.domains, headersList)
 
     const [subscriptionRes, userFormsRes] = await Promise.all([
       supabase
@@ -130,14 +130,14 @@ export async function POST(
     });
     console.log("Processed form data:", formDataObj);
 
-    const ip = allHeaders.get("x-forwarded-for") || "";
-    const language = allHeaders.get("accept-language") || "";
+    const ip = headersList.get("x-forwarded-for") || "";
+    const language = headersList.get("accept-language") || "";
     const location = await getUserLocationInfo().catch(() => ({}));
 
     const analytics = collectAnalytics({
       ip_address: ip,
       user_agent: userAgent,
-      mobile: allHeaders.get("sec-ch-ua-mobile") === "?1",
+      mobile: headersList.get("sec-ch-ua-mobile") === "?1",
       referrer,
       language,
       location,
@@ -202,8 +202,14 @@ export async function POST(
             deviceType: analytics.device_type,
             browser: analytics.browser,
             language: analytics.language,
-            processed_at: submission.created_at,
-            created_at: submission.created_at,
+            created_at: new Date(submission.created_at).toLocaleString("en-US", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
           },
         };
         if (
@@ -211,14 +217,17 @@ export async function POST(
           form.email_enabled &&
           form.notification_email
         ) {
-          console.log('Sending email',{
-            dataToSend: messageData,
-            toEmail: form.notification_email,
-          })
-          void sendEmail({
-            dataToSend: messageData,
-            toEmail: form.notification_email,
-          });
+          console.log('Sending email')
+          const emailTemplate = HeySheetSubmissionEmail({ data: messageData });
+          const html = await render(emailTemplate)
+          void supabase.functions.invoke('send-email', {
+            body: {
+              to: form.notification_email,
+              subject: `New Submission on ${messageData.form.name}`,
+              html
+            }
+          }).catch(e => console.error(e))
+
         }
 
         if (form.webhook_enabled) {
