@@ -1,7 +1,6 @@
-import { Work_Sans } from "next/font/google";
+import { Manrope } from "next/font/google";
 
-export const workSans = Work_Sans({
+export const workSans = Manrope({
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["400", "600", "500", "700"],
 });
-
