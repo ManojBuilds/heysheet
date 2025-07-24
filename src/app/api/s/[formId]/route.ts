@@ -123,145 +123,18 @@ export async function POST(
       return NextResponse.json({ success: false, message: "Insert failed" }, { status: 500 });
     }
 
-    const response = NextResponse.json({ success: true, id: submission.id });
-
-    Promise.resolve().then(async () => {
-      try {
-        const uploadConfig = form.file_upload || {};
-        const hasFile = entries.some(([key, value]) => value instanceof File)
-        if (hasFile && uploadConfig.enabled) {
-          const formDataToUploadFile = new FormData();
-
-          for (const [key, value] of entries) {
-            if (value instanceof File) {
-              formDataToUploadFile.append(key, value); // send as file
-            } else {
-              formDataToUploadFile.append(key, value); // send as string
-            }
-          }
-          formDataToUploadFile.append("uploadConfig", JSON.stringify(uploadConfig));
-          formDataToUploadFile.append("planLimit", JSON.stringify(planLimit));
-          formDataToUploadFile.append("formId", formId);
-          const { data } = await supabase.functions.invoke('upload-files', {
-            body: formDataToUploadFile
-          })
-
-          formDataObj = data?.formDataObj || {};
-        }
-        const messageData: FormSubmissionData = {
-          form: {
-            name: form.title,
-            spreadsheet_id: form.spreadsheet_id,
-            id: formId,
-          },
-          submission: {
-            created_at: submission.created_at,
-            data: formDataObj,
-            id: submission.id,
-          },
-          analytics: {
-            referrer: referrer,
-            country: analytics.country,
-            city: analytics.city,
-            timezone: analytics.timezone,
-            deviceType: analytics.device_type,
-            browser: analytics.browser,
-            language: analytics.language,
-            created_at: new Date(submission.created_at).toLocaleString("en-US", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-              hour12: true,
-            }),
-          },
-        };
-
-
-        const tasks: Promise<any>[] = [];
-        console.log('fromDataObj', formDataObj)
-
-        tasks.push(
-          supabase.functions.invoke("process-submissions", {
-            body: {
-              submissionId: submission.id,
-              data: formDataObj,
-            },
-          })
-        );
-
-        if (
-          planLimit.features.emailAlerts &&
-          form.email_enabled &&
-          form.notification_email
-        ) {
-          const html = await render(HeySheetSubmissionEmail({ data: messageData }));
-          tasks.push(
-            supabase.functions.invoke("send-email", {
-              body: {
-                to: form.notification_email,
-                subject: `New Submission on ${form.title}`,
-                html,
-              },
-            })
-          );
-        }
-
-        console.log("Checking if webhook enabled", form.webhook_enabled)
-        if (form.webhook_enabled) {
-          const { data: webhookData } = await supabase
-            .from("webhooks")
-            .select("url, secret")
-            .eq("form_id", formId)
-            .single();
-          console.log("webhook:", webhookData)
-
-          if (webhookData?.url) {
-            console.log('Calling send-webhook edge function')
-            tasks.push(
-              supabase.functions.invoke("send-webhook", {
-                body: {
-                  webhookUrl: webhookData.url,
-                  payload: {
-                    formId: form.id,
-                    submissionId: submission.id,
-                    data: formDataObj,
-                    createdAt: submission.created_at,
-                  },
-                  secret: webhookData.secret,
-                },
-              })
-            );
-          }
-        }
-
-        // @ts-expect-error You will get access token
-        const notionAccessToken = form.notion_accounts?.access_token;
-        if (
-          planLimit.features.notionIntegration &&
-          form.notion_enabled &&
-          form.notion_database_id &&
-          notionAccessToken
-        ) {
-          tasks.push(
-            supabase.functions.invoke("append-to-notion-db", {
-              body: {
-                accessToken: notionAccessToken,
-                databaseId: form.notion_database_id,
-                data: formDataObj,
-              },
-            })
-          );
-        }
-
-        await Promise.allSettled(tasks);
-      } catch (err) {
-        console.error("❌ Background task error:", err);
-      }
+    supabase.functions.invoke("submission-handler", {
+      body: {
+        submission,
+        form,
+        analytics,
+        referrer,
+        formDataObj,
+        planLimit,
+      },
     });
 
-    return response;
+    return NextResponse.json({ success: true, id: submission.id });
   } catch (error: any) {
     console.error("❌ Error:", error.message || error);
     return NextResponse.json(
