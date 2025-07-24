@@ -129,7 +129,6 @@ export async function POST(
       try {
         const uploadConfig = form.file_upload || {};
         const hasFile = entries.some(([key, value]) => value instanceof File)
-
         if (hasFile && uploadConfig.enabled) {
           const formDataToUploadFile = new FormData();
 
@@ -140,20 +139,15 @@ export async function POST(
               formDataToUploadFile.append(key, value); // send as string
             }
           }
-
           formDataToUploadFile.append("uploadConfig", JSON.stringify(uploadConfig));
           formDataToUploadFile.append("planLimit", JSON.stringify(planLimit));
           formDataToUploadFile.append("formId", formId);
-
           const { data } = await supabase.functions.invoke('upload-files', {
             body: formDataToUploadFile
           })
 
           formDataObj = data?.formDataObj || {};
         }
-
-
-
         const messageData: FormSubmissionData = {
           form: {
             name: form.title,
@@ -214,14 +208,17 @@ export async function POST(
           );
         }
 
+        console.log("Checking if webhook enabled", form.webhook_enabled)
         if (form.webhook_enabled) {
           const { data: webhookData } = await supabase
             .from("webhooks")
             .select("url, secret")
             .eq("form_id", formId)
             .single();
+          console.log("webhook:", webhookData)
 
-          if (webhookData) {
+          if (webhookData?.url) {
+            console.log('Calling send-webhook edge function')
             tasks.push(
               supabase.functions.invoke("send-webhook", {
                 body: {
