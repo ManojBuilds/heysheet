@@ -39,20 +39,19 @@ export function FormCard({ form }: FormCardProps) {
             <h2 className="text-lg font-semibold text-foreground flex-1">
               {form.title}
             </h2>
-
-            <Link
-              target="_blank"
-              href={`/form-builder/${form.id}`}
-              className="z-10"
-            >
-              <TooltipWrapper
-                content={"Build beautiful form with form builder"}
-              >
-                <div className="inline-flex items-center justify-center p-2 bg-muted rounded-full">
-                  <Paintbrush2Icon strokeWidth={1.5} size={18} />
-                </div>
-              </TooltipWrapper>
-            </Link>
+            {/* <Link */}
+            {/*   target="_blank" */}
+            {/*   href={`/form-builder/${form.id}`} */}
+            {/*   className="z-10" */}
+            {/* > */}
+            {/*   <TooltipWrapper */}
+            {/*     content={"Build beautiful form with form builder"} */}
+            {/*   > */}
+            {/*     <div className="inline-flex items-center justify-center p-2 bg-muted rounded-full"> */}
+            {/*       <Paintbrush2Icon strokeWidth={1.5} size={18} /> */}
+            {/*     </div> */}
+            {/*   </TooltipWrapper> */}
+            {/* </Link> */}
           </CardTitle>
         </div>
       </CardHeader>
