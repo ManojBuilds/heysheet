@@ -15,9 +15,6 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
-  if(process.env.NODE_ENV==="development"){
-    await auth.protect()
-  }
   const url = new URL(myConfig.afterSignOutUrl);
   url.searchParams.append("requiredLogin", "true");
   if (isPublicRoute(req)) {

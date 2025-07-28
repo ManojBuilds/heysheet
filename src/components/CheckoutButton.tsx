@@ -10,6 +10,8 @@ import { useMutation } from "@tanstack/react-query";
 import { createDodopaymentsCheckoutSession } from "@/actions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { Loader, Loader2 } from "lucide-react";
 
 interface CheckoutButtonProps {
   productId: string;
@@ -33,13 +35,11 @@ export function CheckoutButton({
   const { isLoaded, user } = useUser();
   const isMobile = useIsMobile();
   const router = useRouter();
+  const { resolvedTheme } = useTheme()
 
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     status: "idle",
   });
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [message, setMessage] = useState<string>("");
 
   const { mutateAsync: createCheckoutSession } = useMutation({
     mutationKey: ["payment_link"],
@@ -59,18 +59,15 @@ export function CheckoutButton({
     switch (event.event_type) {
       case "checkout.opened":
         setCheckoutState({ status: "open" });
-        setMessage("Checkout opened");
         break;
 
       case "checkout.closed":
         setCheckoutState({ status: "idle" });
-        setMessage("Checkout closed");
         break;
 
       case "checkout.redirect":
         setCheckoutState({ status: "loading" });
         window.location.href = event.data?.url as string;
-        setMessage("Redirecting to payment page");
         break;
 
       case "checkout.error":
@@ -78,7 +75,6 @@ export function CheckoutButton({
           status: "error",
           error: (event.data?.message as string) || "An error occurred",
         });
-        setMessage("An error occurred");
         break;
     }
   };
@@ -87,9 +83,9 @@ export function CheckoutButton({
     if (isMobile) return;
     DodoPayments.Initialize({
       displayType: "overlay",
+      mode: "test",
       linkType: "static",
-      mode: process.env.NODE_ENV === "production" ? "live" : "test",
-      theme: "dark",
+      theme: resolvedTheme as "dark" | "light",
       onEvent: (event: CheckoutEvent) => {
         ListinEvents(event);
       },
@@ -97,9 +93,9 @@ export function CheckoutButton({
   }, [isMobile]);
 
   const handleCheckout = useCallback(async () => {
+    if (!isLoaded) return;
     try {
-      if (!isLoaded) return;
-      setIsLoading(false)
+      setCheckoutState({ status: "loading" });
       if (isMobile) {
         const checkoutSession = await createCheckoutSession({
           name: user?.fullName || user?.firstName || "",
@@ -110,12 +106,10 @@ export function CheckoutButton({
           toast.error(checkoutSession.message || "Something went wrong!");
           return;
         }
-        setIsLoading(false)
         if (checkoutSession.link) {
           router.push(checkoutSession.link);
         }
       }
-      setCheckoutState({ status: "loading" });
       DodoPayments.Checkout.open({
         redirectUrl: `${config.appUrl}/dashboard`,
         products: [
@@ -137,8 +131,6 @@ export function CheckoutButton({
           error instanceof Error ? error.message : "Failed to open checkout",
       });
       throw error;
-    }finally{
-      setIsLoading(false)
     }
   }, [productId, isLoaded, user, isMobile, createCheckoutSession, router]);
 
@@ -152,9 +144,12 @@ export function CheckoutButton({
     <Button
       className={className}
       onClick={handleCheckout}
-      disabled={isLoading || disabled || !isLoaded}
+      disabled={disabled || !isLoaded}
     >
-      {isLoading ? "Loading..." : children || "Checkout Now"}
+      {
+        checkoutState.status === "loading" ? <Loader2 className="animate-spin" /> : null
+      }
+      {children || "Checkout Now"}
     </Button>
   );
 }

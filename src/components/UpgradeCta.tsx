@@ -1,6 +1,6 @@
 'use client'
 import Link from "next/link";
-import { CrownIcon } from "lucide-react";
+import { Gem } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "./ui/button";
 import useSubscription from "@/hooks/useSubscription";
@@ -14,7 +14,7 @@ const UpgradeCta = ({ className }: { className?: string, }) => {
         className: cn("inline-flex items-center gap-2 capitalize", className),
       })}
     >
-      <CrownIcon className="text-yellow-500" />
+      <Gem  />
       {subscription && subscription?.plan !== "free"
         ? `${subscription.plan} plan`
         : "upgrade plan"}
