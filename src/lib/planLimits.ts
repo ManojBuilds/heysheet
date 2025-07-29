@@ -48,10 +48,8 @@ export const PLANS = [
     features: [
       "1 Forms",
       "100 Submissions/mo",
-      "Drag & Drop Builder",
       "Google Sheets Sync",
       "Notion Integration",
-      "Basic Branding",
     ],
     cta: "Get Started Free",
     popular: false,
@@ -60,22 +58,20 @@ export const PLANS = [
     name: "Starter",
     price: {
       monthly: {
-        price: 8,
+        price: 7.99,
         priceId: process.env.NEXT_PUBLIC_STARTER_MONTHLY_ID!,
       },
       annually: {
-        price: 6,
+        price: 5.99,
         priceId: process.env.NEXT_PUBLIC_STARTER_ANNUAL_ID!,
       },
     },
     description: "Most popular for growing businesses",
     features: [
       "Unlimited Forms",
-      "25,000 Submissions/mo",
-      "Drag & Drop Builder (Comming soon)",
+      "Unlimited Submissions",
       "Google Sheets Sync",
       "Notion Integration",
-      "Custom Branding",
       "File Uploads",
       "Slack & Email Alerts",
       "Basic Analytics",
@@ -100,8 +96,7 @@ export const PLANS = [
     description: "For power users and teams",
     features: [
       "Unlimited Forms",
-      "50,000 Submissions/mo",
-      "Drag & Drop Builder",
+      "Unlimited Submissions",
       "Google Sheets Sync",
       "Notion Integration",
       "Custom Branding",
