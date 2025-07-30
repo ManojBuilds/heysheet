@@ -21,6 +21,7 @@ export async function POST(
     const contentType = headersList.get("content-type") || "";
     let entries: [string, any][] = [];
     let formDataObj: Record<string, any> = {}
+    console.log('content-type', contentType)
 
     if (contentType.includes("application/json")) {
       const json = await request.json();
@@ -31,6 +32,7 @@ export async function POST(
       contentType.includes("application/x-www-form-urlencoded")
     ) {
       const formData = await request.formData();
+      console.log('fromData', formData)
       formData.entries().forEach(([key, value]) => {
         console.log('looping through', { key, value })
         formDataObj[key] = value;
