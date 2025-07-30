@@ -1,5 +1,4 @@
 import { getUserLocationInfo } from "@/actions";
-import HeySheetSubmissionEmail, { FormSubmissionData } from "@/components/email-template";
 import { createClient } from "@/lib/supabase/server";
 import { planLimits } from "@/lib/planLimits";
 import { collectAnalytics } from "@/lib/submission";
@@ -7,7 +6,6 @@ import { extractUtmParams } from "@/lib/utm";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { validateDomains } from "@/lib/domain-validation";
-import { render } from "@react-email/components";
 
 export async function POST(
   request: NextRequest,
@@ -44,6 +42,7 @@ export async function POST(
         { status: 415 },
       );
     }
+    console.log('formDataObj', formDataObj)
     const { data: form, error: formError } = await supabase
       .from("forms")
       .select(`
