@@ -45,6 +45,7 @@ export async function POST(
       );
     }
     console.log('formDataObj', formDataObj)
+    console.log('entries', entries)
     const { data: form, error: formError } = await supabase
       .from("forms")
       .select(`
