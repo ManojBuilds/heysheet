@@ -52,7 +52,7 @@ export const FormDetails = ({
   initialWebhookEnabled: boolean;
   initialWebhookUrl: string;
   initialWebhookSecret: string;
-  subscription?: SubscriptionData
+  subscription?: SubscriptionData;
 }) => {
   const { selectedAccount } = useGoogleAccounts();
   const [isPending, startTransition] = useTransition();
@@ -60,15 +60,16 @@ export const FormDetails = ({
   const [sheetName, setSheetName] = useState("");
   const router = useRouter();
 
-  const [selectedSpreadsheet, setSelectedSpreadsheet] = useState<Spreadsheet | null>(
-    data.spreadsheet_id
-      ? {
-        id: data.spreadsheet_id,
-        name: data.sheet_name || "Unnamed Sheet",
-        url: `https://docs.google.com/spreadsheets/d/${data.spreadsheet_id}`,
-      }
-      : null,
-  );
+  const [selectedSpreadsheet, setSelectedSpreadsheet] =
+    useState<Spreadsheet | null>(
+      data.spreadsheet_id
+        ? {
+            id: data.spreadsheet_id,
+            name: data.sheet_name || "Unnamed Sheet",
+            url: `https://docs.google.com/spreadsheets/d/${data.spreadsheet_id}`,
+          }
+        : null,
+    );
 
   const formEmbeddingCode = `<iframe 
 src="${process.env.NEXT_PUBLIC_APP_URL}/f/${id}"
@@ -237,9 +238,9 @@ loading="lazy"
                 </div>
               </div>
             </div>
-          )
-            : <AllowGooglePermissions />
-          }
+          ) : (
+            <AllowGooglePermissions />
+          )}
         </CardContent>
       </Card>
       <FormSettings
@@ -281,18 +282,18 @@ loading="lazy"
 
       <ConfigureIntegration data={data} subscription={subscription} />
       <CodeSnippet endpointUrl={endpointUrl} />
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>Embed Your Form Anywhere</CardTitle>
-          <CardDescription>
-            Easily embed this form into your website by copying and pasting the
-            code below. It’s responsive, lightweight, and works out of the box.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CodeBlock code={formEmbeddingCode} lang="html" />
-        </CardContent>
-      </Card>
+      {/* <Card> */}
+      {/*   <CardHeader className="border-b"> */}
+      {/*     <CardTitle>Embed Your Form Anywhere</CardTitle> */}
+      {/*     <CardDescription> */}
+      {/*       Easily embed this form into your website by copying and pasting the */}
+      {/*       code below. It’s responsive, lightweight, and works out of the box. */}
+      {/*     </CardDescription> */}
+      {/*   </CardHeader> */}
+      {/*   <CardContent> */}
+      {/*     <CodeBlock code={formEmbeddingCode} lang="html" /> */}
+      {/*   </CardContent> */}
+      {/* </Card> */}
       <DeleteFormButton id={id} isActive={data.is_active} />
     </div>
   );
