@@ -51,7 +51,7 @@ export const PLANS = [
       "Google Sheets Sync",
       "Notion Integration",
     ],
-    cta: "Get Started Free",
+    cta: "Get Started for free",
     popular: false,
   },
   {

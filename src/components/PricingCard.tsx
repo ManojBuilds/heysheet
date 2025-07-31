@@ -7,6 +7,7 @@ import { PLANS } from "@/lib/planLimits";
 import useSubscription from "@/hooks/useSubscription";
 import { CheckoutButton } from "./CheckoutButton";
 import useLoginOrRedirect from "@/hooks/useLoginOrReditrect";
+import { config } from "@/config";
 
 const PricingCard = () => {
   const loginOrRedirect = useLoginOrRedirect();
@@ -14,6 +15,16 @@ const PricingCard = () => {
   const [isAnnual, setIsAnnual] = useState(
     subscription?.billing_interval === "annually",
   );
+  const [copied, setCopied] = useState(false);
+  const couponCode = config.couponeCode;
+
+  const handleCopy = () => {
+    if (couponCode) {
+      navigator.clipboard.writeText(couponCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const getPriceId = (plan: any): string =>
     plan.price[isAnnual ? "annually" : "monthly"].priceId;
@@ -93,9 +104,17 @@ const PricingCard = () => {
               )}
 
               <div>
-                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-1">
-                  {plan.name}
-                </h3>
+                 <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                    {plan.name}
+                  </h3>
+                  {plan.name === "Free" && (
+                    <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold dark:bg-green-900/50 dark:text-green-400">
+                      No credit card required
+                    </span>
+                  )}
+                </div>
+                
                 <p className="text-zinc-600 dark:text-zinc-400 mb-6">
                   {plan.description}
                 </p>
@@ -112,6 +131,23 @@ const PricingCard = () => {
                       Billed annually (${priceInfo.price * 12}/year)
                     </div>
                   )}
+                  {plan.name !== "Free" && couponCode && (
+                    <p className="text-xs text-zinc-500 mt-2">
+                      Use coupon code{" "}
+                      <span
+                        className="font-bold cursor-pointer"
+                        onClick={handleCopy}
+                        title="Click to copy coupon code"
+                      >
+                        {couponCode}
+                      </span>{" "}
+                      for a special discount!
+                      {copied && (
+                        <span className="ml-1 text-green-400">Copied!</span>
+                      )}
+                    </p>
+                  )}
+
                 </div>
 
                 <div className="space-y-4">

@@ -5,4 +5,5 @@ export const config = {
   documentationUrl:
     process.env.NEXT_PUBLIC_DOCUMENTATION_URL || "https://docs.heysheet.in",
   afterSignOutUrl: process.env.NEXT_PUBLIC_AFTER_SIGN_OUT_URL || "https://heysheet.in",
+  couponeCode: process.env.NEXT_PUBLIC_DISCOUNT_COUPON_CODE,
 };

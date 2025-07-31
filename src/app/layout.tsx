@@ -9,6 +9,7 @@ import { config } from "@/config";
 import { workSans } from "@/components/ui/fonts";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import CouponBanner from "@/components/CouponBanner";
 
 export const metadata: Metadata = {
   title:
@@ -62,6 +63,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${workSans.className} antialiased`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <CouponBanner />
             <main>{children}</main>
             <UpgradeModal />
             <Toaster
