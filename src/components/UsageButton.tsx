@@ -21,13 +21,14 @@ const UsageButton = () => {
 export default UsageButton;
 
 const UsageData = async () => {
-  const { userId } = await auth()
-  const subscription = await getSubscription(userId!)
-
+  const { userId } = await auth();
+  const subscription = await getSubscription();
 
   const plan = subscription?.plan || "free";
   const limits = planLimits[plan as keyof typeof planLimits];
-  const { forms = 0, submissions = 0 } = await getUsageData({ userId: userId! })
+  const { forms = 0, submissions = 0 } = await getUsageData({
+    userId: userId!,
+  });
 
   const formUsagePercent =
     limits.maxForms === Infinity
@@ -39,36 +40,37 @@ const UsageData = async () => {
       ? 0
       : Math.min((submissions / limits.maxSubmissions) * 100, 100);
 
-
-  return <>
-    <div>
-      <div className="flex justify-between text-xs mb-1">
-        <span>
-          Forms: {forms}/
-          {limits.maxForms === Infinity ? "∞" : limits.maxForms}
-        </span>
+  return (
+    <>
+      <div>
+        <div className="flex justify-between text-xs mb-1">
+          <span>
+            Forms: {forms}/
+            {limits.maxForms === Infinity ? "∞" : limits.maxForms}
+          </span>
+        </div>
+        {limits.maxForms !== Infinity && (
+          <Progress value={formUsagePercent} className="h-2" />
+        )}
       </div>
-      {limits.maxForms !== Infinity && (
-        <Progress value={formUsagePercent} className="h-2" />
-      )}
-    </div>
 
-    <div>
-      <div className="flex justify-between text-xs mb-1">
-        <span>
-          Submissions this month: {submissions}/
-          {limits.maxSubmissions === Infinity ? "∞" : limits.maxSubmissions}
-        </span>
+      <div>
+        <div className="flex justify-between text-xs mb-1">
+          <span>
+            Submissions this month: {submissions}/
+            {limits.maxSubmissions === Infinity ? "∞" : limits.maxSubmissions}
+          </span>
+        </div>
+        {limits.maxSubmissions !== Infinity && (
+          <Progress value={submissionUsagePercent} className="h-2" />
+        )}
       </div>
-      {limits.maxSubmissions !== Infinity && (
-        <Progress value={submissionUsagePercent} className="h-2" />
-      )}
-    </div>
-  </>
-}
+    </>
+  );
+};
 
 async function getUsageData({ userId }: { userId: string }) {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const now = new Date();
   const firstDayOfMonth = new Date(
     now.getFullYear(),
@@ -81,11 +83,10 @@ async function getUsageData({ userId }: { userId: string }) {
       .from("forms")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId!),
-    supabase.from("forms").select("id").eq("user_id", userId!)
-  ])
+    supabase.from("forms").select("id").eq("user_id", userId!),
+  ]);
 
-  const formIds =
-    forms?.map((f) => f.id) ?? [];
+  const formIds = forms?.map((f) => f.id) ?? [];
 
   const { count: submissionCount } = await supabase
     .from("submissions")

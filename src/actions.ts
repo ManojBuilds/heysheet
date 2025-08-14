@@ -57,17 +57,18 @@ export const getGoogleAccounts = async (userId: string) => {
   return data || [];
 };
 
-export const updateGoogleAccountInDb = async (accountId: string, dataToUpdate: Record<string, any>) => {
+export const updateGoogleAccountInDb = async (
+  accountId: string,
+  dataToUpdate: Record<string, any>,
+) => {
   if (!accountId || !dataToUpdate) return;
-  const [{ userId }, supabase] = await Promise.all([
-    auth(),
-    createClient()
-  ])
+  const [{ userId }, supabase] = await Promise.all([auth(), createClient()]);
   await supabase
     .from("google_accounts")
     .update("id, email, access_token, refresh_token, token_expires_at")
-    .eq("user_id", userId).eq('id', accountId)
-}
+    .eq("user_id", userId)
+    .eq("id", accountId);
+};
 
 export const getFormsByUserId = async (userId: string, from = 0, to = 9) => {
   if (!userId) return { forms: [], totalCount: 0 };
@@ -201,7 +202,7 @@ export const createForm = async ({
     if (result.error) {
       return { error: result.error };
     }
-    revalidatePath('/dashboard')
+    revalidatePath("/dashboard");
 
     return { data: result.data, error: null };
   } catch (error: any) {
@@ -281,34 +282,69 @@ export const updateWebhookSettings = async ({
 };
 
 export async function getUserLocationInfo() {
-  const supabase = await createClient()
-  const { data, error } = await supabase.functions.invoke('getUserLocationInfo')
+  const supabase = await createClient();
+  const { data, error } = await supabase.functions.invoke(
+    "getUserLocationInfo",
+  );
   if (error) {
-    console.log(`@getUserLocationInfoError`, error)
+    console.log(`@getUserLocationInfoError`, error);
   }
-  return data
+  return data;
 }
 
-export const getSubscription = async (userId: string) => {
-  console.log('@getSubscription', userId)
+export const getSubscription = async () => {
+  const { userId } = await auth();
+  const user = await currentUser();
+
+  if (!userId || !user) {
+    return {
+      plan: "free",
+      status: "active",
+      next_billing: "",
+      customer_id: "",
+      billing_interval: "monthly",
+      subscription_id: "",
+    };
+  }
+
+  const email = user.primaryEmailAddress?.emailAddress;
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("subscriptions")
-    .select(
-      "plan, status, customer_id, next_billing, billing_interval, subscription_id",
-    )
-    .eq("user_id", userId)
-    .single();
-  console.log({ data, error })
 
-  if (error) {
-    console.log('@getSubscriptionError', error)
+  if (!email) {
+    const { data: subData, error: subError } = await supabase
+      .from("subscriptions")
+      .select(
+        "plan, status, customer_id, next_billing, billing_interval, subscription_id",
+      )
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (subError) console.log("@getSubscriptionError", subError);
+    if (subData) return subData;
+  } else {
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select(
+        "plan, status, customer_id, next_billing, billing_interval, subscription_id, user_id",
+      )
+      .or(`user_id.eq.${userId},email.eq.${email}`)
+      .maybeSingle();
+
+    if (error) {
+      console.log("@getSubscriptionError", error);
+    }
+
+    if (data) {
+      if (!data.user_id && data.subscription_id) {
+        await supabase
+          .from("subscriptions")
+          .update({ user_id: userId })
+          .eq("subscription_id", data.subscription_id);
+      }
+      return data;
+    }
   }
 
-  if (data) {
-    console.log('@getSubscriptionData', data)
-    return data;
-  }
   return {
     plan: "free",
     status: "active",
@@ -320,17 +356,23 @@ export const getSubscription = async (userId: string) => {
 };
 
 export const canCreateForm = async () => {
-  const { userId } = await auth()
-  const [supabase, { plan }] = await Promise.all([
-    createClient(), getSubscription(userId!)
-  ])
-  const { data } = await supabase
+  const { userId } = await auth();
+  if (!userId) return false;
+
+  const [supabase, subscription] = await Promise.all([
+    createClient(),
+    getSubscription(),
+  ]);
+  const { plan } = subscription;
+
+  const { count } = await supabase
     .from("forms")
-    .select("id")
+    .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
+
   const planLimit = planLimits[plan as keyof typeof planLimits].maxForms ?? 1;
 
-  return (data?.length ?? 0) <= planLimit;
+  return (count ?? 0) < planLimit;
 };
 
 export const createCustomerPortalSession = async () => {
@@ -363,7 +405,7 @@ export const createDodopaymentsCheckoutSession = async ({
     let customerId;
     const supabase = await createClient();
     const { data } = await supabase
-      .from("subscription")
+      .from("subscriptions")
       .select("customer_id")
       .eq("email", email)
       .maybeSingle();
@@ -379,7 +421,21 @@ export const createDodopaymentsCheckoutSession = async ({
       }
       customerId = newCustomer.customer_id;
     }
-    const subscription = await dodo.subscriptions.create({
+
+    const proPlanIds = [
+      process.env.NEXT_PUBLIC_STARTER_MONTHLY_ID,
+      process.env.NEXT_PUBLIC_STARTER_ANNUAL_ID,
+    ];
+    const businessPlanIds = [
+      process.env.NEXT_PUBLIC_PRO_MONTHLY_ID,
+      process.env.NEXT_PUBLIC_PRO_ANNUAL_ID,
+    ];
+
+    const isProOrBusiness = [...proPlanIds, ...businessPlanIds].includes(
+      productId,
+    );
+
+    const subscriptionPayload: any = {
       billing: {
         city: "",
         country: "IN",
@@ -392,7 +448,13 @@ export const createDodopaymentsCheckoutSession = async ({
       payment_link: true,
       return_url: `${config.appUrl}/dashboard`,
       quantity: 1,
-    });
+    };
+
+    if (isProOrBusiness) {
+      subscriptionPayload.trial_period_days = 7;
+    }
+
+    const subscription = await dodo.subscriptions.create(subscriptionPayload);
     console.log(subscription);
     if (!subscription.payment_link) {
       throw new Error("Failed to create payment link");

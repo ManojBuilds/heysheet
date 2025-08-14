@@ -5,15 +5,13 @@ import { FormDetails as IFormDetails } from "@/types/form-details";
 import { auth } from "@clerk/nextjs/server";
 import { getSubscription } from "@/actions";
 
-export async function FormDetailsFetcher({
-  id,
-}: {id:string}) {
-  const {userId} = await auth()
+export async function FormDetailsFetcher({ id }: { id: string }) {
+  const { userId } = await auth();
 
   const [supabase, subscription] = await Promise.all([
     createClient(),
-    getSubscription(userId!)
-  ])
+    getSubscription(),
+  ]);
 
   const [{ data, error }, { data: webhookData }] = await Promise.all([
     supabase
@@ -28,9 +26,8 @@ export async function FormDetailsFetcher({
       .from("webhooks")
       .select("url, secret")
       .eq("form_id", id)
-      .maybeSingle()
-  ])
-
+      .maybeSingle(),
+  ]);
 
   if (error || !data) {
     return notFound();

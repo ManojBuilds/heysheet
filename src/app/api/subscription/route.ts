@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       )
       .eq("user_id", userId)
       .maybeSingle();
+    console.log({ data, error });
 
     if (error) {
       console.error("Error fetching subscription:", error);
@@ -29,7 +30,6 @@ export async function GET(request: Request) {
       return NextResponse.json(data, { status: 200 });
     }
 
-    // If no subscription found, return a default "free" plan
     return NextResponse.json(
       {
         plan: "free",

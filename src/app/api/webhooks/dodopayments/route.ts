@@ -31,6 +31,7 @@ export const POST = async (req: Request) => {
           customer,
           payment_frequency_interval,
           product_id,
+          status,
         } = data;
 
         const { email, customer_id } = customer;
@@ -56,9 +57,22 @@ export const POST = async (req: Request) => {
         const user = userRes.data;
 
         if (!user) {
-          console.error(
-            `User not found for customer_id: ${customer_id} or email: ${email}`,
+          console.log(
+            `User not found for customer_id: ${customer_id} or email: ${email}. Creating subscription without user.`,
           );
+          const { error } = await supabase.from("subscriptions").upsert(
+            {
+              plan,
+              status: status || "active",
+              subscription_id,
+              customer_id,
+              billing_interval,
+              next_billing: next_billing_date,
+              email,
+            },
+            { onConflict: "subscription_id" },
+          );
+          console.log("Error", error);
           break;
         }
 
@@ -73,7 +87,7 @@ export const POST = async (req: Request) => {
           {
             user_id: user.clerk_user_id,
             plan,
-            status: "active",
+            status: status || "active",
             subscription_id,
             customer_id,
             billing_interval,

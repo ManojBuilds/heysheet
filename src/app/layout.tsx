@@ -63,7 +63,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body className={`${workSans.className} antialiased`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <CouponBanner />
+            {/* <CouponBanner /> */}
             <main>{children}</main>
             <UpgradeModal />
             <Toaster

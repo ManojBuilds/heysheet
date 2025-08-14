@@ -11,13 +11,14 @@ const UpgradeCta = ({ className }: { className?: string, }) => {
     <Link
       href={subscription?.plan === "free" ? "/checkout" : '/manage-plan'}
       className={buttonVariants({
-        className: cn("inline-flex items-center gap-2 capitalize", className),
+        className: cn("inline-flex items-center gap-2 capitalize font-semibold", className),
+        size: 'lg'
       })}
     >
-      <Gem  />
+      <Gem />
       {subscription && subscription?.plan !== "free"
-        ? `${subscription.plan} plan`
-        : "upgrade plan"}
+        ? `${subscription.plan}`
+        : "Start 7-Day Pro Trial"}
     </Link>
   );
 };
